@@ -3664,7 +3664,7 @@ def main():
     #make Mac OS app be able to run calcLoveWahr4Layer from Resources
     #directory in application bundle
     os.environ['PATH'] += os.path.pathsep+os.path.abspath(os.curdir)
-    app = SatStressApp(0) # The 0 aka false parameter means "don't redirect stdout and stderr to a window"
+    app = SatStressApp(1) # The 0 aka false parameter means "don't redirect stdout and stderr to a window"
     app.MainLoop()
 
 if __name__ == '__main__':
