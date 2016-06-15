@@ -3,7 +3,7 @@
 
 # for GUI
 #    wx = python extention module that acts as python lang wrapper for wxWidgets
-#         (cross platform GUI API written in C++)
+#         (cross platform GUI API written in C++)t
 import wx
 
 # for manipulating tabluar data
