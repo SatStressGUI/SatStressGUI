@@ -440,6 +440,23 @@ class SatelliteCalculation(object):
                 pass
         f.close()
 
+
+    def save_cyclparams(self, filename):
+        tmp = False
+        if filename is None:
+            filename = os.tempnam(None, 'grid')
+            tmp = True
+        f = open(filename, 'w')
+        for k,v in self.cycloid_parameters_d.items():
+            if k == 'VARY_VELOCITY' and not v:
+                f.write(k + " = False" + "\n")
+            else:
+                f.write(k + " = " + str(v) + "\n")
+        
+        f.close()
+        return filename, tmp
+
+
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
         try:
@@ -1989,7 +2006,7 @@ class CycloidsPanel(SatPanel):
                 style = wx.SAVE,
                 wildcard = 'Cycloid files (*.cyc)|*.cyc',
                 defaultFile = 'cycloid_params.cyc',
-                action = self.save_cyclparams)
+                action = self.sc.save_cyclparams)
         except Exception, e:
             error_dialog(self, str(e), u'Error saving cycloid parameters')
 
@@ -1999,7 +2016,6 @@ class CycloidsPanel(SatPanel):
             filename = os.tempnam(None, 'grid')
             tmp = True
         f = open(filename, 'w')
-        self.sc.cycloid_parameters_d
         for k,v in self.sc.cycloid_parameters_d.items():
             if k == 'VARY_VELOCITY' and not v:
                 f.write(k + " = False" + "\n")
@@ -3602,6 +3618,9 @@ class SatStressFrame(wx.Frame):
         self.GetSizer().Add(self.p, 1, wx.ALL|wx.EXPAND, 10)
 
         ##### 'Information' option of menubar #####
+        File = wx.Menu()
+        File.Append(wx.ID_ANY, '&Export')
+        self.Bind(wx.EVT_MENU,self.onExport)
         About = wx.Menu()
         rights = About.Append(wx.ID_ANY, '&Copyright')
         self.Bind(wx.EVT_MENU, self.onRights, rights)
@@ -3616,6 +3635,7 @@ class SatStressFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onContacts, contact)
 
         menubar = wx.MenuBar()
+        menubar.Append(File,"File")
         menubar.Append(About, "&Information")
 
         ##### 'Help' option of menubar ######
@@ -3650,6 +3670,36 @@ class SatStressFrame(wx.Frame):
         self.CenterOnScreen()
 
         self.p.SetFocus()
+    
+    def onExport(self,evt):
+        try:
+            file_dialog(self,
+                    message=u"Load from satellite file",
+                    style=wx.SAVE,
+                    wildcard='Satellite files (*.satellite;*.sat)|*.satellite;*.sat',
+                    action=self.saveFile)
+        except Exception, e:
+            error_dialog(self, str(e), u'Satellite Error')
+
+    def saveFile(self,filename):
+        os.mkdir(filename)
+        try:
+            self.p.sc.save_grid(filename+'/grid.grid')
+        except Exception, e:
+            error_dialog(self,str(e), "Unable to save grid")
+
+        try:
+            
+            self.p.sc.save_cyclparams(filename+'/cycleparms.cyc')
+        except Exception, e:
+            error_dialog(self,str(e), "Unable to save cycloids")
+                
+        try:
+            self.p.sc.save_satellite(filename+'/satellite.sat')
+        
+        except Exception, e:
+            error_dialog(self,str(e), "Unable to save satellite")
+
 
     def onRights(self, evt):
         # indentation (lack thereof) necessary to prevent tab spaces every newline in source code
