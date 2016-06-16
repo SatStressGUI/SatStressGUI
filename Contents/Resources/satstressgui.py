@@ -1947,7 +1947,23 @@ class CycloidsPanel(SatPanel):
             error_dialog(self, str(e), u'Error saving cycloid parameters')
 
     def save_cyclparams(self, filename):
-        pass
+        tmp = False
+        if filename is None:
+            filename = os.tempnam(None, 'grid')
+            tmp = True
+        f = open(filename, 'w')
+        self.sc.cycloid_parameters_d
+        for k,v in self.sc.cycloid_parameters_d.items():
+            if k == 'VARY_VELOCITY' and not v:
+                f.write(k + " = False" + "\n")
+            else:
+                f.write(k + " = " + str(v) + "\n")
+        
+        f.close()
+        
+        if not tmp:
+            self.grid_save_changed = False
+        return filename, tmp
 
     def on_load_cyclparams(self, evt):
         try:
@@ -1960,8 +1976,34 @@ class CycloidsPanel(SatPanel):
             error_dialog(self, str(e), u'Error loading cycloid parameters')
 
     def load_cyclparams(self, filename):
-        pass
-     
+        try:
+            f = open(filename)
+        except:
+            error_dialog(self, 'File error', 'Cannot open file')
+
+        for p, v in nvf2dict(f).items():
+            if not p == 'k' and not p == 'VARY_VELOCITY' and not p == 'STARTING_DIRECTION':
+                self.sc.cycloid_parameters_d[p] = float(v)
+            elif p == 'k':
+                if v == 'None':
+                    self.sc.cycloid_parameters_d[p] = 0
+                else:
+                    self.sc.cycloid_parameters_d[p] = float(v)
+                        
+            elif p == 'VARY_VELOCITY':
+                if v == 'True':
+                    self.constant.Enable()
+                else:
+                    self.constant.Disable()
+                self.sc.cycloid_parameters_d[p] = v
+            else:
+                self.sc.cycloid_parameters_d[p] = v;
+                    
+        self.cycl_save_changed = True
+        print(self.sc.cycloid_parameters_d['YIELD'])
+        f.close()
+
+
     def load_shape(self, filename):
         # walk around char const * restriction
         sf = os.path.splitext(str(filename))[0] + '.shp'
