@@ -1792,7 +1792,14 @@ class CycloidsPanel(SatPanel):
 
         # initialize sizers
         sz = wx.BoxSizer(wx.VERTICAL)
-        gridSizer    = wx.FlexGridSizer(rows=7, cols=3, hgap=5, vgap=0)
+        gridSizer    = wx.FlexGridSizer(rows=7, cols=2, hgap=5, vgap=0)
+        
+        dirSizer = wx.BoxSizer(wx.HORIZONTAL)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        filler = wx.BoxSizer(wx.HORIZONTAL)
+        varyvSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        '''
         threshSizer  = wx.BoxSizer(wx.HORIZONTAL)
         propstrSizer = wx.BoxSizer(wx.HORIZONTAL)
         propspdSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1801,8 +1808,7 @@ class CycloidsPanel(SatPanel):
         lonSizer = wx.BoxSizer(wx.HORIZONTAL)
         filler = wx.BoxSizer(wx.HORIZONTAL)
         filler2 = wx.BoxSizer(wx.HORIZONTAL)
-        dirSizer = wx.BoxSizer(wx.HORIZONTAL)
-        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
         
         # create widgets
         threshold = wx.StaticText(self, wx.ID_ANY, 'Yield (Threshold) [kPa]: ')
@@ -1847,11 +1853,11 @@ class CycloidsPanel(SatPanel):
         lonSizer.Add(startlon, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
         filler.AddSpacer(5)
         filler2.AddSpacer(15)
-
+        '''
         # whould eventually replace with add_combobox2_to_sizer()
         # create combobox that chooses (initial?) direction
         which_dir = wx.StaticText(self, wx.ID_ANY, 'Propagation Direction: ')
-        dirSizer.Add(which_dir, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+        dirSizer.Add(which_dir, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 0)
         all_dir = ['East', 'West']
         start_dir = wx.ComboBox(self, size=(100, 50) ,choices=all_dir, style=wx.CB_DROPDOWN|wx.CB_READONLY)
         # bind
@@ -1866,8 +1872,28 @@ class CycloidsPanel(SatPanel):
         buttonSizer.AddSpacer(5)
         buttonSizer.Add(save_bt, wx.ALIGN_CENTER)
 
+
+
+        self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
+        self.Bind(wx.EVT_CHECKBOX, self.EvtSetVary, self.vary)
+        self.constant = wx.TextCtrl(self, wx.ID_ANY, '0', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetConstant, self.constant)
+        self.constant.Disable()
+
+        varyvSizer.Add(self.vary, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        varyvSizer.Add(self.constant, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         # add widgets into grid
         # Set the TextCtrl to expand on resize
+        
+        
+        fieldsToAdd = [('YIELD', 'Yield'),('PROPAGATION_STRENGTH','Propagation Strength'),('PROPAGATION_SPEED','Propagation Speed'), ('STARTING_LONGITUDE', 'Starting Longitude'), ('STARTING_LATITUDE', 'Starting Latitude')]
+
+        self.add_text_control(gridSizer, fieldsToAdd )
+     
+        gridSizer.Add(dirSizer)
+        gridSizer.Add(start_dir)
+        gridSizer.Add(varyvSizer)
+        '''
         gridSizer.AddMany([
             (threshSizer, 0, wx.ALIGN_LEFT), (input_thresh, 0, wx.EXPAND), (filler, wx.EXPAND),
             (propstrSizer, 0, wx.ALIGN_LEFT), (input_propstrength, 0, wx.EXPAND), (filler, wx.EXPAND),
@@ -1875,12 +1901,13 @@ class CycloidsPanel(SatPanel):
             (latSizer, 0, wx.ALIGN_LEFT), (self.input_startlat, 0, wx.EXPAND), (filler, wx.EXPAND),
             (lonSizer, 0, wx.ALIGN_LEFT), (self.input_startlon, 0, wx.EXPAND), (filler, wx.EXPAND),
             (dirSizer, 0, wx.ALIGN_LEFT), (start_dir), (filler, wx.EXPAND)])
-
+        '''
         many_params = wx.Button(self, label='Load Multiple Cycloid Parameters')
         wx.EVT_BUTTON(self, many_params.GetId(), self.load_many)
 
         # add to overarching sizer sz
-        sz.Add(WrapStaticText(self, 
+        '''
+        sz.Add(WrapStaticText(self,
             label=u'This tab calculates cycloids through combined diurnal and NSR stresses. Cycloids ' +
             u'are arcuate lineaments found on the surface of Europa. ' +
             u'They can be modeled and plotted on the following ' +
@@ -1889,14 +1916,34 @@ class CycloidsPanel(SatPanel):
             u'Propagation Strength. The Propagation Speed is usually <10 m/s. ' +
             u'For further information on cycloids see About tab.'),
             flag=wx.ALL|wx.EXPAND)
-        sz.Add(filler)
+            #sz.Add(filler)
+        '''
         sz.Add(buttonSizer, 0, wx.ALL, 5)
-        # sz.Add(filler2)
+        #sz.Add(filler2)
         sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
         sz.Add(many_params)
         self.SetSizer(sz)
         sz.Fit(self)
+    
+    def add_text_control(self,  sz, parameters_d):
+        for p, d in parameters_d:
+            sz.Add(wx.StaticText(self, label=d), flag=wx.ALIGN_CENTER_VERTICAL)
+            txtCtrlObj = wx.TextCtrl(self, -1,name=p)
+            txtCtrlObj.Bind(wx.EVT_CHAR,self.OnChar)
+            txtCtrlObj.Bind(wx.EVT_TEXT, self.OnText)
+            sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
 
+    def OnChar(self,event):
+        charEntered= event.GetKeyCode()
+        if (charEntered >= 48 and charEntered <= 57) or charEntered == 8 or charEntered == 9 or charEntered == 13:
+            event.Skip()
+
+    def OnText(self,event):
+        if event.GetEventObject().GetValue():
+            self.sc.cycloid_parameters_d[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
+        
+        else:
+            self.sc.cycloid_parameters_d[event.GetEventObject().GetName()] = None
     def load_many(self, evt):
         try:
             file_dialog(self,
@@ -2905,7 +2952,10 @@ class ScalarPlotPanel(PlotPanel):
                             self.sc.cycloid_parameters_d['STARTING_LONGITUDE'],
                             self.sc.cycloid_parameters_d['STARTING_LATITUDE'],
                             self.sc.cycloid_parameters_d['STARTING_DIRECTION'],
+                            self.sc.cycloid_parameters_d['VARY_VELOCITY'],
+                            self.sc.cycloid_parameters_d['k'],
                             self.sc.get_parameter(float, 'ORBIT_MAX', 360))
+                          
 
     
 
