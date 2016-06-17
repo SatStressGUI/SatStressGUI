@@ -440,23 +440,6 @@ class SatelliteCalculation(object):
                 pass
         f.close()
 
-
-    def save_cyclparams(self, filename):
-        tmp = False
-        if filename is None:
-            filename = os.tempnam(None, 'grid')
-            tmp = True
-        f = open(filename, 'w')
-        for k,v in self.cycloid_parameters_d.items():
-            if k == 'VARY_VELOCITY' and not v:
-                f.write(k + " = False" + "\n")
-            else:
-                f.write(k + " = " + str(v) + "\n")
-        
-        f.close()
-        return filename, tmp
-
-
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
         try:
@@ -1807,6 +1790,7 @@ class CycloidsPanel(SatPanel):
     def __init__(self, *args, **kw):
         super(CycloidsPanel, self).__init__(*args, **kw)
 
+        self.textCtrls = {} #keys are the name of the fields (YIELD,etc) and values are the textCtrl objects for those fields.
         # initialize sizers
         sz = wx.BoxSizer(wx.VERTICAL)
         gridSizer    = wx.FlexGridSizer(rows=7, cols=2, hgap=5, vgap=0)
@@ -1876,9 +1860,9 @@ class CycloidsPanel(SatPanel):
         which_dir = wx.StaticText(self, wx.ID_ANY, 'Propagation Direction: ')
         dirSizer.Add(which_dir, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 0)
         all_dir = ['East', 'West']
-        start_dir = wx.ComboBox(self, size=(100, 50) ,choices=all_dir, style=wx.CB_DROPDOWN|wx.CB_READONLY)
+        self.start_dir = wx.ComboBox(self, size=(100, 50) ,choices=all_dir, style=wx.CB_DROPDOWN|wx.CB_READONLY)
         # bind
-        self.Bind(wx.EVT_COMBOBOX, self.EvtSetDir, start_dir)
+        self.Bind(wx.EVT_COMBOBOX, self.EvtSetDir, self.start_dir)
 
         # create load/save buttons
         save_bt = wx.Button(self, label='Save to file')
@@ -1905,10 +1889,10 @@ class CycloidsPanel(SatPanel):
         
         fieldsToAdd = [('YIELD', 'Yield'),('PROPAGATION_STRENGTH','Propagation Strength'),('PROPAGATION_SPEED','Propagation Speed'), ('STARTING_LONGITUDE', 'Starting Longitude'), ('STARTING_LATITUDE', 'Starting Latitude')]
 
-        self.add_text_control(gridSizer, fieldsToAdd )
+        self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
      
         gridSizer.Add(dirSizer)
-        gridSizer.Add(start_dir)
+        gridSizer.Add(self.start_dir)
         gridSizer.Add(varyvSizer)
         '''
         gridSizer.AddMany([
@@ -1943,20 +1927,23 @@ class CycloidsPanel(SatPanel):
         sz.Fit(self)
     
     def add_text_control(self,  sz, parameters_d):
+        txtCtrls = {}
         for p, d in parameters_d:
             sz.Add(wx.StaticText(self, label=d), flag=wx.ALIGN_CENTER_VERTICAL)
             txtCtrlObj = wx.TextCtrl(self, -1,name=p)
             txtCtrlObj.Bind(wx.EVT_CHAR,self.OnChar)
             txtCtrlObj.Bind(wx.EVT_TEXT, self.OnText)
+            txtCtrls[p] = txtCtrlObj
             sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
-
+        return txtCtrls
     def OnChar(self,event):
         charEntered= event.GetKeyCode()
         if (charEntered >= 48 and charEntered <= 57) or charEntered == 8 or charEntered == 9 or charEntered == 13:
             event.Skip()
 
     def OnText(self,event):
-        if event.GetEventObject().GetValue():
+        print "t: ", event.GetEventObject().GetValue()
+        if not event.GetEventObject().GetValue() == 'None':
             self.sc.cycloid_parameters_d[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
         
         else:
@@ -2006,7 +1993,7 @@ class CycloidsPanel(SatPanel):
                 style = wx.SAVE,
                 wildcard = 'Cycloid files (*.cyc)|*.cyc',
                 defaultFile = 'cycloid_params.cyc',
-                action = self.sc.save_cyclparams)
+                action = self.save_cyclparams)
         except Exception, e:
             error_dialog(self, str(e), u'Error saving cycloid parameters')
 
@@ -2038,33 +2025,46 @@ class CycloidsPanel(SatPanel):
         except Exception, e:
             error_dialog(self, str(e), u'Error loading cycloid parameters')
 
+
     def load_cyclparams(self, filename):
         try:
             f = open(filename)
         except:
             error_dialog(self, 'File error', 'Cannot open file')
-
+        
         for p, v in nvf2dict(f).items():
-            if not p == 'k' and not p == 'VARY_VELOCITY' and not p == 'STARTING_DIRECTION':
-                self.sc.cycloid_parameters_d[p] = float(v)
+            if not p in ('k','VARY_VELOCITY', 'STARTING_DIRECTION'):
+                if v == 'None':
+                    self.sc.cycloid_parameters_d[p] = None
+                    self.textCtrls[p].SetValue('')
+                else:
+                    self.sc.cycloid_parameters_d[p] = float(v)
+                    self.textCtrls[p].SetValue(v)
+
             elif p == 'k':
                 if v == 'None':
                     self.sc.cycloid_parameters_d[p] = 0
+                    self.constant.SetValue(0)
                 else:
                     self.sc.cycloid_parameters_d[p] = float(v)
-                        
+                    self.constant.SetValue(v)
+
             elif p == 'VARY_VELOCITY':
                 if v == 'True':
-                    self.constant.Enable()
+                    self.vary.Enable()
+                    self.vary.SetValue(1)
                 else:
-                    self.constant.Disable()
+                    self.vary.Disable()
+                    self.vary.SetValue(0)
                 self.sc.cycloid_parameters_d[p] = v
-            else:
-                self.sc.cycloid_parameters_d[p] = v;
-                    
+
+            elif p == 'STARTING_DIRECTION':
+                self.sc.cycloid_parameters_d[p] = v
+                self.start_dir.SetValue(v)
+
         self.cycl_save_changed = True
-        print(self.sc.cycloid_parameters_d['YIELD'])
         f.close()
+
 
 
     def load_shape(self, filename):
