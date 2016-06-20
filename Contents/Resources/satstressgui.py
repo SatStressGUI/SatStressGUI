@@ -1229,11 +1229,36 @@ class StressListPanel(SatPanel):
         diff_sz.Add(self.diffusivity_label, flag=wx.ALIGN_CENTER_VERTICAL)
         self.parameters.update(add_text_ctrls(self, diff_sz, [ ('diffusivity', 'diffusivity') ]))
         ISTParams_sz.Add(diff_sz)
-
         sz.Add(ISTParams_sz)
+        
+        
+        
+        self.parameters.update(add_checkboxes_to_sizer(self, sz,
+                                                       [ ('Polar Wander', 'Polar Wander') ]))
+                                                       
+        polarParams_sz = wx.BoxSizer(wx.VERTICAL)
+        # include ice thickness parameter for IST aka Ice Shell Thickening
+        polarlat_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        polarlat_sz.AddSpacer(28)
+        self.lat_label = wx.StaticText(self, label=u'Final latitude [degrees] ')
+        polarlat_sz.Add(self.lat_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.parameters.update(add_text_ctrls(self, polarlat_sz, [ ('polarlat_tc', 'polarlat_tc') ]))
+        polarParams_sz.Add(polarlat_sz)
+        polarParams_sz.AddSpacer(5)
+        
+        polarlong_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        polarlong_sz.AddSpacer(28)
+        self.long_label = wx.StaticText(self, label=u'Final latitude [degrees] ')
+        polarlong_sz.Add(self.long_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('polarlong_tc', 'polarlong_tc') ]))
+        polarParams_sz.Add(polarlong_sz)
+        
+    
+        # include thermal diffusivity parameter for IST
+
+        sz.Add(polarParams_sz)
 
         sz.AddSpacer(15)
-
         save_love_bt = wx.Button(self, label='Save Love numbers')
         wx.EVT_BUTTON(self, save_love_bt.GetId(), self.on_save_love)
         sz.Add(save_love_bt)
@@ -1297,6 +1322,10 @@ class StressListPanel(SatPanel):
 
         self.parameters['Obliquity'].Bind(wx.EVT_CHECKBOX, self.on_set_obliq)
         self.disable_obliq()
+    
+    
+        self.parameters['Polar Wander'].Bind(wx.EVT_CHECKBOX,self.on_set_polar)
+        self.disable_polar()
 
 
     def disable_display_diurnlove(self):
@@ -1343,6 +1372,15 @@ class StressListPanel(SatPanel):
                self.periapsis_label, self.parameters['periapsis_arg'] ]:
             e.Enable()
 
+
+    def enable_polar(self):
+        for e in [self.lat_label, self.parameters['polarlat_tc'], self.long_label, self.parameters['polarlong_tc']]:
+            e.Enable()
+
+    def disable_polar(self):
+        for e in [self.lat_label, self.parameters['polarlat_tc'], self.long_label, self.parameters['polarlong_tc']]:
+            e.Disable()
+
     def on_set_diurn(self, evt):
         state = self.parameters['Diurnal'].GetValue()
         self.sc.set_parameter('Diurnal', state)
@@ -1375,7 +1413,14 @@ class StressListPanel(SatPanel):
             self.enable_obliq()
         else:
             self.disable_obliq()
-    
+    def on_set_polar(self,evt):
+        s = self.parameters['Polar Wander'].GetValue()
+        self.sc.set_parameter('Polar Wander', s)
+        if s:
+            self.enable_polar()
+        else:
+            self.disable_polar()
+
     def parse_complex(self, string):
         real, imag = re.split(r'[+-]', string)
         if imag.startswith('i') or imag.startswith('j'):
