@@ -199,6 +199,12 @@ class SatelliteCalculation(object):
             if not str(value):
                 del self.parameters[parameter]
 
+        elif parameter in self.cycloid_parameters_d.keys():
+            if not parameter in ['STARTING_DIRECTION','VARY_VELOCITY']:
+                self.parameters[p] = float(value)
+            else:
+                self.parameters[p] = value
+                
         # if NSR related, grid would automatically update?
         elif parameter.startswith('nsr_'):
             self.grid_changed = True
@@ -455,6 +461,7 @@ class SatelliteCalculation(object):
             else:
                 raise LocalError(str(e), u'Calc Error')
                 traceback.print_exc()
+
 
     # updates calculations
     def get_calc(self, k=None):
@@ -1887,27 +1894,19 @@ class CycloidsPanel(SatPanel):
         # Set the TextCtrl to expand on resize
         
         
-        fieldsToAdd = [('YIELD', 'Yield'),('PROPAGATION_STRENGTH','Propagation Strength'),('PROPAGATION_SPEED','Propagation Speed'), ('STARTING_LONGITUDE', 'Starting Longitude'), ('STARTING_LATITUDE', 'Starting Latitude')]
+        fieldsToAdd = [('YIELD', 'Yield (Threshold) [kPa]: '),('PROPAGATION_STRENGTH','Propagation Strength [kPa]: '),('PROPAGATION_SPEED','Propagation Speed [m/s]: '), ('STARTING_LONGITUDE', 'Starting Longitude: '), ('STARTING_LATITUDE', 'Starting Latitude: ')]
 
         self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
      
         gridSizer.Add(dirSizer)
         gridSizer.Add(self.start_dir)
         gridSizer.Add(varyvSizer)
-        '''
-        gridSizer.AddMany([
-            (threshSizer, 0, wx.ALIGN_LEFT), (input_thresh, 0, wx.EXPAND), (filler, wx.EXPAND),
-            (propstrSizer, 0, wx.ALIGN_LEFT), (input_propstrength, 0, wx.EXPAND), (filler, wx.EXPAND),
-            (propspdSizer, 0, wx.ALIGN_LEFT), (input_propspeed, 0, wx.EXPAND), (varyvSizer, wx.EXPAND),
-            (latSizer, 0, wx.ALIGN_LEFT), (self.input_startlat, 0, wx.EXPAND), (filler, wx.EXPAND),
-            (lonSizer, 0, wx.ALIGN_LEFT), (self.input_startlon, 0, wx.EXPAND), (filler, wx.EXPAND),
-            (dirSizer, 0, wx.ALIGN_LEFT), (start_dir), (filler, wx.EXPAND)])
-        '''
+    
         many_params = wx.Button(self, label='Load Multiple Cycloid Parameters')
         wx.EVT_BUTTON(self, many_params.GetId(), self.load_many)
 
         # add to overarching sizer sz
-        '''
+        
         sz.Add(WrapStaticText(self,
             label=u'This tab calculates cycloids through combined diurnal and NSR stresses. Cycloids ' +
             u'are arcuate lineaments found on the surface of Europa. ' +
@@ -1918,7 +1917,7 @@ class CycloidsPanel(SatPanel):
             u'For further information on cycloids see About tab.'),
             flag=wx.ALL|wx.EXPAND)
             #sz.Add(filler)
-        '''
+        
         sz.Add(buttonSizer, 0, wx.ALL, 5)
         #sz.Add(filler2)
         sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
@@ -1942,12 +1941,11 @@ class CycloidsPanel(SatPanel):
             event.Skip()
 
     def OnText(self,event):
-        print "t: ", event.GetEventObject().GetValue()
         if not event.GetEventObject().GetValue() == 'None':
-            self.sc.cycloid_parameters_d[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
+            self.sc.parameters[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
         
         else:
-            self.sc.cycloid_parameters_d[event.GetEventObject().GetName()] = None
+            self.sc.parameters[event.GetEventObject().GetName()] = None
     def load_many(self, evt):
         try:
             file_dialog(self,
@@ -1973,15 +1971,15 @@ class CycloidsPanel(SatPanel):
             for paramType in paramSpace:
                 params[paramType.pop(0)] = paramType
 
-            self.sc.cycloid_parameters_d['YIELD'] = params["Yield Threshold"]
-            self.sc.cycloid_parameters_d['PROPAGATION_STRENGTH'] = params["Propagation Strength"]
-            self.sc.cycloid_parameters_d['PROPAGATION_SPEED'] = params["Propagation Speed"]
-            self.sc.cycloid_parameters_d['STARTING_LATITUDE'] = params["Starting Lat"]
-            self.sc.cycloid_parameters_d['STARTING_LONGITUDE'] = params["Starting Lon"]
+            self.parameters['YIELD'] = params["Yield Threshold"]
+            self.parameters['PROPAGATION_STRENGTH'] = params["Propagation Strength"]
+            self.parameters['PROPAGATION_SPEED'] = params["Propagation Speed"]
+            self.parameters['STARTING_LATITUDE'] = params["Starting Lat"]
+            self.parameters['STARTING_LONGITUDE'] = params["Starting Lon"]
 
             if ("Vary Velocity" in params.keys()) and ('k' in params.keys()):
-                self.sc.cycloid_parameters_d['VARY_VELOCITY'] = params["Vary Velocity"]
-                self.sc.cycloid_parameters_d['k'] = params["k"]
+                self.parameters['VARY_VELOCITY'] = params["Vary Velocity"]
+                self.parameters['k'] = params["k"]
     
         finally:
             paramFile.close()
@@ -2007,8 +2005,11 @@ class CycloidsPanel(SatPanel):
             if k == 'VARY_VELOCITY' and not v:
                 f.write(k + " = False" + "\n")
             else:
-                f.write(k + " = " + str(v) + "\n")
-        
+                if self.sc.parameters.has_key(k):
+                    f.write(k + " = " + str(self.sc.parameters[k]) + "\n")
+                else:
+                    f.write(k + " = None" + "\n")
+
         f.close()
         
         if not tmp:
@@ -2035,19 +2036,16 @@ class CycloidsPanel(SatPanel):
         for p, v in nvf2dict(f).items():
             if not p in ('k','VARY_VELOCITY', 'STARTING_DIRECTION'):
                 if v == 'None':
-                    self.sc.cycloid_parameters_d[p] = None
-                    self.textCtrls[p].SetValue('')
+                    self.sc.parameters[p] = 'None'
                 else:
-                    self.sc.cycloid_parameters_d[p] = float(v)
-                    self.textCtrls[p].SetValue(v)
+                    self.sc.parameters[p] = float(v)
 
             elif p == 'k':
                 if v == 'None':
-                    self.sc.cycloid_parameters_d[p] = 0
+                    self.sc.parameters[p] = 0
                     self.constant.SetValue(0)
                 else:
-                    self.sc.cycloid_parameters_d[p] = float(v)
-                    self.constant.SetValue(v)
+                    self.sc.parameters[p] = float(v)
 
             elif p == 'VARY_VELOCITY':
                 if v == 'True':
@@ -2055,15 +2053,27 @@ class CycloidsPanel(SatPanel):
                     self.vary.SetValue(1)
                 else:
                     self.vary.Disable()
-                    self.vary.SetValue(0)
-                self.sc.cycloid_parameters_d[p] = v
+                self.sc.parameters[p] = v
 
             elif p == 'STARTING_DIRECTION':
-                self.sc.cycloid_parameters_d[p] = v
+                self.sc.parameters[p] = v
                 self.start_dir.SetValue(v)
 
-        self.cycl_save_changed = True
+        self.updateFields()
+        self.cycloid_saved = True
         f.close()
+
+    def updateFields(self):
+        for p, textctrl in self.textCtrls.items():
+            if self.sc.parameters.has_key(p):
+                if p == 'VARY_VELOCITY':
+                    self.vary.SetValue(int(self.sc.parameters[p]))
+                elif p == 'k':
+                    self.constant.SetValue(int(self.sc.parameters[p]))
+                elif p == 'STARTING_DIRECTION':
+                    self.start_dir.SetValue(v)
+                else:
+                    textctrl.SetValue(str(self.sc.parameters[p]))
 
 
 
@@ -2078,22 +2088,22 @@ class CycloidsPanel(SatPanel):
         self.plot()
 
     def EvtSetDir(self, event):
-        self.sc.cycloid_parameters_d['STARTING_DIRECTION'] = event.GetString()
+        self.parameters['STARTING_DIRECTION'] = event.GetString()
     
     def EvtSetYeild(self, event):
         assert(float(event.GetString() > 0))
-        self.sc.cycloid_parameters_d['YIELD'] = float(event.GetString())
+        self.parameters['YIELD'] = float(event.GetString())
 
     def EvtSetPropStr(self, event):
         assert(float(event.GetString() > 0))
-        self.sc.cycloid_parameters_d['PROPAGATION_STRENGTH'] = float(event.GetString())
+        self.parameters['PROPAGATION_STRENGTH'] = float(event.GetString())
 
     def EvtSetPropSpd(self, event):
         assert(float(event.GetString() > 0))
-        self.sc.cycloid_parameters_d['PROPAGATION_SPEED'] = float(event.GetString())
+        self.parameters['PROPAGATION_SPEED'] = float(event.GetString())
 
     def EvtSetVary(self, event):
-        self.sc.cycloid_parameters_d['VARY_VELOCITY'] = self.vary.GetValue()
+        self.parameters['VARY_VELOCITY'] = self.vary.GetValue()
 
         if self.vary.GetValue():
             self.constant.Enable()
@@ -2101,32 +2111,32 @@ class CycloidsPanel(SatPanel):
             self.constant.Disable()
 
     def EvtSetConstant(self, event):
-        self.sc.cycloid_parameters_d['k'] = float(event.GetString())
+        self.parameters['k'] = float(event.GetString())
 
     def EvtSetStartLat(self, event):
         lat = float(event.GetString())
         assert(lat <= 90)
         assert(lat >= -90)
-        self.sc.cycloid_parameters_d['STARTING_LATITUDE'] = float(event.GetString())
+        self.parameters['STARTING_LATITUDE'] = float(event.GetString())
 
     def EvtSetStartLon(self, event):
         lon = float(event.GetString())
         assert(lon <= 180)
         assert(lon >= -180)
-        self.sc.cycloid_parameters_d['STARTING_LONGITUDE'] = float(event.GetString())
+        self.parameters['STARTING_LONGITUDE'] = float(event.GetString())
 
     def EvtRandLat(self, event):
         # generates random lat to the 2nd decimal place (current precision of GUI)
         rand_startlat = float("%.2f" % random.uniform(-90, 90))
         # set it to parameter
-        self.sc.cycloid_parameters_d['STARTING_LATITUDE'] = rand_startlat
+        self.parameters['STARTING_LATITUDE'] = rand_startlat
         # display it in textctrl
         input_startlat.SetValue('%s', rand_startlat)
 
     def EvtRandLon(self, event):
         rand_startlon = float("%.2f" % random.uniform(-180, 180))
         # set it to parameters
-        self.sc.cycloid_parameters_d['STARTING_LONGITUDE'] = rand_startlon
+        self.parameters['STARTING_LONGITUDE'] = rand_startlon
         # display in textctrl
         input_startlon.SetValue('%s', rand_startlon)
 
@@ -2951,7 +2961,7 @@ class ScalarPlotPanel(PlotPanel):
         if self.plot_cycl.GetValue(): # plot only if box is checked
             # print self.basemap_ax
             # print self.calc
-            # print self.sc.cycloid_parameters_d
+            # print self.parameters
             self.sc.parameters['to_plot_cycloids'] = True
             self.plot()
         else:
@@ -2962,14 +2972,14 @@ class ScalarPlotPanel(PlotPanel):
         print 'plot_cycloids(self)'
 
         plotcoordsonbasemap(self.calc, self.basemap_ax,
-                            self.sc.cycloid_parameters_d['YIELD'],
-                            self.sc.cycloid_parameters_d['PROPAGATION_STRENGTH'],
-                            self.sc.cycloid_parameters_d['PROPAGATION_SPEED'],
-                            self.sc.cycloid_parameters_d['STARTING_LONGITUDE'],
-                            self.sc.cycloid_parameters_d['STARTING_LATITUDE'],
-                            self.sc.cycloid_parameters_d['STARTING_DIRECTION'],
-                            self.sc.cycloid_parameters_d['VARY_VELOCITY'],
-                            self.sc.cycloid_parameters_d['k'],
+                            self.parameters['YIELD'],
+                            self.parameters['PROPAGATION_STRENGTH'],
+                            self.parameters['PROPAGATION_SPEED'],
+                            self.parameters['STARTING_LONGITUDE'],
+                            self.parameters['STARTING_LATITUDE'],
+                            self.parameters['STARTING_DIRECTION'],
+                            self.parameters['VARY_VELOCITY'],
+                            self.parameters['k'],
                             self.sc.get_parameter(float, 'ORBIT_MAX', 360))
                           
 
@@ -2999,15 +3009,15 @@ class ScalarPlotPanel(PlotPanel):
             # self.Hide()
 
             i = 0
-            while i < len(self.sc.cycloid_parameters_d['YIELD']):
+            while i < len(self.parameters['YIELD']):
 
                 # create cycloid
-                threshold = float(self.sc.cycloid_parameters_d['YIELD'][i])
-                strength = float(self.sc.cycloid_parameters_d['PROPAGATION_STRENGTH'][i])
-                speed = float(self.sc.cycloid_parameters_d['PROPAGATION_SPEED'][i])
-                lon = float(self.sc.cycloid_parameters_d['STARTING_LONGITUDE'][i])
-                lat = float(self.sc.cycloid_parameters_d['STARTING_LATITUDE'][i])
-                propdir = self.sc.cycloid_parameters_d['STARTING_DIRECTION']
+                threshold = float(self.parameters['YIELD'][i])
+                strength = float(self.parameters['PROPAGATION_STRENGTH'][i])
+                speed = float(self.parameters['PROPAGATION_SPEED'][i])
+                lon = float(self.parameters['STARTING_LONGITUDE'][i])
+                lat = float(self.parameters['STARTING_LATITUDE'][i])
+                propdir = self.parameters['STARTING_DIRECTION']
                 
                 print threshold, strength, speed, lon, lat, propdir
                 print self.calc
@@ -3578,7 +3588,7 @@ class SatStressPanel(wx.Panel):
 
         spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
         
-        cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
+        self.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
 
 
         #dummy = PlainTab(self.nb, satellite_calculation=self.sc)
@@ -3588,7 +3598,7 @@ class SatStressPanel(wx.Panel):
         self.nb.AddPage(stp, u"Stresses")
         self.nb.AddPage(tp, u"Point")
         self.nb.AddPage(gp, u"Grid")
-        self.nb.AddPage(cy, u"Cycloids")
+        self.nb.AddPage(self.cy, u"Cycloids")
         self.nb.AddPage(spp, u"Plot")
         # self.nb.AddPage(dummy, u'Test')
         
@@ -3619,8 +3629,10 @@ class SatStressFrame(wx.Frame):
 
         ##### 'Information' option of menubar #####
         File = wx.Menu()
-        File.Append(wx.ID_ANY, '&Export')
-        self.Bind(wx.EVT_MENU,self.onExport)
+        export = File.Append(wx.ID_ANY, '&Export')
+        self.Bind(wx.EVT_MENU,self.onExport, export)
+        load = File.Append(wx.ID_ANY, '&Load')
+        self.Bind(wx.EVT_MENU, self.onLoad, load)
         About = wx.Menu()
         rights = About.Append(wx.ID_ANY, '&Copyright')
         self.Bind(wx.EVT_MENU, self.onRights, rights)
@@ -3668,37 +3680,47 @@ class SatStressFrame(wx.Frame):
         self.Fit()
         self.Show(True)
         self.CenterOnScreen()
-
         self.p.SetFocus()
     
     def onExport(self,evt):
         try:
             file_dialog(self,
-                    message=u"Load from satellite file",
+                    message=u"Save configuration",
                     style=wx.SAVE,
-                    wildcard='Satellite files (*.satellite;*.sat)|*.satellite;*.sat',
+                    wildcard='Satstress files (*.sats)|*.sats',
                     action=self.saveFile)
         except Exception, e:
-            error_dialog(self, str(e), u'Satellite Error')
+            error_dialog(self, str(e), u'Save Error')
+
+    def onLoad(self,evt):
+        try:
+            file_dialog(self,
+                        message=u"Load configuration",
+                        style=wx.OPEN,
+                        wildcard='Satstress files (*.sats)|*.sats',
+                        action=self.loadFile)
+        except Exception, e:
+            error_dialog(self, str(e), u'Load Error')
+    
+    def loadFile(self,filename):
+        f = open(filename)
+        for p,v in nvf2dict(f).items():
+            print p,v
+            self.p.sc.set_parameter(p,v)
+        self.p.sc.grid_changed = True
+        self.p.sc.grid_save_changed = True
+        self.p.sc.satellite_changed = True
+        self.p.sc.satellite_save_changed = True
+        self.p.sc.nsr_period_seconds2years()
+        self.p.cy.updateFields()
+        
+
 
     def saveFile(self,filename):
-        os.mkdir(filename)
-        try:
-            self.p.sc.save_grid(filename+'/grid.grid')
-        except Exception, e:
-            error_dialog(self,str(e), "Unable to save grid")
-
-        try:
-            
-            self.p.sc.save_cyclparams(filename+'/cycleparms.cyc')
-        except Exception, e:
-            error_dialog(self,str(e), "Unable to save cycloids")
-                
-        try:
-            self.p.sc.save_satellite(filename+'/satellite.sat')
-        
-        except Exception, e:
-            error_dialog(self,str(e), "Unable to save satellite")
+        f = open(filename,'w')
+        for p,v in self.p.sc.parameters.items():
+            f.write(p + ' = ' + str(v) + '\n')
+        f.close()
 
 
     def onRights(self, evt):
