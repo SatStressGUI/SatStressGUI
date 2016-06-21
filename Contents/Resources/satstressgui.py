@@ -176,6 +176,11 @@ class SatelliteCalculation(object):
             self.parameters[parameter][point - 1] = value
         else:
             self.parameters[parameter] = value
+        
+        if value == 'True':
+            self.parameters[parameter] = 1
+        elif value == 'False':
+            self.parameters[parameter] = 0
 
         # if arg parameter is key of attribute satellite_vars
         if parameter in [p for p,d in self.satellite_vars]:
@@ -201,9 +206,9 @@ class SatelliteCalculation(object):
 
         elif parameter in self.cycloid_parameters_d.keys():
             if not parameter in ['STARTING_DIRECTION','VARY_VELOCITY']:
-                self.parameters[p] = float(value)
+                self.parameters[parameter] = float(value)
             else:
-                self.parameters[p] = value
+                self.parameters[parameter] = value
                 
         # if NSR related, grid would automatically update?
         elif parameter.startswith('nsr_'):
@@ -2317,8 +2322,9 @@ class StressPlotPanel(MatPlotPanel):
     Specifically, the [< | < | > | >] controls
     """
     scale_y    = 0.15
-    orbit_y    = 0.1
-    nsr_y    = 0.05
+    orbit_y    = 0.11
+    polar_y = 0.01
+    nsr_y    = 0.06
     button_l = 0.04
     bbutton_l= 0.12
     slider_h = 0.04
@@ -2332,6 +2338,7 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax = self.figure.add_axes([scale_left, self.scale_y, scale_bar_length, self.slider_h], frame_on=False)
         #
         self.add_orbit()
+        self.add_polar()
         self.add_nsr()
 
     def get_ax_orbit(self):
@@ -2339,6 +2346,9 @@ class StressPlotPanel(MatPlotPanel):
 
     def get_ax_nsr(self):
         return self.figure.add_axes([scale_left, self.nsr_y, scale_bar_length, self.slider_h])
+    
+    def get_ax_polar(self):
+        return self.figure.add_axes([scale_left, self.polar_y, scale_bar_length, self.slider_h])
 
     def del_orbit(self):
         self.figure.delaxes(self.ax_orbit)
@@ -2347,6 +2357,10 @@ class StressPlotPanel(MatPlotPanel):
     def del_nsr(self):
         self.figure.delaxes(self.ax_nsr)
         self.del_nsr_controls()
+    
+    def del_polar(self):
+        self.figure.delaxes(self.ax_polar)
+        self.del_polar_controls()
 
     def del_orbit_controls(self):
         for a in [self.ax_orbit_first, self.ax_orbit_prev, \
@@ -2356,6 +2370,12 @@ class StressPlotPanel(MatPlotPanel):
     def del_nsr_controls(self):
         for a in [self.ax_nsr_first, self.ax_nsr_prev, \
             self.ax_nsr_next, self.ax_nsr_last, self.ax_nsr_save]:
+            self.figure.delaxes(a)
+
+
+    def del_polar_controls(self):
+        for a in [self.ax_polar_first, self.ax_polar_prev, \
+            self.ax_polar_next, self.ax_polar_last, self.ax_polar_save]:
             self.figure.delaxes(a)
 
     def add_orbit(self):
@@ -2389,7 +2409,40 @@ class StressPlotPanel(MatPlotPanel):
         self.orbit_last_button.on_clicked(lambda e: self.orbit_slider.last())
         # hack
         self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_orbit_series, e))
-
+    
+    def add_polar(self):
+        self.ax_polar = self.get_ax_polar()
+        self.add_polar_controls()
+    
+    def add_polar_controls(self):
+        x = self.slider_x
+        self.ax_polar_first = self.figure.add_axes([x, self.polar_y, self.button_l, self.slider_h])
+        x += self.button_l
+        self.ax_polar_prev = self.figure.add_axes([x, self.polar_y, self.button_l, self.slider_h])
+        x += self.button_l
+        self.ax_polar_next = self.figure.add_axes([x, self.polar_y, self.button_l, self.slider_h])
+        x += self.button_l
+        self.ax_polar_last = self.figure.add_axes([x, self.polar_y, self.button_l, self.slider_h])
+        x += self.button_l
+        self.ax_polar_save = self.figure.add_axes([x, self.polar_y, self.bbutton_l, self.slider_h])
+        
+        # Note: StepSlider is custom designed class in/for gui
+        self.polar_slider = StepSlider(self.ax_polar, 'Polar position', 0, 1, 10, valinit=0, dragging=False)
+        
+        self.polar_first_button = matplotlib.widgets.Button(self.ax_polar_first, '[<')
+        self.polar_prev_button = matplotlib.widgets.Button(self.ax_polar_prev, '<')
+        self.polar_next_button = matplotlib.widgets.Button(self.ax_polar_next, '>')
+        self.polar_last_button = matplotlib.widgets.Button(self.ax_polar_last, '>]')
+        self.polar_save_button = matplotlib.widgets.Button(self.ax_polar_save, 'Save series')
+        
+        self.polar_first_button.on_clicked(lambda e: self.polar_slider.first())
+        self.polar_prev_button.on_clicked(lambda e: self.polar_slider.prev())
+        self.polar_next_button.on_clicked(lambda e: self.polar_slider.next())
+        self.polar_last_button.on_clicked(lambda e: self.polar_slider.last())
+        # hack
+        self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_polar_series, e))
+    
+    
     def add_nsr(self):
         self.ax_nsr = self.get_ax_nsr()
         self.add_nsr_controls()
@@ -2452,6 +2505,15 @@ class StressPlotPanel(MatPlotPanel):
         self.nsr_slider = self.change_slider(
             self.ax_nsr, self.nsr_slider, valmin=valmin, valmax=valmax, numsteps=numsteps, valinit=valmin, valfmt="%.1g")
 
+
+    def change_polar_slider(self, valmin, valmax, numsteps, valinit=None):
+        if valinit is None:
+            valinit = valmin
+        self.figure.delaxes(self.ax_polar)
+        self.ax_polar = self.get_ax_polar()
+        self.polar_slider = self.change_slider(
+                                             self.ax_polar, self.polar_slider, valmin=valmin, valmax=valmax, numsteps=numsteps, valinit=valmin, valfmt="%.1g")
+
     def plot_scale(self, scale, valfmt):
         self.scale_ax.clear()
         while self.scale_ax.texts:
@@ -2478,6 +2540,16 @@ class StressPlotPanel(MatPlotPanel):
                 message=u"Save calculation series on nsr period",
                 style=wx.SAVE,
                 action=self.save_nsr_series)
+        except LocalError, e:
+            error_dialog(self, str(e), e.title)
+
+
+    def on_save_polar_series(self, evt):
+        try:
+            dir_dialog(self,
+                       message=u"Save calculation series on nsr period",
+                       style=wx.SAVE,
+                       action=self.save_polar_series)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
 
@@ -2621,7 +2693,7 @@ class ScalarPlotPanel(PlotPanel):
     def __init__(self, *args, **kw):
         super(ScalarPlotPanel, self).__init__(*args, **kw)
 
-        self.orbit_hidden = self.nsr_hidden = False
+        self.orbit_hidden = self.nsr_hidden = self.polar_hidden = False
 
         main_sz = wx.BoxSizer(orient=wx.VERTICAL)
 
@@ -2659,7 +2731,8 @@ class ScalarPlotPanel(PlotPanel):
         self.scp = self.stress_plot_panel()
         self.init_orbit_slider()
         self.init_nsr_slider()
-
+        self.init_polar_slider()
+        
         p = self.parameters_sizer()
 
         s.Add(self.scp, flag=wx.ALL|wx.EXPAND)
@@ -2673,10 +2746,13 @@ class ScalarPlotPanel(PlotPanel):
         scp.canvas.callbacks.connect('motion_notify_event', self.on_move_in_plot)
         scp.orbit_slider.on_changed(self.on_orbit_updated)
         scp.nsr_slider.on_changed(self.on_nsr_updated)
+        scp.polar_slider.on_changed(self.on_polar_updated)
         scp.save_orbit_series = self.save_orbit_series
         scp.save_nsr_series = self.save_nsr_series
+        scp.save_polar_series = self.save_polar_series
         self.orbit_pos = self.sc.get_parameter(int, 'ORBIT_MIN', 0)
         self.nsr_pos = self.sc.get_parameter(float, 'TIME_MIN', 0)
+        self.polar_pos = self.sc.get_parameter(float,'TIME_MIN',0)
         self.updating = False
         scp.Fit()
         return scp
@@ -3109,6 +3185,18 @@ class ScalarPlotPanel(PlotPanel):
         self.orbit_pos = 0
         self.updating = False
         self.plot()
+    
+    
+    def on_polar_updated(self, val):
+        if self.updating:
+            return
+        self.polar_pos = self.scp.polar_slider.val
+        self.updating = True
+        self.scp.orbit_slider.first()
+        self.orbit_pos = 0
+        self.updating = False
+        self.plot()
+
 
     def prepare_plot(self):
         b = wx.BusyInfo(u"Performing calculations. Please wait.", self)
@@ -3449,6 +3537,11 @@ class ScalarPlotPanel(PlotPanel):
         else:
             self.hide_orbit_slider()
 
+        if self.sc.parameters.get('Polar Wander', False):
+            self.reveal_polar_slider()
+        else:
+            self.hide_polar_slider()
+
     def init_orbit_slider(self):
         self.scp.change_orbit_slider(
             self.sc.get_parameter(float, 'ORBIT_MIN', 0),
@@ -3463,7 +3556,14 @@ class ScalarPlotPanel(PlotPanel):
             nm + self.sc.get_parameter(float, 'nsr_time', 0)*self.sc.get_parameter(float, 'TIME_NUM', 0),
             self.sc.get_parameter(int, 'TIME_NUM', 1),
             self.nsr_pos)
-    
+    def init_polar_slider(self):
+        nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
+        self.scp.change_polar_slider(
+           nm,
+           nm + self.sc.get_parameter(float, 'nsr_time', 0)*self.sc.get_parameter(float, 'TIME_NUM', 0),
+           self.sc.get_parameter(int, 'TIME_NUM', 1),
+           self.polar_pos)
+
     def hide_orbit_slider(self):
         if not self.orbit_hidden:
             self.orbit_hidden = True
@@ -3473,10 +3573,16 @@ class ScalarPlotPanel(PlotPanel):
         if not self.nsr_hidden:
             self.nsr_hidden = True
             self.scp.del_nsr()
- 
+
+    def hide_polar_slider(self):
+        if not self.polar_hidden:
+            self.polar_hidden = True
+            self.scp.del_polar()
+
     def hide_sliders(self):
         self.hide_nsr_slider()
         self.hide_orbit_slider()
+        self.hide_polar_slider()
 
     def reveal_orbit_slider(self):
         if self.orbit_hidden:
@@ -3484,7 +3590,7 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.add_orbit()
             self.init_orbit_slider()
             self.scp.orbit_slider.on_changed(self.on_orbit_updated)
-            self.scp.save_orbit_series = self.save_orbit_series
+            # self.scp.save_orbit_series = self.save_orbit_series
 
     def reveal_nsr_slider(self):
         if self.nsr_hidden:
@@ -3493,7 +3599,17 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.nsr_slider.on_changed(self.on_nsr_updated)
             self.init_nsr_slider()
             self.scp.save_nsr_series = self.save_nsr_series
-    
+
+
+    def reveal_polar_slider(self):
+        if self.polar_hidden:
+            self.polar_hidden = False
+            self.scp.add_polar()
+            self.scp.polar_slider.on_changed(self.on_polar_updated)
+            self.init_polar_slider()
+            self.scp.save_polar_series = self.save_polar_series
+
+
     def hide_orbit_controls(self):
         self.scp.del_orbit_controls()
         self.scp.orbit_slider.on_changed(lambda v: v)
@@ -3555,6 +3671,26 @@ class ScalarPlotPanel(PlotPanel):
         self.reveal_nsr_controls()
         self.init_nsr_slider()
         self.scp.nsr_slider.set_val(self.nsr_pos)
+        self.plot()
+        del b
+
+    def save_polar_series(self, dir='.'):
+        b = wx.BusyInfo(u"Saving images. Please wait.", self)
+        wx.SafeYield()
+        old_polar_pos = self.polar_pos
+        nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
+        s = self.sc.get_parameter(float, 'polar_time', 0)
+        n = self.sc.get_parameter(int, 'TIME_NUM', 0)
+        self.hide_polar_controls()
+        for k in range(0, n+1):
+            self.polar_pos = nm + s*k
+            self.scp.polar_slider.set_val(self.polar_pos)
+            self.plot_no_draw()
+            self.scp.figure.savefig("%s/polar_%03d.png" % (dir, k), bbox_inches='tight', pad_inches=0.5)
+        self.polar_pos = old_polar_pos
+        self.reveal_polar_controls()
+        self.init_polar_slider()
+        self.scp.polar_slider.set_val(self.polar_pos)
         self.plot()
         del b
 
