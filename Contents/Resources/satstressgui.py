@@ -153,13 +153,18 @@ class SatelliteCalculation(object):
         self.calc = None
         self.calc_changed = False
         
+        self.cycloid_changed = False
+        
         self.projection_changed = False
         
         self.parameters = {}
         self.parameters['NSR_PERIOD'] = 'infinity'   # initial value of NSRperiod in Satellite tab
-
         self.parameters['to_plot_cycloids'] = False
         self.parameters['to_plot_many_cycloids'] = False
+        self.parameters['VARY_VELOCITY'] = False
+        self.parameters['k'] = 0
+
+        self.cyc = None
 
     # returns boolean of whether any parameters have been changed
     def changed(self):
@@ -209,6 +214,8 @@ class SatelliteCalculation(object):
                 self.parameters[parameter] = float(value)
             else:
                 self.parameters[parameter] = value
+
+            self.cycloid_changed = True
                 
         # if NSR related, grid would automatically update?
         elif parameter.startswith('nsr_'):
@@ -1846,7 +1853,7 @@ class CycloidsPanel(SatPanel):
     """
     def __init__(self, *args, **kw):
         super(CycloidsPanel, self).__init__(*args, **kw)
-
+        self.cyc = None
         self.textCtrls = {} #keys are the name of the fields (YIELD,etc) and values are the textCtrl objects for those fields.
         # initialize sizers
         sz = wx.BoxSizer(wx.VERTICAL)
@@ -2138,22 +2145,22 @@ class CycloidsPanel(SatPanel):
         self.plot()
 
     def EvtSetDir(self, event):
-        self.parameters['STARTING_DIRECTION'] = event.GetString()
+        self.sc.parameters['STARTING_DIRECTION'] = event.GetString()
     
     def EvtSetYeild(self, event):
         assert(float(event.GetString() > 0))
-        self.parameters['YIELD'] = float(event.GetString())
+        self.sc.parameters['YIELD'] = float(event.GetString())
 
     def EvtSetPropStr(self, event):
         assert(float(event.GetString() > 0))
-        self.parameters['PROPAGATION_STRENGTH'] = float(event.GetString())
+        self.sc.parameters['PROPAGATION_STRENGTH'] = float(event.GetString())
 
     def EvtSetPropSpd(self, event):
         assert(float(event.GetString() > 0))
-        self.parameters['PROPAGATION_SPEED'] = float(event.GetString())
+        self.sc.parameters['PROPAGATION_SPEED'] = float(event.GetString())
 
     def EvtSetVary(self, event):
-        self.parameters['VARY_VELOCITY'] = self.vary.GetValue()
+        self.sc.parameters['VARY_VELOCITY'] = self.vary.GetValue()
 
         if self.vary.GetValue():
             self.constant.Enable()
@@ -2161,32 +2168,32 @@ class CycloidsPanel(SatPanel):
             self.constant.Disable()
 
     def EvtSetConstant(self, event):
-        self.parameters['k'] = float(event.GetString())
+        self.sc.parameters['k'] = float(event.GetString())
 
     def EvtSetStartLat(self, event):
         lat = float(event.GetString())
         assert(lat <= 90)
         assert(lat >= -90)
-        self.parameters['STARTING_LATITUDE'] = float(event.GetString())
+        self.sc.parameters['STARTING_LATITUDE'] = float(event.GetString())
 
     def EvtSetStartLon(self, event):
         lon = float(event.GetString())
         assert(lon <= 180)
         assert(lon >= -180)
-        self.parameters['STARTING_LONGITUDE'] = float(event.GetString())
+        self.sc.parameters['STARTING_LONGITUDE'] = float(event.GetString())
 
     def EvtRandLat(self, event):
         # generates random lat to the 2nd decimal place (current precision of GUI)
         rand_startlat = float("%.2f" % random.uniform(-90, 90))
         # set it to parameter
-        self.parameters['STARTING_LATITUDE'] = rand_startlat
+        self.sc.parameters['STARTING_LATITUDE'] = rand_startlat
         # display it in textctrl
         input_startlat.SetValue('%s', rand_startlat)
 
     def EvtRandLon(self, event):
         rand_startlon = float("%.2f" % random.uniform(-180, 180))
         # set it to parameters
-        self.parameters['STARTING_LONGITUDE'] = rand_startlon
+        self.sc.parameters['STARTING_LONGITUDE'] = rand_startlon
         # display in textctrl
         input_startlon.SetValue('%s', rand_startlon)
 
@@ -3091,17 +3098,15 @@ class ScalarPlotPanel(PlotPanel):
 
     def plot_cycloids(self):
         print 'plot_cycloids(self)'
-
-        plotcoordsonbasemap(self.calc, self.basemap_ax,
-                            self.parameters['YIELD'],
-                            self.parameters['PROPAGATION_STRENGTH'],
-                            self.parameters['PROPAGATION_SPEED'],
-                            self.parameters['STARTING_LONGITUDE'],
-                            self.parameters['STARTING_LATITUDE'],
-                            self.parameters['STARTING_DIRECTION'],
-                            self.parameters['VARY_VELOCITY'],
-                            self.parameters['k'],
-                            self.sc.get_parameter(float, 'ORBIT_MAX', 360))
+        
+        if (self.sc.cyc == None or self.cycloid_changed):
+            self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
+                                  self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
+                                  self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
+            self.cycloid_changed = False
+        
+        self.sc.cyc.plotcoordsonbasemap(self.basemap_ax)
+        
                           
 
     
