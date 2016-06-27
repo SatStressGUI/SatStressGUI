@@ -1065,7 +1065,7 @@ class SatPanel(wx.Panel):
                         ctrl[i].SetValue(self.sc.parameters[p][i - 1])
                 else:
                     if isinstance(ctrl, wx.CheckBox):
-                        if self.sc.parameters[p] == 'True' or self.sc.parameters[p] == '1':
+                        if self.sc.parameters[p] == 'True' or self.sc.parameters[p] == '1' or self.sc.parameters[p]:
                             ctrl.SetValue(True)
                         else:
                             ctrl.SetValue(False)
@@ -1331,20 +1331,14 @@ class StressListPanel(SatPanel):
         self.bind_parameters()
 
         self.parameters['Diurnal'].Bind(wx.EVT_CHECKBOX, self.on_set_diurn)
-        self.disable_display_diurnlove()
 
         self.parameters['Nonsynchronous Rotation'].Bind(wx.EVT_CHECKBOX, self.on_set_nsr)
-        self.disable_display_nsrlove()
 
         self.parameters['Ice Shell Thickening'].Bind(wx.EVT_CHECKBOX, self.on_set_ist)
-        self.disable_istparams()
 
         self.parameters['Obliquity'].Bind(wx.EVT_CHECKBOX, self.on_set_obliq)
-        self.disable_obliq()
-    
     
         self.parameters['Polar Wander'].Bind(wx.EVT_CHECKBOX,self.on_set_polar)
-        self.disable_polar()
 
 
     def disable_display_diurnlove(self):
@@ -2081,11 +2075,11 @@ class CycloidsPanel(SatPanel):
                     self.sc.parameters[p] = float(v)
 
             elif p == 'VARY_VELOCITY':
-                if v == 'True':
-                    self.vary.Enable()
+                if v == 'True' or v == '1':
+                    self.constant.Enable()
                     self.vary.SetValue(1)
                 else:
-                    self.vary.Disable()
+                    self.constant.Disable()
                 self.sc.parameters[p] = v
 
             elif p == 'STARTING_DIRECTION':
