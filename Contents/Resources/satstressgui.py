@@ -28,6 +28,8 @@ import matplotlib, scipy.ndimage
 # for long running tasks, such as computing multiple parameter sets
 from threading import Thread
 
+import time
+
 # fig state updated every plot command, but only redraw on explicit calls to draw()
 matplotlib.interactive(False)
 # sets matplotlib backend to 'WXAgg'
@@ -3619,12 +3621,22 @@ class ScalarPlotPanel(PlotPanel):
         n = self.sc.get_parameter(float, 'ORBIT_NUM', 0)
         s = (om - o)/n
         self.hide_orbit_controls()
+
+        localtime = time.asctime(time.localtime(time.time()))
+        location = dir + "/" + self.sc.parameters['SYSTEM_ID']
+        directory = location + "/" + localtime
+        if os.path.isdir(location):
+            os.mkdir(directory)
+        else:
+            os.mkdir(location)
+            os.mkdir(directory)
+
         while o <= om:
             self.orbit_pos = o
             self.plot_no_draw()
             self.scp.orbit_slider.set_val(self.orbit_pos)
             self.scp.figure.savefig("%s/orbit_%03d.%02d.png" %
-                (dir, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
+                (directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
                 bbox_inches='tight', pad_inches=1.5)
             o += s
         self.orbit_pos = old_orbit_pos
@@ -3642,11 +3654,21 @@ class ScalarPlotPanel(PlotPanel):
         s = self.sc.get_parameter(float, 'nsr_time', 0)
         n = self.sc.get_parameter(int, 'TIME_NUM', 0)
         self.hide_nsr_controls()
+
+        localtime = time.asctime(time.localtime(time.time()))
+        location = dir + "/" + self.sc.parameters['SYSTEM_ID']
+        directory = location + "/" + localtime
+        if os.path.isdir(location):
+            os.mkdir(directory)
+        else:
+            os.mkdir(location)
+            os.mkdir(directory)
+            
         for k in range(0, n+1):
             self.nsr_pos = nm + s*k
             self.scp.nsr_slider.set_val(self.nsr_pos)
             self.plot_no_draw()
-            self.scp.figure.savefig("%s/nsr_%03d.png" % (dir, k), bbox_inches='tight', pad_inches=0.5)
+            self.scp.figure.savefig("%s/nsr_%03d.png" % (directory, k), bbox_inches='tight', pad_inches=0.5)
         self.nsr_pos = old_nsr_pos
         self.reveal_nsr_controls()
         self.init_nsr_slider()
