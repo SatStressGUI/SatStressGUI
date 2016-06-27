@@ -25,8 +25,6 @@ import traceback
 #    scipy.ndimage = multi-D
 import matplotlib, scipy.ndimage
 
-# for long running tasks, such as computing multiple parameter sets
-from threading import Thread
 
 import time
 
@@ -185,9 +183,9 @@ class SatelliteCalculation(object):
             self.parameters[parameter] = value
         
         if value == 'True':
-            self.parameters[parameter] = 1
+            self.parameters[parameter] = True
         elif value == 'False':
-            self.parameters[parameter] = 0
+            self.parameters[parameter] = False
 
         # if arg parameter is key of attribute satellite_vars
         if parameter in [p for p,d in self.satellite_vars]:
@@ -1075,6 +1073,8 @@ class SatPanel(wx.Panel):
                         ctrl.SetValue(self.sc.parameters[p])
             except KeyError:
                 pass
+    def get_panel_param(self, p):
+        return self.parameters[p]
 
 
 # ===============================================================================
@@ -1507,6 +1507,7 @@ class PointPanel(SatPanel):
             self.sc.parameters[p] = []
             for i in range(1, row + 1):
                 self.sc.parameters[p].append(defval)
+    
         return pp
         #for p,d in params_d:
         #    self.sc.parameters[p] = defval
@@ -3572,7 +3573,7 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.add_orbit()
             self.init_orbit_slider()
             self.scp.orbit_slider.on_changed(self.on_orbit_updated)
-            # self.scp.save_orbit_series = self.save_orbit_series
+            self.scp.save_orbit_series = self.save_orbit_series
 
     def reveal_nsr_slider(self):
         if self.nsr_hidden:
@@ -3887,13 +3888,18 @@ class SatStressFrame(wx.Frame):
     
     def loadFile(self,filename):
         f = open(filename)
-        for p,v in nvf2dict(f).items():
-            print p,v
-            self.p.sc.set_parameter(p,v)
+        for k,v in nvf2dict(f).items():
+            if str(v)[0] == '[':  #Load in a list
+                l = eval(v)
+                for i in range(1, len(l)):
+                    self.p.sc.set_parameter(k, l[i], point = i)
+            else:
+                self.p.sc.set_parameter(k,v)
+        
         self.p.sc.grid_changed = True
         self.p.sc.nsr_period_seconds2years()
-        self.p.cy.updateFields()
-        self.p.nb.GetCurrentPage().update_parameters()
+        self.p.cy.updateFields() #Update the text fields in cycloids tab.
+        self.p.nb.GetCurrentPage().update_parameters() #Update the current page's fields
 
 
 
