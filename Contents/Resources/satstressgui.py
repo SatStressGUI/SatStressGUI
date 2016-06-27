@@ -1035,7 +1035,7 @@ class SatPanel(wx.Panel):
             f = self.mk_change_param(k)
             if isinstance(p, wx.TextCtrl):
                 p.Bind(wx.EVT_KILL_FOCUS, f)
-                p.Bind(wx.EVT_TEXT_ENTER, f)
+                p.Bind(wx.EVT_TEXT, f)
             elif isinstance(p, wx.CheckBox):
                 p.Bind(wx.EVT_CHECKBOX, f)
             elif isinstance(p, wx.ComboBox):
@@ -1058,17 +1058,22 @@ class SatPanel(wx.Panel):
         return on_change
 
     def update_parameters(self):
-        #print self.parameters.items()
-        #print self.sc.parameters
         for p, ctrl in self.parameters.items():
             try:
                 if type(ctrl) is list:
                     for i in range(1,len(ctrl)):
                         ctrl[i].SetValue(self.sc.parameters[p][i - 1])
-                else:             
-                    ctrl.SetValue(self.sc.parameters[p])
+                else:
+                    if isinstance(ctrl, wx.CheckBox):
+                        if self.sc.parameters[p] == 'True' or self.sc.parameters[p] == '1':
+                            ctrl.SetValue(True)
+                        else:
+                            ctrl.SetValue(False)
+                    else:
+                        ctrl.SetValue(self.sc.parameters[p])
             except KeyError:
                 pass
+
 
 # ===============================================================================
 # SATELLITE TAB
@@ -1159,6 +1164,8 @@ class SatelliteLayersPanel(SatPanel):
     def load_entries(self, filename):
         self.sc.load_satellite(filename)
         self.update_parameters()
+
+
 
 # ===============================================================================
 # STRESSES TAB
@@ -1863,62 +1870,6 @@ class CycloidsPanel(SatPanel):
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
         filler = wx.BoxSizer(wx.HORIZONTAL)
         varyvSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        '''
-        threshSizer  = wx.BoxSizer(wx.HORIZONTAL)
-        propstrSizer = wx.BoxSizer(wx.HORIZONTAL)
-        propspdSizer = wx.BoxSizer(wx.HORIZONTAL)
-        varyvSizer = wx.BoxSizer(wx.HORIZONTAL)
-        latSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lonSizer = wx.BoxSizer(wx.HORIZONTAL)
-        filler = wx.BoxSizer(wx.HORIZONTAL)
-        filler2 = wx.BoxSizer(wx.HORIZONTAL)
-        
-        
-        # create widgets
-        threshold = wx.StaticText(self, wx.ID_ANY, 'Yield (Threshold) [kPa]: ')
-        input_thresh = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetYeild, input_thresh)
-
-        propstrength = wx.StaticText(self, wx.ID_ANY, 'Propagation Strength [kPa]: ')
-        input_propstrength= wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetPropStr, input_propstrength)
-
-        self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
-        self.Bind(wx.EVT_CHECKBOX, self.EvtSetVary, self.vary)
-        self.constant = wx.TextCtrl(self, wx.ID_ANY, '0', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetConstant, self.constant)
-        self.constant.Disable()
-
-        propspeed = wx.StaticText(self, wx.ID_ANY, 'Propagation Speed [m/s]: ')
-        input_propspeed= wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetPropSpd, input_propspeed)
-
-        startlat = wx.StaticText(self, wx.ID_ANY, 'Starting Latitude: ')
-        self.input_startlat= wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetStartLat, self.input_startlat)
-
-        startlon = wx.StaticText(self, wx.ID_ANY, 'Starting Longitude: ')
-        self.input_startlon= wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetStartLon, self.input_startlon)
-
-        # make_random_lat = wx.Button(self, label='Random')
-        # self.Bind(wx.EVT_BUTTON, self.EvtRandLon, make_random_lat)
-
-        # make_random_lon = wx.Button(self, label='Random')
-        # self.Bind(wx.EVT_BUTTON, self.EvtRandLon, make_random_lon)
-
-        # wrapping each label widget in sizer just makes it look nicer
-        threshSizer.Add(threshold, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        propstrSizer.Add(propstrength, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        propspdSizer.Add(propspeed, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        varyvSizer.Add(self.vary, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        varyvSizer.Add(self.constant, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        latSizer.Add(startlat, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        lonSizer.Add(startlon, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        filler.AddSpacer(5)
-        filler2.AddSpacer(15)
-        '''
         # whould eventually replace with add_combobox2_to_sizer()
         # create combobox that chooses (initial?) direction
         which_dir = wx.StaticText(self, wx.ID_ANY, 'Propagation Direction: ')
@@ -1942,7 +1893,7 @@ class CycloidsPanel(SatPanel):
         self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
         self.Bind(wx.EVT_CHECKBOX, self.EvtSetVary, self.vary)
         self.constant = wx.TextCtrl(self, wx.ID_ANY, '0', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.EvtSetConstant, self.constant)
+        self.Bind(wx.EVT_TEXT, self.EvtSetConstant, self.constant)
         self.constant.Disable()
 
         varyvSizer.Add(self.vary, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
@@ -2121,15 +2072,18 @@ class CycloidsPanel(SatPanel):
         f.close()
 
     def updateFields(self):
+        if self.sc.parameters['VARY_VELOCITY'] == 'True' or self.sc.parameters['VARY_VELOCITY'] == '1':
+            self.vary.SetValue(True)
+            if self.sc.parameters.has_key('k'):
+                self.constant.Enable()
+                self.constant.SetValue(str(self.sc.parameters['k']))
+
+        if self.sc.parameters.has_key('STARTING_DIRECTION'):
+            self.start_dir.SetValue(self.sc.parameters['STARTING_DIRECTION'])
+        
+        
         for p, textctrl in self.textCtrls.items():
             if self.sc.parameters.has_key(p):
-                if p == 'VARY_VELOCITY':
-                    self.vary.SetValue(int(self.sc.parameters[p]))
-                elif p == 'k':
-                    self.constant.SetValue(int(self.sc.parameters[p]))
-                elif p == 'STARTING_DIRECTION':
-                    self.start_dir.SetValue(v)
-                else:
                     textctrl.SetValue(str(self.sc.parameters[p]))
 
 
@@ -3894,12 +3848,11 @@ class SatStressFrame(wx.Frame):
             print p,v
             self.p.sc.set_parameter(p,v)
         self.p.sc.grid_changed = True
-        self.p.sc.grid_save_changed = True
-        self.p.sc.satellite_changed = True
-        self.p.sc.satellite_save_changed = True
         self.p.sc.nsr_period_seconds2years()
         self.p.cy.updateFields()
-        
+        self.p.nb.GetCurrentPage().update_parameters()
+
+
 
 
     def saveFile(self,filename):
