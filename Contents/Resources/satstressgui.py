@@ -1370,6 +1370,8 @@ class StressListPanel(SatPanel):
                   self.diffusivity_label, self.parameters['diffusivity'] ]:
             e.Disable()
 
+
+
     def enable_istparams(self):
         """Don't yet enable diffusivity as it is only rleevant for the viscoelastic case."""
         for e in [self.delta_label, self.parameters['delta_tc'] ]:
@@ -1808,13 +1810,13 @@ class GridCalcPanel(SatPanel):
     def enable_pw(self):
         for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
             self.parameters[p].Enable()
-        for sts in self.orbit_labels:
+        for sts in self.pw_labels:
             sts.Enable()
 
     def disable_pw(self):
         for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
             self.parameters[p].Disable()
-        for sts in self.orbit_labels:
+        for sts in self.pw_labels:
             sts.Disable()
 
     def update_parameters(self):
