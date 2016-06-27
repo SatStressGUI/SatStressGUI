@@ -9,7 +9,8 @@ http://code.google.com/p/satstress and most recently at https://github.com/zanes
 SatStressGUI 4.0 has been created upon efforts by
 Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin,
-David Dubois, Ben J. Ayton, Jessica B. Li.
+David Dubois, Ben J. Ayton, Jessica B. Li, 
+Andre Ismailyan, Peter Sinclair.
 
 ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any 
 commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
