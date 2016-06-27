@@ -20,6 +20,7 @@ licenses, or other export authority as may be required before exporting such
 information to foreign countries or providing access to foreign persons.
 
 For more information, please see:
+
 1) Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins,
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation
 and orbital eccentricity using gravitational potential theory,
