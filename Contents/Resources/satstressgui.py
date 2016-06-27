@@ -99,8 +99,7 @@ class SatelliteCalculation(object):
         ("YOUNGS_MODULUS", u"Young's Modulus [Pa]"),
         ("POISSONS_RATIO", u"Poisson's Ratio"),
         ("THICKNESS", u"Thickness [m]"),
-        ("VISCOSITY", u"Viscosity [Pa s]"),
-        ("TENSILE_STR", u"Tensile Strength [Pa]")]
+        ("VISCOSITY", u"Viscosity [Pa s]")]
 
     satlayers_d = [
         (3, "ICE_UPPER"),
@@ -124,7 +123,8 @@ class SatelliteCalculation(object):
         ("LON", u'Longitude'),
         ("TIME", u'Time (Periapse = 0)'),
         ("ORBIT", u'Orbital position (Periapse = 0) [°]'),
-        ("NSR_PERIOD", u'NSR period')]
+        ("NSR_PERIOD", u'NSR period'),
+        ("POLE_POSITION", u'Initial North Pole Location')]
 
     cycloid_parameters_d = {
         'YIELD' : None,
@@ -1118,9 +1118,9 @@ class SatelliteLayersPanel(SatPanel):
         self.bind_parameters()
         for l, v in self.sc.satlayers_d:
             self.parameters["LAYER_ID_%d" % l].SetEditable(True)
-        for l, v in self.sc.satlayers_d[1:]:
-            self.parameters["TENSILE_STR_%d" % l].SetValue('0')
-            self.parameters["TENSILE_STR_%d" % l].Disable()
+        #for l, v in self.sc.satlayers_d:
+            #self.parameters["TENSILE_STR_%d" % l].SetValue('0')
+            #self.parameters["TENSILE_STR_%d" % l].Disable()
         # end
 
         top.Add(bp, 0, wx.ALL|wx.EXPAND)
@@ -1156,7 +1156,7 @@ class SatelliteLayersPanel(SatPanel):
     def save(self, evt):
         file_dialog(self,
             message=u"Save to satellite file",
-            style=wx.SAVE,
+            style=wx.SAVE | wx.OVERWRITE_PROMPT,
             wildcard='Satellite files (*.satellite;*.sat)|*.satellite;*.sat',
             defaultFile='satellite.satellite',
             action=self.sc.save_satellite)
@@ -1267,7 +1267,7 @@ class StressListPanel(SatPanel):
         
         polarlong_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         polarlong_sz.AddSpacer(28)
-        self.long_label = wx.StaticText(self, label=u'Final latitude [degrees] ')
+        self.long_label = wx.StaticText(self, label=u'Final longitude [degrees] ')
         polarlong_sz.Add(self.long_label, flag=wx.ALIGN_CENTER_VERTICAL)
         self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('polarlong_tc', 'polarlong_tc') ]))
         polarParams_sz.Add(polarlong_sz)
@@ -1487,7 +1487,7 @@ class StressListPanel(SatPanel):
         try:
             file_dialog(self,
                 message=u"Save Love Numbers",
-                style=wx.SAVE,
+                style=wx.SAVE | wx.OVERWRITE_PROMPT,
                 wildcard='Text files (*.txt)|*.txt',
                 defaultFile='love.txt',
                 action=self.sc.save_love)
@@ -1687,7 +1687,7 @@ class PointPanel(SatPanel):
     def save(self, evt):
         file_dialog(self,
             message=u"Save to CSV file",
-            style=wx.SAVE,
+            style=wx.SAVE | wx.OVERWRITE_PROMPT,
             wildcard='CSV files (*.csv)|*.csv',
             defaultFile='untitled.csv',
             action=self.save_pointcalc)
@@ -1754,6 +1754,15 @@ class GridCalcPanel(SatPanel):
         gmcp.Add(self.nsr_labels[-1])
         self.parameters.update(
             add_text_ctrls(self, gmcp, [ ('TIME_MIN', ''), ('nsr_time', ''), ('TIME_NUM', '') ]))
+        # Polar Wander
+        for i in range(4):
+            gmcp.AddSpacer(20)
+        self.pw_labels = add_static_texts(self, gmcp,
+            [('',''), ('', u'Final Pole Latitude [°]'), ('',u'Final Pole Longitude [°]'), ('',u'Number of increments')])
+        self.pw_labels.append(wx.StaticText(self, label=u'Final Pole Location'))
+        gmcp.Add(self.pw_labels[-1])
+        self.parameters.update(
+            add_text_ctrls(self, gmcp, [ ('FINAL_LAT', ''), ('FINAL_LONG', ''), ('NUM_INCREMENTS', '') ]))
         self.parameters['nsr_time'].SetMinSize((250, 10))
         top = wx.BoxSizer(orient=wx.HORIZONTAL)
         top.Add(grid_id_p)
@@ -1802,6 +1811,18 @@ class GridCalcPanel(SatPanel):
         for sts in self.orbit_labels:
             sts.Disable()
 
+    def enable_pw(self):
+        for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
+            self.parameters[p].Enable()
+        for sts in self.orbit_labels:
+            sts.Enable()
+
+    def disable_pw(self):
+        for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
+            self.parameters[p].Disable()
+        for sts in self.orbit_labels:
+            sts.Disable()
+
     def update_parameters(self):
         super(GridCalcPanel, self).update_parameters()
         if self.sc.parameters.get('Nonsynchronous Rotation', False):
@@ -1813,6 +1834,10 @@ class GridCalcPanel(SatPanel):
             self.enable_orbit()
         else:
             self.disable_orbit()
+        if self.sc.parameters.get('Polar Wander', False):
+            self.enable_pw()
+        else:
+            self.disable_pw()
         for p in [ "%s_%s" % (p, v)
                 for p,pd in self.sc.grid_parameters_d
                 for v, vd in self.sc.grid_vars_d ]:
@@ -1828,7 +1853,7 @@ class GridCalcPanel(SatPanel):
         try:
             file_dialog(self,
                 message=u"Save to grid file",
-                style=wx.SAVE,
+                style=wx.SAVE | wx.OVERWRITE_PROMPT,
                 wildcard=u'Grid files (*.grid)|*.grid',
                 defaultFile=self.sc.parameters['GRID_ID'] + '.grid',
                 action=self.sc.save_grid)
@@ -1996,7 +2021,7 @@ class CycloidsPanel(SatPanel):
         try:
             file_dialog(self,
                 message = u'Save cycloid parameters to file',
-                style = wx.SAVE,
+                style = wx.SAVE | wx.OVERWRITE_PROMPT,
                 wildcard = 'Cycloid files (*.cyc)|*.cyc',
                 defaultFile = 'cycloid_params.cyc',
                 action = self.save_cyclparams)
@@ -2892,7 +2917,7 @@ class ScalarPlotPanel(PlotPanel):
     def on_save_shape(self, evt):
         file_dialog(self,
             message = u"Save to shape file",
-            style = wx.SAVE,
+            style = wx.SAVE | wx.OVERWRITE_PROMPT,
             wildcard = 'Shape files (*.shp)|*.shp',
             defaultFile = 'lineaments.shp',
             action = self.save_shape)
@@ -2919,7 +2944,7 @@ class ScalarPlotPanel(PlotPanel):
         try:
             file_dialog(self,
                 message=u"Save to NetCDF file",
-                style=wx.SAVE,
+                style=wx.SAVE | wx.OVERWRITE_PROMPT,
                 defaultFile='gridcalc.nc',
                 wildcard=u'NetCDF files (*.nc)|*.nc',
                 action=self.sc.save_netcdf)
@@ -3826,7 +3851,7 @@ class SatStressFrame(wx.Frame):
         try:
             file_dialog(self,
                     message=u"Save configuration",
-                    style=wx.SAVE,
+                    style=wx.SAVE | wx.OVERWRITE_PROMPT,
                     wildcard='Satstress files (*.sats)|*.sats',
                     action=self.saveFile)
         except Exception, e:
