@@ -3811,38 +3811,61 @@ class SatStressFrame(wx.Frame):
         self.p = SatStressPanel(self)
         self.GetSizer().Add(self.p, 1, wx.ALL|wx.EXPAND, 10)
 
-        ##### 'Information' option of menubar #####
+        menubar = wx.MenuBar()
+
+        ##### 'File' option of menubar #####
         File = wx.Menu()
-        export = File.Append(wx.ID_ANY, '&Export')
+        export = File.Append(wx.ID_SAVE, '&Export')
         self.Bind(wx.EVT_MENU,self.onExport, export)
-        load = File.Append(wx.ID_ANY, '&Load')
+        load = File.Append(wx.ID_OPEN, '&Load')
         self.Bind(wx.EVT_MENU, self.onLoad, load)
+
+        menubar.Append(File,"File")
+
+        ##### 'Information' option of menubar #####        
+        Information = wx.Menu()
+
         About = wx.Menu()
         rights = About.Append(wx.ID_ANY, '&Copyright')
         self.Bind(wx.EVT_MENU, self.onRights, rights)
-        develop = About.Append(wx.ID_ANY, '&Development')
-        self.Bind(wx.EVT_MENU, self.onDevelopment, develop)
-        updates = About.Append(wx.ID_ANY, '&Updates')
+        updates = About.Append(wx.ID_ANY, '&Version')
         self.Bind(wx.EVT_MENU, self.onUpdates, updates)
-        ref = About.Append(wx.ID_ANY, '&References')
-        self.Bind(wx.EVT_MENU, self.onRef, ref)
-        About.AppendSeparator()
         contact = About.Append(wx.ID_ANY, '&Contact')
         self.Bind(wx.EVT_MENU, self.onContacts, contact)
+        develop = About.Append(wx.ID_ANY, '&Development')
+        self.Bind(wx.EVT_MENU, self.onDevelopment, develop)
 
-        menubar = wx.MenuBar()
-        menubar.Append(File,"File")
-        menubar.Append(About, "&Information")
+        Information.AppendMenu(wx.ID_ANY, "&About", About)
+        Information.AppendSeparator()
+
+        References = wx.Menu()
+        ref = References.Append(wx.ID_ANY, '&General')
+        self.Bind(wx.EVT_MENU, self.onRef, ref)
+        PW = References.Append(wx.ID_ANY, '&Polar Wander')
+
+        Cycloids = References.Append(wx.ID_ANY, '&Cycloids')
+        self.Bind(wx.EVT_MENU, self.onCycloids, Cycloids)
+
+        Information.AppendMenu(wx.ID_ANY, "&References", References)
+
+        menubar.Append(Information, "&Information")
 
         ##### 'Help' option of menubar ######
         Help = wx.Menu()
-        docSat = Help.Append(wx.ID_ANY, '&Satellite')
-        docStress = Help.Append(wx.ID_ANY, '&Stresses')
-        docPoint = Help.Append(wx.ID_ANY, '&Point')
-        docGrid = Help.Append(wx.ID_ANY, '&Grid')
-        docCyc = Help.Append(wx.ID_ANY, '&Cycloids')
-        docPlot = Help.Append(wx.ID_ANY, '&Plot')
-
+        Tutorial = Help.Append(wx.ID_ANY, '&Getting Started')
+        self.Bind(wx.EVT_MENU, self.onTutorial, Tutorial)
+        HelpSat = Help.Append(wx.ID_ANY, '&Satellite Tab')
+        self.Bind(wx.EVT_MENU, self.onHelpSat, HelpSat)
+        HelpStress = Help.Append(wx.ID_ANY, '&Stresses Tab')
+        self.Bind(wx.EVT_MENU, self.onHelpStresses, HelpStress)
+        HelpPoint = Help.Append(wx.ID_ANY, '&Point Tab')
+        self.Bind(wx.EVT_MENU, self.onHelpPoint, HelpPoint)
+        HelpGrid = Help.Append(wx.ID_ANY, '&Grid Tab')
+        self.Bind(wx.EVT_MENU, self.onHelpGrid, HelpGrid)
+        HelpCycloids = Help.Append(wx.ID_ANY, '&Cycloids Tab')
+        self.Bind(wx.EVT_MENU, self.onHelpCycloids, HelpCycloids)
+        HelpPlot = Help.Append(wx.ID_ANY, '&Plot Tab')
+        self.Bind(wx.EVT_MENU, self.onHelpPlot, HelpPlot)
         menubar.Append(Help, "&Help")
 
         self.SetMenuBar(menubar)
@@ -3929,27 +3952,26 @@ information to foreign countries or providing access to foreign persons. """
         self.makeMsgDialog(spiel, copyright)
 
     def onDevelopment(self, evt):
-        spiel = u"""SatStressGUI V2.3 was developed at the Jet Propulsion Laboratory, \
+        spiel = u"""SatStressGUI V4.0 was developed at the Jet Propulsion Laboratory, \
 California Institute of Technology and is based on SatStressGUI. \
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho \
 SatStress GUI is based on SatStress, which was designed by Zane Selvans and is available at \
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress \
-\n\n SatStressGUI 2.3 has been created upon efforts by \
+\n\n SatStressGUI 4.0 has been created upon efforts by \
 Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang \
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin, \
-David Dubois, Ben J. Ayton, Jessica B. Li."""
+David Dubois, Ben J. Ayton, Jessica B. Li, \
+Andre Ismailyan, Peter Sinclair."""
         
         self.makeMsgDialog(spiel, u'Developers')
 
     def onUpdates(self, evt):
-        updates = u"""1. Corrected Love number calculation\n \
-2. Changed input parameters FROM Shear Modulus and Lame Parameters TO Youngs Modulus and Poissons ratio.\n \
-    *Note, this change invalidates version 1.0 satellite files.\n \
-3. Created the ability to calculate stress at 10 points and export values as a CSV file.\n \
-4. Updated plot function for east and west positive, EXPLAIN MORE CLEARLY\n \
-5. Cycloids Tab and cycloid generator implemented in GUI.  Version 2.3."""
+        updates = u"""This is Version 4.0 of SatStressGUI.  For more information, please visit: \n\n\
+https://github.com/Phiteros/SatStressGui\n\n\
+In this version, several bugs were fixed, and a new stressing mechanism (Polar Wander) was added.\
+To find detailed notes of all the changes, please visit the GitHub page."""
         
-        self.makeMsgDialog(updates, u'Updates since SatStressGUI 1.0')
+        self.makeMsgDialog(updates, u'Version 4.0')
 
     def onRef(self, evt):
         references = """ For more information, please see:\n\n \
@@ -3960,14 +3982,14 @@ Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.\n\n \
 2) See chapter on Geodynamics of Europa’s Ice Shell by Francis Nimmo and Michael Manga in \
 Europa for more information about the ice shell thickening model.\n\n \
 3) See Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal \
-features on Europa. Science 285, 1899–1902, or chapter on Geologic Stratigraphy and Evolution of \
+features on Europa. Science 285, 1899-1902, or chapter on Geologic Stratigraphy and Evolution of \
 Europa's surface by Thomas Doggett, Ronald Greeley, Patricio Figueredo and Ken Tanaka in Europa \
 for additional information on cycloid formation, for diurnal potential including obliquity \n\n \
-4) Jara-Orué, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
+4) Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
 obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
 case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickening. \n\n \
 5) Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application \
-to Europa. Journal of Geophysical Research: Planets (1991–2012), 109(E12). """
+to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12). """
         
         self.makeMsgDialog(references, u'Science References')
 
@@ -3975,6 +3997,87 @@ to Europa. Journal of Geophysical Research: Planets (1991–2012), 109(E12). """
         # Create a message dialog box
         self.makeMsgDialog(u"Alex Patthoff via Patthoff@jpl.nasa.gov",
                            u"Primary Contact")
+
+    def onCycloids(self, evt):
+        Resources = """ Cycloids are arcuate lineaments found on the surface of Europa.  \
+They are thought to be created when a fracture in the ice is propagated because of the stresses. \
+In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.\
+Once the fracture has started, it will propagate through the ice at a certain velocity.\
+This velocity could be constant, or could vary depending on the magnitude of the stress.\
+During the cycloid's propagation, the satellite will continue orbiting around its primary.\
+This causes the stress field on the satellite to change, making the cycloids curve.\
+When the stress is no longer greater than the requisite propagation strength, the cycloid stops moving.\
+If the stress reaches the propagation strength again, it will continue.\n\n \
+For more information, please see:\n\n \
+    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal \
+features on Europa. Science 285, 1899-1902"""
+        self.makeMsgDialog(Resources, u'About Cycloids')
+
+
+    def onTutorial(self, evt):
+        Tutorial = """Welcome to SatStressGUI!  This program is designed to model stresses icy satellites \
+experience as they orbit their primary.  For more information on this program and the mathematics behind it, \
+check the "Information" menu. \n\n\
+1) Input the satellite's physical parameters on the Satellite tab.\n\
+2) Select which stresses to apply in the Stresses tab.\n\
+- When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
+leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
+- Please note that most stresses do not function well together.\n\
+- Diurnal and Obliquity must be used together.\n\
+3) In the Grid tab, input a latitude and longitude range to examine.\n\
+- The number of grid points must be equal for both latitude and longitude.\n\
+4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
+5) Change to the Plot tab to see the stress maps.\n\
+- For more information on how to use the maps, see "Plot" in the Help Menu.\n\
+6) Use the Point tab to calculate the stress at up to 10 discrete points in space and time.
+"""
+        self.makeMsgDialog(Tutorial, u'Getting Started')
+
+    def onHelpSat(self, evt):
+        Help = """The Satellite Tab is used to input the physical properties of the satellite.\n\n\
+- Each entry should use the units denoted in the square brackets next to the box.\n\
+- The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.\n\
+- The NSR period is usually on the order of 100,000 years.  If you are not using NSR, you can leave it as 'infinity'.\n\
+- The orbital eccentricity must be < 0.25.  Otherwise the program cannot reasonably calculate stresses.\n\
+- If you have changed a number, but nothing seems to happen, try hitting 'Enter' in the box you changed.\n\
+"""
+        self.makeMsgDialog(Help, u'The Satellite Tab')
+
+    def onHelpStresses(self, evt):
+        Help = """The Stresses Tab is used to select which stresses to use.\n\n\
+- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
+Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
+NOTE: This feature may not be functioning correctly.\n\
+- Most stresses should be used independently, however the Obliquity stress and Diurnal stress can be active at the same time.\n\
+- The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
+"""
+        self.makeMsgDialog(Help, u'The Stresses Tab')
+
+    def onHelpPoint(self, evt):
+        Help = """The Point Tab can be used to calculate the stress at up to 10 discrete points in space and time.\n\n\
+- Enter a latitude, longitude, year, and orbital position for up to 10 points.\n\
+- Press the "Calculate Stress" button.\n\
+- Use the "Save to File" button to save the results as a .cvs file.\n\
+"""
+        self.makeMsgDialog(Help, u'The Point Tab')
+
+    def onHelpGrid(self, evt):
+        Help = """The Grid Tab is used to specify what section of the satellite to look at.\n\n\
+-
+        """
+        self.makeMsgDialog(Help, u'The Grid Tab')
+
+    def onHelpCycloids(self, evt):
+        Help = """The Cycloids Tab allows the user to generate a cycloidal feature on the map.\n\n\
+-
+        """
+        self.makeMsgDialog(Help, u'The Cycloids Tab')
+
+    def onHelpPlot(self, evt):
+        Help = """The Plot Tab shows a map of the stresses on the surface of the satellite.\n\n\
+-
+        """
+        self.makeMsgDialog(Help, u'The Plot Tab')
        
     def makeMsgDialog(self, msg, title):
         msg = wx.MessageDialog(self, msg, title, wx.OK | wx.ICON_INFORMATION)
