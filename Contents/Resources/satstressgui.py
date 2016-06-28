@@ -1748,7 +1748,7 @@ class GridCalcPanel(SatPanel):
         for i in range(4):
             gmcp.AddSpacer(20)
         self.nsr_labels = add_static_texts(self, gmcp,
-            [('', ''), ('', u'Minimum time [yrs]'), ('', u'Time into shell rotation [yrs]'), ('', u'Number of increments')])
+            [('', ''), ('', u'Start Time [yrs]'), ('', u'End Time [yrs]'), ('', u'Number of increments')])
         self.nsr_labels.append(wx.StaticText(self, label=u'Amount of NSR build up'))
         gmcp.Add(self.nsr_labels[-1])
         self.parameters.update(
@@ -4063,20 +4063,40 @@ NOTE: This feature may not be functioning correctly.\n\
 
     def onHelpGrid(self, evt):
         Help = """The Grid Tab is used to specify what section of the satellite to look at.\n\n\
--
-        """
+- For more information about each stress, see the Information menu.
+- NOTE: The number of latitude and longitude grid points must be equal.\n\
+- To examine the whole moon, use a latitude range from -90 to 90 and a longitude range of -180 to 180.\n\
+- Each row will only activate when the appropriate stress is enabled.\n\
+- The "Orbital Position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. \
+Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be added by increasing the maximum beyond 360 degrees.\n\
+- The "Amount of NSR Buildup" row is used to determine how long the ice shell has been rotating. \
+The Start Time is when the plotting starts, and the End Time is when the plotting ends.\n\
+- The "Final Pole Location" is used for the Polar Wander stress.
+"""
         self.makeMsgDialog(Help, u'The Grid Tab')
 
     def onHelpCycloids(self, evt):
         Help = """The Cycloids Tab allows the user to generate a cycloidal feature on the map.\n\n\
--
-        """
+- The cycloids are modeled and plotted on the Plot Tab.\n\
+- The Yield Threshold is how much stress must be put on the crust to break the ice and initiate a fracture.\n\
+- The Propagation Strength is how much stress must be put on the crust to make the split continue, and the split continues at the Propagation Speed.\n\
+- The Starting Latitude and Longitude determine where the cycloid begins, and the Direction determines the curvature of the cycloid.\n\
+- NOTE: The Vary Velocity option is currently untested.\n\
+- For more information on cycloids, see the Information menu.
+"""
         self.makeMsgDialog(Help, u'The Cycloids Tab')
 
     def onHelpPlot(self, evt):
         Help = """The Plot Tab shows a map of the stresses on the surface of the satellite.\n\n\
--
-        """
+- Tension on the map is shown as positive, and compression as negative.
+- You can step through the plots by using the buttons to the bottom right of the graph.\n\
+- Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "Save Series" \
+button to the lower right.\n\
+- The panel on the right allows manipulation of the map, changing the scale and type of map, as well as the stresses showed.\n\
+- The bottom panel enables and disables cycloids.\n\
+- NOTE: The cycloids cannot be saved as shape or netcdf files currently.\n\
+- NOTE: The Lineaments features does not function currently.
+"""
         self.makeMsgDialog(Help, u'The Plot Tab')
        
     def makeMsgDialog(self, msg, title):
