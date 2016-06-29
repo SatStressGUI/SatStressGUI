@@ -25,8 +25,8 @@ import traceback
 #    scipy.ndimage = multi-D
 import matplotlib, scipy.ndimage
 
-
 import time
+#For saving images in unique folders.
 
 # fig state updated every plot command, but only redraw on explicit calls to draw()
 matplotlib.interactive(False)
@@ -1133,13 +1133,13 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(filler)
         sz.Add(lp)
         
-        sz.Add(wx.StaticText(self, label=u'Notes: '))
-        sz.Add(wx.StaticText(self, label=u'NSR stands for nonsynchronous rotation'))
-        sz.Add(wx.StaticText(self, label=u'-3rd layer must be liquid'))
-        sz.Add(wx.StaticText(self, label=u'-Whenever the user changes values in the grid boxes, ' +\
-         u'it is important to click in another box (or press Enter) before switching to another tab, '))
-        sz.Add(wx.StaticText(self, label=u'in order to take into account that change before moving on. '))
-        sz.Add(wx.StaticText(self, label=u'-The orbital eccentricity must be < 0.25'))
+        sz.Add(wx.StaticText(self, label=u'ASSUMPTIONS: '))
+        sz.Add(wx.StaticText(self, label=u'This model makes several assumptions when calculating stresses.'))
+        sz.Add(wx.StaticText(self, label=u'The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
+        sz.Add(wx.StaticText(self, label=u'It is assumed to behave in a viscoelastic manner.'))
+        sz.Add(wx.StaticText(self, label=u'Each layer is considered to be homogenous throughout, with no differences in density or thickness based on location, but decreasing in mass out from the core.'))
+        sz.Add(wx.StaticText(self, label=u'The Polar Wander stress assumes that the body is in a circular, zero-inclination, synchronous orbit.'))
+        sz.Add(wx.StaticText(self, label=u'The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
         
         self.SetSizer(sz)
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
@@ -4027,7 +4027,8 @@ U.S. export laws and regulations. User has the responsibility to obtain export \
 licenses, or other export authority as may be required before exporting such \
 information to foreign countries or providing access to foreign persons. """
 
-        copyright = "Copyright 2015, by the California Institute of Technology."
+        copyright = "Copyright 2016, by the California Institute of Technology."
+        #Update year whenever a new version is released.
 
         self.makeMsgDialog(spiel, copyright)
 
@@ -4047,7 +4048,7 @@ Andre Ismailyan, Peter Sinclair."""
 
     def onUpdates(self, evt):
         updates = u"""This is Version 4.0 of SatStressGUI.  For more information, please visit: \n\n\
-https://github.com/Phiteros/SatStressGui\n\n\
+https://github.com/SatStressGUI/SatStressGUI\n\n\
 In this version, several bugs were fixed, and a new stressing mechanism (Polar Wander) was added.\
 To find detailed notes of all the changes, please visit the GitHub page."""
         
