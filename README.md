@@ -20,7 +20,12 @@ U.S. export laws and regulations. User has the responsibility to obtain export
 licenses, or other export authority as may be required before exporting such
 information to foreign countries or providing access to foreign persons.
 
-For more information, please see:
+For more information, please contact Alex Patthoff at donald.a.patthoff@jpl.nasa.gov.
+
+Older versions of this program can be found at https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
+
+
+References:
 
 1) Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins,
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation
@@ -42,4 +47,4 @@ case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickeni
 5) Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application 
 to Europa. Journal of Geophysical Research: Planets (1991–2012), 109(E12). 
 
-Primary Contact: Alex Patthoff via Patthoff@jpl.nasa.gov
+6)	Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.
