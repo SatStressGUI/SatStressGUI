@@ -5,13 +5,13 @@
 #    wx = python extention module that acts as python lang wrapper for wxWidgets
 #         (cross platform GUI API written in C++)t
 import wx
-
+import wx.scrolledpanel as scrolled
 # for manipulating tabluar data
 #     wx.grid = allows displaying, editing, customizing tabular data'''
 import wx.grid, csv
 
 # for command line parsing?
-#     copy = allows shallow & deep copying operations
+#     copy/Users/andreismailyan = allows shallow & deep copying operations
 #     sys = access syst specific parameters & fcts, variables held by interpreter
 #     os = allows more direct interaction with OS
 import copy, sys, os
@@ -1497,76 +1497,83 @@ class StressListPanel(SatPanel):
 # ===============================================================================
 class PointPanel(SatPanel):
     """
-    Defines the point panel of the GUI
-    """
-    def params_grid(self, params_d, defval, width=3, row = 1):
+        Defines the point panel of the GUI
+        """
+    def params_grid(self, panel, params_d, defval, width=3, row = 1):
         pp = wx.FlexGridSizer(row, width)
-        add_table_header(self, pp, params_d)
-        self.parameters.update(add_text_ctrls(self, pp, params_d, rows = row, point = True))
+        add_table_header(panel, pp, params_d)
+        self.parameters.update(add_text_ctrls(panel, pp, params_d, rows = row, point = True))
         for p,d in params_d:
             self.sc.parameters[p] = []
             for i in range(1, row + 1):
                 self.sc.parameters[p].append(defval)
-    
         return pp
-        #for p,d in params_d:
-        #    self.sc.parameters[p] = defval
-        #return pp
-
+    
+    
     def __init__(self, *args, **kw):
         super(PointPanel, self).__init__(*args, **kw)
-        #change self.rows to change how many rows are displayed in the GUI
-        self.rows = 10
-        sz = wx.BoxSizer(orient=wx.VERTICAL)
-
-        sz.Add(WrapStaticText(self, label=
-            u'This tab is for calculating the stress tensor at a location at the surface ' +\
-            u'at a point in the orbit. It uses the Stresses tab to determine which ' +\
-            u'stresses are being calculated.'), flag=wx.ALL|wx.EXPAND)
-        sz.AddSpacer(15)
         
+        
+        #change self.rows to change how many rows are displayed in the GUI
+        self.rows = 20
+        
+        self.header1 = [('theta', [u'θ [°]']), ('phi', [u'φ [°]']), ('t', [u't [yrs]']), ('orbit', [u'orbital pos [°]'])]
+        self.header2 = [("Ttt", [u'Stt [kPa]']), ("Tpt", [u'Spt [kPa]']), ("Tpp", [u'Spp [kPa]'])]
+        self.header3 = [("s1", [u'σ1 [kPa]']), ("s3", [u'σ3 [kPa]']), ("a", [u'α [°]'])]
+        
+        sz = wx.BoxSizer(orient=wx.VERTICAL)
+        
+        sz.Add(WrapStaticText(self, label=
+        u'This tab is for calculating the stress tensor at a location at the surface ' +\
+        u'at a point in the orbit. It uses the Stresses tab to determine which ' +\
+        u'stresses are being calculated.'), flag=wx.ALL|wx.EXPAND)
+
+        sz.AddSpacer(20)
+        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1000,400), style=wx.SIMPLE_BORDER)
+        self.fieldPanel.SetupScrolling()
+
+        rsz = wx.BoxSizer(orient=wx.HORIZONTAL)
+
         p2 = wx.BoxSizer(orient=wx.VERTICAL)
-
         cp = wx.BoxSizer(orient=wx.HORIZONTAL)
-
         p0 = wx.BoxSizer(orient=wx.VERTICAL)
-        p0.Add(wx.StaticText(self, label=u'Time/space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
-        pp = self.params_grid([('theta', [u'θ [°]']), ('phi', [u'φ [°]']), ('t', [u't [yrs]']), ('orbit', [u'orbital pos [°]'])], '0', 4, self.rows)
-        p0.Add(pp)
+        p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        self.pp = self.params_grid(self.fieldPanel, self.header1, '0', 4, self.rows)
+        p0.Add(self.pp)
         cp.Add(p0)
-
         p1 = wx.BoxSizer(orient=wx.VERTICAL)
-        p1.Add(wx.StaticText(self, label=u'Stress Tensor at a point'), flag=wx.ALIGN_CENTER_HORIZONTAL)
-        tp = self.params_grid([("Ttt", [u'Stt [kPa]']), ("Tpt", [u'Spt [kPa]']), ("Tpp", [u'Spp [kPa]'])], '', row = self.rows)
-        p1.Add(tp, 1, wx.ALL|wx.EXPAND)
+        p1.Add(wx.StaticText(self.fieldPanel, label=u'Stress Tensor at a point'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        self.tp = self.params_grid(self.fieldPanel,self.header2, '', row = self.rows)
+        p1.Add(self.tp, 1, wx.ALL|wx.EXPAND)
         cp.AddSpacer(15)
         cp.Add(p1)
-
         p3 = wx.BoxSizer(orient=wx.VERTICAL)
-        p3.Add(wx.StaticText(self, label=u'principal Components'), flag=wx.ALIGN_CENTER_HORIZONTAL)
-        sp = self.params_grid([("s1", [u'σ1 [kPa]']), ("s3", [u'σ3 [kPa]']), ("a", [u'α [°]'])], '', row = self.rows)
-        p3.Add(sp, 1, wx.ALL|wx.EXPAND)
+        p3.Add(wx.StaticText(self.fieldPanel, label=u'principal Components'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        self.sp = self.params_grid(self.fieldPanel,self.header3, '', row = self.rows)
+        p3.Add(self.sp, 1, wx.ALL|wx.EXPAND)
         cp.Add(p3)
-        
         p2.Add(cp)
-        
+
+        rsz.Add(p2)
+        self.fieldPanel.SetSizer(rsz)
+        sz.Add(self.fieldPanel)
+
         bp = wx.BoxSizer(orient=wx.HORIZONTAL)
-        # self.load_b = wx.Button(self, label=u'Load from file')
-        ## Load from file button not yet functional--not bound to event
-        #row_ctrl = wx.SpinCtrl(self, min = 1, value = str(self.rows))
+        self.spin_value = self.rows
+        self.row_ctrl = wx.SpinCtrl(self, min = 1, value = str(self.rows))
+
         self.save_b = wx.Button(self, label=u'Save to File')
         self.b = wx.Button(self, label=u'Calculate Stress')
-        #self.load_b = wx.Button(self, label=u'Load from file')
+        self.load_b = wx.Button(self, label=u'Load from file')
         bp.Add(self.b, 1, wx.ALL|wx.EXPAND, 3)
-        # bp.Add(self.load_b, 1, wx.ALL|wx.EXPAND, 3)
+        bp.Add(self.load_b, 1, wx.ALL|wx.EXPAND, 3)
         bp.Add(self.save_b, 1, wx.ALL|wx.EXPAND, 3)
-        #bp.AddSpacer(15)
-        #bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.ALIGN_CENTER_VERTICAL)
-        #bp.Add(row_ctrl)
-        p2.Add(bp)
-        sz.AddSpacer(15)
-        sz.Add(p2)
-        
+
+        bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.ALIGN_CENTER_VERTICAL)
+        bp.Add(self.row_ctrl)
+        sz.Add(bp)
+     
+
         sz.AddSpacer(15)
 
         sz.Add(wx.StaticText(self, label=u'θ: Latitude (-90.00-90.00) [°]'))
@@ -1584,11 +1591,11 @@ class PointPanel(SatPanel):
 
         self.SetSizer(sz)
 
-        #row_ctrl.Bind(wx.EVT_SPIN_UP, lambda evt, szr = pp: self.spin_up(evt, szr))
-        #row_ctrl.Bind(wx.EVT_SPIN_DOWN, lambda evt, szr = pp: self.spin_down(evt, szr))
+        self.row_ctrl.Bind(wx.EVT_SPINCTRL, self.spinCtrl)
+        #self.row_ctrl.Bind(wx.EVT_SPIN_DOWN, lambda evt, szr = pp: self.spin_down(evt, szr))
         # Here we bind the load and save buttons to the respective events
         wx.EVT_BUTTON(self, self.b.GetId(), self.on_calc)
-        #self.load_b.Bind(wx.EVT_BUTTON, self.load)
+        self.load_b.Bind(wx.EVT_BUTTON, self.load)
         self.save_b.Bind(wx.EVT_BUTTON, self.save)
         self.update_parameters()
         self.bind_parameters()
@@ -1612,7 +1619,7 @@ class PointPanel(SatPanel):
         except:
             traceback.print_exc()
         self.updating = False
-
+    
     #updates the t text ctrls when orbital position is changed
     def on_orbit_update(self, evt, row = 1):
         self.updating = True
@@ -1625,7 +1632,7 @@ class PointPanel(SatPanel):
         except:
             traceback.print_exc()
         self.updating = False
-
+    
     def on_calc(self, evt):
         try:
             self.b.SetFocus()
@@ -1633,64 +1640,111 @@ class PointPanel(SatPanel):
             self.update_parameters()
         except LocalError, e:
             error_dialog(self, str(e), e.title)
+    
+    #These functions were meant to handle events generated by the spin control used to change number of points to calculate
+    def spinCtrl(self, evt):
+        if (evt.GetEventObject().GetValue() > self.spin_value):
+            self.onUp()
+            self.spin_value += 1
+        else:
+            self.spin_value -= 1
+            self.spin_down()
+    
+    def onUp(self):
+        self.rows +=1
+        self.pp.SetRows(self.rows)
+        self.tp.SetRows(self.rows)
+        self.sp.SetRows(self.rows)
+        self.add_row(self.fieldPanel, self.pp, self.header1, '0')
+        self.add_row(self.fieldPanel,self.tp, self.header2, '')
+        self.add_row(self.fieldPanel,self.sp, self.header3, '')
+    
+        self.fieldPanel.Layout()
+        self.Layout()
+        self.update_parameters()
+        self.fieldPanel.SetupScrolling()
 
-#These functions were meant to handle events generated by the spin control used to change number of points to calculate
-    def spin_up(self, evt, szr):
-       try:
-           self.rows += 1
-           szr.SetRows(self.rows)
-           self.parameters.update(add_text_ctrls(self, szr, self.parameters, rows = 1, point = True))
-           self.Layout()
-       except:
-           traceback.print_exc()
 
-    def spin_down(self, evt, szr):
-       try:
-           self.rows -= 1
-           szr.SetRows(self.rows)
-           print szr.GetItem(-1)
-           self.Layout()
-
-       except:
-           traceback.print_exc()
-
-#These functions were meant to handle loading csv files with coordinates
+    def add_row(self, panel, sz, params_d, defaultval):
+        for p,d in params_d:
+            text = wx.TextCtrl(self.fieldPanel, style = wx.TE_PROCESS_ENTER)
+            sz.Add(text, flag=wx.ALL|wx.EXPAND)
+            self.parameters[p].append(text)
+            self.sc.parameters[p].append(defaultval)
+    
+    def spin_down(self):
+    	self.rows -= 1
+        self.pp.SetRows(self.rows)
+        for p,d in self.header1+self.header2+self.header3:
+            self.parameters[p][-1].Destroy()
+            del self.parameters[p][-1]
+            del self.sc.parameters[p][-1]
+        
+        self.fieldPanel.Layout()
+	
     def load(self, evt):
-       try:
-           file_dialog(self,
-               message=u"Load from CSV file",
-               style=wx.OPEN,
-               wildcard='CSV files (*.csv)|*.csv',
-               action=self.load_entries)
-       except Exception, e:
-           traceback.print_exc()
-
+        try:
+            file_dialog(self,
+                        message=u"Load from CSV file",
+                        style=wx.OPEN,
+                        wildcard='CSV files (*.csv)|*.csv',
+                        action=self.load_entries)
+        except Exception, e:
+            traceback.print_exc()
+    def set_num_rows(self,num_rows):
+        self.pp.SetRows(num_rows)
+        self.sp.SetRows(num_rows)
+        self.tp.SetRows(num_rows)
+        if (num_rows > self.rows):
+            for j in range(num_rows-self.rows):
+                self.add_row(self.fieldPanel,self.pp, self.header1, '0')
+                self.add_row(self.fieldPanel,self.tp, self.header2, '')
+                self.add_row(self.fieldPanel,self.sp, self.header3, '')
+            self.update_parameters()
+        else:
+            for j in range(self.rows-num_rows):
+                for p,d in self.header1+self.header2+self.header3:
+                    self.parameters[p][-1].Destroy()		
+                    del self.parameters[p][-1]		
+                    del self.sc.parameters[p][-1]
+        self.rows = num_rows
+        self.row_ctrl.SetValue(num_rows)		
+        self.spin_value = num_rows
     def load_entries(self, filename):
-       f = open(filename)
-       csvreader = csv.reader(f)
-       try:
-          keys = ['theta', 'phi', 'orbit']
-          for i in range(self.rows):
-              coord = csvreader.next()
-              for key in keys:
-                  val = coord[keys.index(key)]
-                  self.parameters[key][i].SetValue(val)
-                  self.sc.set_parameter(key, val, point = i)
+        f = open(filename)
+        csvreader = csv.reader(f)
+        coord = csvreader.next()  #Skip headers
+        data = list(csvreader)
+        self.set_num_rows(len(data))
+        
+        try:
+            keys = ['theta', 'phi', 't', 'orbit']
+            
+            for i,coord in enumerate(data):
+                
+                for key in keys:
+                    val = coord[keys.index(key)]
+                    self.parameters[key][i+1].SetValue(val)
+                    self.sc.set_parameter(key, val, point = i+1)
+        
+        except:
+            traceback.print_exc()
+        finally:
+            f.close()
+            self.fieldPanel.Layout()
+            self.fieldPanel.SetupScrolling()
+            self.Layout()
 
-       except:
-           traceback.print_exc()
-       finally:
-           f.close()
     
     #opens save dialog
     def save(self, evt):
         file_dialog(self,
-            message=u"Save to CSV file",
-            style=wx.SAVE | wx.OVERWRITE_PROMPT,
-            wildcard='CSV files (*.csv)|*.csv',
-            defaultFile='untitled.csv',
-            action=self.save_pointcalc)
-
+                    message=u"Save to CSV file",
+                    style=wx.SAVE,
+                    wildcard='CSV files (*.csv)|*.csv',
+                    defaultFile='untitled.csv',
+                    action=self.save_pointcalc)
+    
     #parses text ctrls and writes to csv
     def save_pointcalc(self, filename=None):
         tmp = False
@@ -1700,8 +1754,8 @@ class PointPanel(SatPanel):
         f = open(filename, 'wb')
         writer = csv.writer(f)
         headers = [u'theta [degrees]', 'phi [degrees]', 't [yrs]', 'orbital pos [degrees]', \
-        'Stt [kPa]', 'Spt [kPa]', 'Spp [kPa]', \
-        'sigma1 [kPa]', 'sigma3 [kPa]', 'alpha [degrees]'] 
+                   'Stt [kPa]', 'Spt [kPa]', 'Spp [kPa]', \
+                   'sigma1 [kPa]', 'sigma3 [kPa]', 'alpha [degrees]'] 
         writer.writerow(headers)
         keys = ['theta', 'phi', 't', 'orbit',\
         "Ttt", "Tpt", "Tpp", \
