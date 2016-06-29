@@ -3815,10 +3815,12 @@ class SatStressFrame(wx.Frame):
 
         ##### 'File' option of menubar #####
         File = wx.Menu()
-        export = File.Append(wx.ID_SAVE, '&Export')
+        export = File.Append(wx.ID_SAVE, '&Export\tCtrl+S', 'Save all variables')
         self.Bind(wx.EVT_MENU,self.onExport, export)
-        load = File.Append(wx.ID_OPEN, '&Load')
+        load = File.Append(wx.ID_OPEN, '&Load\tCtrl+O', 'Load a set of variables')
         self.Bind(wx.EVT_MENU, self.onLoad, load)
+        quit = File.Append(wx.ID_ANY, '&Quit\tCtrl+Q', 'Quit Application')
+        self.Bind(wx.EVT_MENU, self.onQuit, quit)
 
         menubar.Append(File,"File")
 
@@ -3839,12 +3841,20 @@ class SatStressFrame(wx.Frame):
         Information.AppendSeparator()
 
         References = wx.Menu()
-        ref = References.Append(wx.ID_ANY, '&General')
-        self.Bind(wx.EVT_MENU, self.onRef, ref)
-        PW = References.Append(wx.ID_ANY, '&Polar Wander')
-
-        Cycloids = References.Append(wx.ID_ANY, '&Cycloids')
-        self.Bind(wx.EVT_MENU, self.onCycloids, Cycloids)
+        #ref = References.Append(wx.ID_ANY, '&General')
+        #self.Bind(wx.EVT_MENU, self.onRef, ref)
+        Diurnalref = References.Append(wx.ID_ANY, '&Diurnal')
+        self.Bind(wx.EVT_MENU, self.onDiurnalref, Diurnalref)
+        NSRref = References.Append(wx.ID_ANY, '&Nonsynchronous Rotation')
+        self.Bind(wx.EVT_MENU, self.onNSRref, NSRref)
+        Obliquityref = References.Append(wx.ID_ANY, '&Obliquity')
+        self.Bind(wx.EVT_MENU, self.onObliquityref, Obliquityref)
+        ISTref = References.Append(wx.ID_ANY, '&Ice Shell Thickening')
+        self.Bind(wx.EVT_MENU, self.onISTref, ISTref)
+        PWref = References.Append(wx.ID_ANY, '&Polar Wander')
+        self.Bind(wx.EVT_MENU, self.onPWref, PWref)
+        Cycloidsref = References.Append(wx.ID_ANY, '&Cycloids')
+        self.Bind(wx.EVT_MENU, self.onCycloidsref, Cycloidsref)
 
         Information.AppendMenu(wx.ID_ANY, "&References", References)
 
@@ -3852,7 +3862,7 @@ class SatStressFrame(wx.Frame):
 
         ##### 'Help' option of menubar ######
         Help = wx.Menu()
-        Tutorial = Help.Append(wx.ID_ANY, '&Getting Started')
+        Tutorial = Help.Append(wx.ID_ANY, '&Getting Started\tf1')
         self.Bind(wx.EVT_MENU, self.onTutorial, Tutorial)
         HelpSat = Help.Append(wx.ID_ANY, '&Satellite Tab')
         self.Bind(wx.EVT_MENU, self.onHelpSat, HelpSat)
@@ -3924,14 +3934,14 @@ class SatStressFrame(wx.Frame):
         self.p.cy.updateFields() #Update the text fields in cycloids tab.
         self.p.nb.GetCurrentPage().update_parameters() #Update the current page's fields
 
-
-
-
     def saveFile(self,filename):
         f = open(filename,'w')
         for p,v in self.p.sc.parameters.items():
             f.write(p + ' = ' + str(v) + '\n')
         f.close()
+
+    def onQuit(self, evt):
+        self.Close()
 
 
     def onRights(self, evt):
@@ -3979,7 +3989,7 @@ To find detailed notes of all the changes, please visit the GitHub page."""
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
 and orbital eccentricity using gravitational potential theory, \
 Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.\n\n \
-2) See chapter on Geodynamics of Europa’s Ice Shell by Francis Nimmo and Michael Manga in \
+2) See chapter on Geodynamics of Europa's Ice Shell by Francis Nimmo and Michael Manga in \
 Europa for more information about the ice shell thickening model.\n\n \
 3) See Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal \
 features on Europa. Science 285, 1899-1902, or chapter on Geologic Stratigraphy and Evolution of \
@@ -3987,10 +3997,7 @@ Europa's surface by Thomas Doggett, Ronald Greeley, Patricio Figueredo and Ken T
 for additional information on cycloid formation, for diurnal potential including obliquity \n\n \
 4) Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
 obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
-case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickening. \n\n \
-5) Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application \
-to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12). """
-        
+case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickening."""
         self.makeMsgDialog(references, u'Science References')
 
     def onContacts(self, evt):
@@ -3998,7 +4005,72 @@ to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12). """
         self.makeMsgDialog(u"Alex Patthoff via Patthoff@jpl.nasa.gov",
                            u"Primary Contact")
 
-    def onCycloids(self, evt):
+    def onDiurnalref(self, evt):
+        Resources = """Diurnal tidal stresses arise when a satellite is in an eccentric orbit. \
+This is due to two reasons. \
+First, the amplitude of the planet's gravitational force is greater at periapse than it is at apoapse. \
+Secondly, the planet is rotating slightly faster (compared to its synchronous rotation rate) at periapse \
+and slightly slower (again compared to its synchronous rotation rate) at apoapse. \
+This results in a 'librational tide', where the planet appears to rock back and forth in the sky.\n\n\
+For more information on diurnal tides, please see:\n\
+Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
+M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
+and orbital eccentricity using gravitational potential theory, \
+Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
+"""
+        self.makeMsgDialog(Resources, u'About Diurnal Tides')
+
+    def onNSRref(self, evt):
+        Resources = """Nonsynchronous rotation (NSR) occurs when a satellite's lithosphere is decoupled from its core. \
+When this happens, the tidal bulge of the shell causes it to experience a net torque, and could rotate more quickly than the synchronous rate. \
+Thus, the planet appears to move across the sky, and the tidal bulge moves beneath the shell. \
+This results in surface stresses. \
+The period of this rotation should be > 10,000 years.\n\n\
+For more information on NSR, please see:\n\
+Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
+M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
+and orbital eccentricity using gravitational potential theory, \
+Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
+"""
+        self.makeMsgDialog(Resources, u'About Nonsynchronous Rotation')
+
+    def onObliquityref(self, evt):
+        Resources = """A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. \
+A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. \
+However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.\n\n\
+For more information on stresses due to oblique orbits, see:\n\
+Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
+obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
+case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickening.
+"""
+        self.makeMsgDialog(Resources, u'About Olibque Orbits')
+
+    def onISTref(self, evt):
+        Resources = """As satellites age, they could become cooler. \
+This would result in more of the liquid ocean freezing, increasing the thickness of the icy crust. \
+This process would force the ice shell to expand, putting extensional stress on the surface.\n\n\
+For more information on Ice Shell Thickening as a stressing mechanism, please see:\n\
+Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application \
+to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
+"""
+        self.makeMsgDialog(Resources, u'About Ice Shell Thickening')
+
+
+    def onPWref(self, evt):
+        Resources = """
+Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. \
+If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). \
+Sometimes, this also results in a reorientation of the poles. \
+The north pole appears to wander over the surface as the crust reorients itself. \
+This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, \
+as well as the parent planet appearing to hange its location in the sky. \n\n\
+For more information on Polar Wander as a stressing mechanism, please see:\n\
+    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.\n\
+    Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
+"""
+        self.makeMsgDialog(Resources, u'About Polar Wander')
+
+    def onCycloidsref(self, evt):
         Resources = """ Cycloids are arcuate lineaments found on the surface of Europa.  \
 They are thought to be created when a fracture in the ice is propagated because of the stresses. \
 In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.\
@@ -4007,12 +4079,11 @@ This velocity could be constant, or could vary depending on the magnitude of the
 During the cycloid's propagation, the satellite will continue orbiting around its primary.\
 This causes the stress field on the satellite to change, making the cycloids curve.\
 When the stress is no longer greater than the requisite propagation strength, the cycloid stops moving.\
-If the stress reaches the propagation strength again, it will continue.\n\n \
-For more information, please see:\n\n \
+If the stress reaches the propagation strength again, it will continue.\n\n\
+For more information, please see:\n\
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal \
 features on Europa. Science 285, 1899-1902"""
         self.makeMsgDialog(Resources, u'About Cycloids')
-
 
     def onTutorial(self, evt):
         Tutorial = """Welcome to SatStressGUI!  This program is designed to model stresses icy satellites \
@@ -4023,7 +4094,7 @@ check the "Information" menu. \n\n\
 - When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
 leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
 - Please note that most stresses do not function well together.\n\
-- Diurnal and Obliquity must be used together.\n\
+- Obliquity must be used with either Diurnal or NSR.\n\
 3) In the Grid tab, input a latitude and longitude range to examine.\n\
 - The number of grid points must be equal for both latitude and longitude.\n\
 4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
@@ -4048,7 +4119,7 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
 NOTE: This feature may not be functioning correctly.\n\
-- Most stresses should be used independently, however the Obliquity stress and Diurnal stress can be active at the same time.\n\
+- Most stresses should be used independently, however the Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
