@@ -1604,7 +1604,7 @@ class PointPanel(SatPanel):
         #print self.parameters
         for i in range(1, self.rows + 1):
             self.parameters['orbit'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_orbit_update(evt, row))
-            self.parameters['orbit'][i].Bind(wx.EVT_, lambda evt, row = i: self.on_orbit_update(evt, row))
+            self.parameters['orbit'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_orbit_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_t_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_t_update(evt, row))
 
