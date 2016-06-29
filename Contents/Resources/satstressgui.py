@@ -1203,6 +1203,13 @@ class StressListPanel(SatPanel):
         # for NSR
         self.parameters.update(add_checkboxes_to_sizer(self, sz, 
             [ ('Nonsynchronous Rotation', 'Nonsynchronous Rotation') ]))
+
+        sz.AddSpacer(8)
+
+        sz.Add(wx.StaticText(self, label=u'To input custom Love numbers, use the format <Re> +/- <Im>j.'))
+        sz.Add(wx.StaticText(self, label=u'Do not use scientific notation when inputting custom Love numbers.'))
+        sz.Add(wx.StaticText(self, label=u'"3.0-1.0e-03j" should be written as "3.0-0.001j".'))
+
         sz.AddSpacer(8)
         
         # for Diurnal w/ Obliquity
@@ -4181,7 +4188,8 @@ leave them blank to allow the program to calculate Love numbers based on the sat
         Help = """The Stresses Tab is used to select which stresses to use.\n\n\
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
-NOTE: This feature may not be functioning correctly.\n\
+When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do not use scientific notation. \
+1.2 + 3e-05j would look like 1.2+0.00003j.\n\
 - Most stresses should be used independently, however the Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 """
