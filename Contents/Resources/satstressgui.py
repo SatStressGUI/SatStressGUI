@@ -1517,6 +1517,7 @@ class PointPanel(SatPanel):
         #change self.rows to change how many rows are displayed in the GUI
         self.rows = 20
         
+        #parameter name and their labels
         self.header1 = [('theta', [u'θ [°]']), ('phi', [u'φ [°]']), ('t', [u't [yrs]']), ('orbit', [u'orbital pos [°]'])]
         self.header2 = [("Ttt", [u'Stt [kPa]']), ("Tpt", [u'Spt [kPa]']), ("Tpp", [u'Spp [kPa]'])]
         self.header3 = [("s1", [u'σ1 [kPa]']), ("s3", [u'σ3 [kPa]']), ("a", [u'α [°]'])]
