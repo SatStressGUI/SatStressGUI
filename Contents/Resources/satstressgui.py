@@ -1516,6 +1516,7 @@ class PointPanel(SatPanel):
         
         #change self.rows to change how many rows are displayed in the GUI
         self.rows = 20
+        self.sc.set_parameter('point_rows',self.rows)
         
         #parameter name and their labels
         self.header1 = [('theta', [u'θ [°]']), ('phi', [u'φ [°]']), ('t', [u't [yrs]']), ('orbit', [u'orbital pos [°]'])]
@@ -1664,6 +1665,7 @@ class PointPanel(SatPanel):
         self.Layout()
         self.update_parameters()
         self.fieldPanel.SetupScrolling()
+        self.sc.set_parameter('point_rows',self.rows)
 
 
     def add_row(self, panel, sz, params_d, defaultval):
@@ -1672,7 +1674,7 @@ class PointPanel(SatPanel):
             sz.Add(text, flag=wx.ALL|wx.EXPAND)
             self.parameters[p].append(text)
             self.sc.parameters[p].append(defaultval)
-    
+
     def spin_down(self):
     	self.rows -= 1
         self.pp.SetRows(self.rows)
@@ -1680,7 +1682,7 @@ class PointPanel(SatPanel):
             self.parameters[p][-1].Destroy()
             del self.parameters[p][-1]
             del self.sc.parameters[p][-1]
-        
+        self.sc.set_parameter('point_rows',self.rows)
         self.fieldPanel.Layout()
 	
     def load(self, evt):
@@ -1711,6 +1713,9 @@ class PointPanel(SatPanel):
         self.rows = num_rows
         self.row_ctrl.SetValue(num_rows)		
         self.spin_value = num_rows
+        self.sc.set_parameter('point_rows',self.rows)
+        self.fieldPanel.Layout()
+        self.fieldPanel.SetupScrolling()
     def load_entries(self, filename):
         f = open(filename)
         csvreader = csv.reader(f)
@@ -3821,7 +3826,7 @@ class SatStressPanel(wx.Panel):
         slp = SatelliteLayersPanel(self.nb, satellite_calculation=self.sc)
         stp = StressListPanel(self.nb, satellite_calculation=self.sc)
 
-        tp = PointPanel(self.nb, satellite_calculation=self.sc)
+        self.tp = PointPanel(self.nb, satellite_calculation=self.sc)
 
         gp = GridCalcPanel(self.nb, satellite_calculation=self.sc)
 
@@ -3835,7 +3840,7 @@ class SatStressPanel(wx.Panel):
         # Assign each panel to a page and give it a name
         self.nb.AddPage(slp, u"Satellite")
         self.nb.AddPage(stp, u"Stresses")
-        self.nb.AddPage(tp, u"Point")
+        self.nb.AddPage(self.tp, u"Point")
         self.nb.AddPage(gp, u"Grid")
         self.nb.AddPage(self.cy, u"Cycloids")
         self.nb.AddPage(spp, u"Plot")
@@ -3976,7 +3981,10 @@ class SatStressFrame(wx.Frame):
     
     def loadFile(self,filename):
         f = open(filename)
+        
         for k,v in nvf2dict(f).items():
+            if k == 'point_rows':
+                self.p.tp.set_num_rows(float(v))
             if str(v)[0] == '[':  #Load in a list
                 l = eval(v)
                 for i in range(1, len(l)):
