@@ -1046,7 +1046,7 @@ class SatPanel(wx.Panel):
                 if isinstance(p[1], wx.TextCtrl):
                     for i in range(1, len(p)):
                         p[i].Bind(wx.EVT_KILL_FOCUS, f)
-                        p[i].Bind(wx.EVT_TEXT_ENTER, f)
+                        p[i].Bind(wx.EVT_TEXT, f)
 
     def mk_change_param(self, k):
         def on_change(evt):
@@ -1293,20 +1293,20 @@ class StressListPanel(SatPanel):
         self.l2 = wx.StaticText(self, label=u'l\u2082')
 
         self.h2Diurn = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.set_h2Diurn, self.h2Diurn)
+        self.Bind(wx.EVT_TEXT, self.set_h2Diurn, self.h2Diurn)
         self.k2Diurn = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.set_k2Diurn, self.k2Diurn)
+        self.Bind(wx.EVT_TEXT, self.set_k2Diurn, self.k2Diurn)
         self.l2Diurn = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.set_l2Diurn, self.l2Diurn)
+        self.Bind(wx.EVT_TEXT, self.set_l2Diurn, self.l2Diurn)
         self.userDiurn = wx.CheckBox(self, wx.ID_ANY, label='Input Love Numbers')
         self.Bind(wx.EVT_CHECKBOX, self.useUserLove_diurn, self.userDiurn)
 
         self.h2NSR = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.set_h2NSR, self.h2NSR)
+        self.Bind(wx.EVT_TEXT, self.set_h2NSR, self.h2NSR)
         self.k2NSR = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.set_k2NSR, self.k2NSR)
+        self.Bind(wx.EVT_TEXT, self.set_k2NSR, self.k2NSR)
         self.l2NSR = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.set_l2NSR, self.l2NSR)
+        self.Bind(wx.EVT_TEXT, self.set_l2NSR, self.l2NSR)
         self.userNSR = wx.CheckBox(self, wx.ID_ANY, label='Input Love Numbers')
         self.Bind(wx.EVT_CHECKBOX, self.useUserLove_nsr, self.userNSR)
         
@@ -1604,9 +1604,9 @@ class PointPanel(SatPanel):
         #print self.parameters
         for i in range(1, self.rows + 1):
             self.parameters['orbit'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_orbit_update(evt, row))
-            self.parameters['orbit'][i].Bind(wx.EVT_TEXT_ENTER, lambda evt, row = i: self.on_orbit_update(evt, row))
+            self.parameters['orbit'][i].Bind(wx.EVT_, lambda evt, row = i: self.on_orbit_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_t_update(evt, row))
-            self.parameters['t'][i].Bind(wx.EVT_TEXT_ENTER, lambda evt, row = i: self.on_t_update(evt, row))
+            self.parameters['t'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_t_update(evt, row))
 
     #updates the orbit text ctrls when t is changed
     def on_t_update(self, evt, row = 1):
@@ -3029,7 +3029,7 @@ class ScalarPlotPanel(PlotPanel):
 
         self.l_count_tc = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.l_count_tc.SetValue(str(self.l_count))
-        self.l_count_tc.Bind(wx.EVT_TEXT_ENTER, self.generate_lins)
+        self.l_count_tc.Bind(wx.EVT_TEXT, self.generate_lins)
 
         # construct ckSizer
         lins_ckSizer.AddSpacer(10)
@@ -3799,7 +3799,7 @@ class PlainTab(SatPanel):
 #         self.sizer = sizer
 
 #         self.slider.Bind(wx.EVT_SLIDER, self.sliderHandler)
-#         self.sliderText.Bind(wx.EVT_TEXT_ENTER, self.sliderTextHandler) 
+#         self.sliderText.Bind(wx.EVT_, self.sliderTextHandler) 
 
 
 # ===============================================================================
