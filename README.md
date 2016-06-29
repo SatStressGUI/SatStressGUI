@@ -7,7 +7,7 @@ SatStress GUI is based on SatStress, which was designed by Zane Selvans and is a
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress
 
 SatStressGUI 4.0 has been created upon efforts by
-Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang
+Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang,
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin,
 David Dubois, Ben J. Ayton, Jessica B. Li, 
 Andre Ismailyan, Peter Sinclair.
