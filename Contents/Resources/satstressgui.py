@@ -1946,7 +1946,7 @@ class CycloidsPanel(SatPanel):
             u'Plot tab. The Yield Strength is the threshold that initiates fracture in the ice. ' +
             u'This fracture will propagate as long as the strength is below this threshold and greater than the ' +
             u'Propagation Strength. The Propagation Speed is usually <10 m/s. ' +
-            u'For further information on cycloids see About tab.'),
+            u'For further information on cycloids see the Help menu.'),
             flag=wx.ALL|wx.EXPAND)
             #sz.Add(filler)
         
