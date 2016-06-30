@@ -1055,7 +1055,6 @@ class SatPanel(wx.Panel):
         '''
         for i in range(1, len(self.parameters[param_name])):
             f = self.mk_change_list_param(param_name, i)
-            print 'h: ' , param_name
             self.parameters[param_name][i].Bind(wx.EVT_TEXT, f)
 
     def mk_change_list_param(self,param_name, i ):
@@ -4035,7 +4034,8 @@ class SatStressFrame(wx.Frame):
     def saveFile(self,filename):
         f = open(filename,'w')
         for p,v in self.p.sc.parameters.items():
-            f.write(p + ' = ' + str(v) + '\n')
+            if v:
+                f.write(p + ' = ' + str(v) + '\n')
         f.close()
 
     def onQuit(self, evt):
