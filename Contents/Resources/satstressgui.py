@@ -25,8 +25,8 @@ import traceback
 #    scipy.ndimage = multi-D
 import matplotlib, scipy.ndimage
 
-
 import time
+#For saving images in unique folders.
 
 # fig state updated every plot command, but only redraw on explicit calls to draw()
 matplotlib.interactive(False)
@@ -1148,13 +1148,13 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(filler)
         sz.Add(lp)
         
-        sz.Add(wx.StaticText(self, label=u'Notes: '))
-        sz.Add(wx.StaticText(self, label=u'NSR stands for nonsynchronous rotation'))
-        sz.Add(wx.StaticText(self, label=u'-3rd layer must be liquid'))
-        sz.Add(wx.StaticText(self, label=u'-Whenever the user changes values in the grid boxes, ' +\
-         u'it is important to click in another box (or press Enter) before switching to another tab, '))
-        sz.Add(wx.StaticText(self, label=u'in order to take into account that change before moving on. '))
-        sz.Add(wx.StaticText(self, label=u'-The orbital eccentricity must be < 0.25'))
+        sz.Add(wx.StaticText(self, label=u'ASSUMPTIONS: '))
+        sz.Add(wx.StaticText(self, label=u'This model makes several assumptions when calculating stresses.'))
+        sz.Add(wx.StaticText(self, label=u'The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
+        sz.Add(wx.StaticText(self, label=u'It is assumed to behave in a viscoelastic manner.'))
+        sz.Add(wx.StaticText(self, label=u'Each layer is considered to be homogenous throughout, with no differences in density or thickness based on location, but decreasing in mass out from the core.'))
+        sz.Add(wx.StaticText(self, label=u'The Polar Wander stress assumes that the body is in a circular, zero-inclination, synchronous orbit.'))
+        sz.Add(wx.StaticText(self, label=u'The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
         
         self.SetSizer(sz)
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
@@ -1218,6 +1218,13 @@ class StressListPanel(SatPanel):
         # for NSR
         self.parameters.update(add_checkboxes_to_sizer(self, sz, 
             [ ('Nonsynchronous Rotation', 'Nonsynchronous Rotation') ]))
+
+        sz.AddSpacer(8)
+
+        sz.Add(wx.StaticText(self, label=u'To input custom Love numbers, use the format <Re> +/- <Im>j.'))
+        sz.Add(wx.StaticText(self, label=u'Do not use scientific notation when inputting custom Love numbers.'))
+        sz.Add(wx.StaticText(self, label=u'"3.0-1.0e-03j" should be written as "3.0-0.001j".'))
+
         sz.AddSpacer(8)
         
         # for Diurnal w/ Obliquity
@@ -4048,7 +4055,8 @@ U.S. export laws and regulations. User has the responsibility to obtain export \
 licenses, or other export authority as may be required before exporting such \
 information to foreign countries or providing access to foreign persons. """
 
-        copyright = "Copyright 2015, by the California Institute of Technology."
+        copyright = "Copyright 2016, by the California Institute of Technology."
+        #Update year whenever a new version is released.
 
         self.makeMsgDialog(spiel, copyright)
 
@@ -4059,7 +4067,7 @@ SatStressGUI was developed by the Planetary Geology Research group at the Univer
 SatStress GUI is based on SatStress, which was designed by Zane Selvans and is available at \
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress \
 \n\n SatStressGUI 4.0 has been created upon efforts by \
-Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang \
+Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang, \
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin, \
 David Dubois, Ben J. Ayton, Jessica B. Li, \
 Andre Ismailyan, Peter Sinclair."""
@@ -4068,7 +4076,7 @@ Andre Ismailyan, Peter Sinclair."""
 
     def onUpdates(self, evt):
         updates = u"""This is Version 4.0 of SatStressGUI.  For more information, please visit: \n\n\
-https://github.com/Phiteros/SatStressGui\n\n\
+https://github.com/SatStressGUI/SatStressGUI\n\n\
 In this version, several bugs were fixed, and a new stressing mechanism (Polar Wander) was added.\
 To find detailed notes of all the changes, please visit the GitHub page."""
         
@@ -4209,7 +4217,8 @@ leave them blank to allow the program to calculate Love numbers based on the sat
         Help = """The Stresses Tab is used to select which stresses to use.\n\n\
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
-NOTE: This feature may not be functioning correctly.\n\
+When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do not use scientific notation. \
+1.2 + 3e-05j would look like 1.2+0.00003j.\n\
 - Most stresses should be used independently, however the Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 """
@@ -4292,7 +4301,7 @@ button to the lower right.\n\
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        frame = SatStressFrame(None, title=u'SatStressGUI V3.0')
+        frame = SatStressFrame(None, title=u'SatStressGUI V4.0')
         frame.Show(True)
         self.SetTopWindow(frame)
         return True
