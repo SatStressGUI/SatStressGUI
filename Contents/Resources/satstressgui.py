@@ -485,6 +485,7 @@ class SatelliteCalculation(object):
     def calc_tensor(self, rows=1):
         # print self.parameters
         for i in range(rows):
+            print 'th: ', self.parameters['theta'][i], 'phi: ', self.parameters['phi'][i], 't', self.parameters['t'][i]
             theta, phi, t = [ float(self.parameters[p][i]) for p in ['theta', 'phi', 't'] ]
             t *= seconds_in_year
             theta, phi = map(numpy.radians, [theta, phi])
@@ -999,10 +1000,11 @@ def add_text_ctrls(parent, sz, parameters_d, rows = 1, point=False):
     if point:
         for i in range(rows):
             for p, d in parameters_d:
-                parameters[p] = d
+                if i == 0:
+                    parameters[p] = d
                 text = wx.TextCtrl(parent, style = wx.TE_PROCESS_ENTER)
                 parameters[p].append(text)
-                sz.Add(parameters[p][i+1], flag=wx.ALL|wx.EXPAND)
+                sz.Add(text, flag=wx.ALL|wx.EXPAND)
         return parameters
     else:
         for p, d in parameters_d:
@@ -1043,18 +1045,31 @@ class SatPanel(wx.Panel):
             elif isinstance(p, RadioBox2):
                 p.Bind(wx.EVT_RADIOBOX, f)
             elif isinstance(p, list):
-                if isinstance(p[1], wx.TextCtrl):
-                    for i in range(1, len(p)):
-                        p[i].Bind(wx.EVT_KILL_FOCUS, f)
-                        p[i].Bind(wx.EVT_TEXT, f)
+                pass
 
-    def mk_change_param(self, k):
+    def bind_list_parameter(self, param_name):
+        '''
+        @param - a parameter such as theta, phi which has as a value a list of text ctrls
+        Parameters which have list of ctrls as values rather than just one ctrl, should call this instead. The 0th index is 
+        just the label for all the ctrls
+        '''
+        for i in range(1, len(self.parameters[param_name])):
+            f = self.mk_change_list_param(param_name, i)
+            print 'h: ' , param_name
+            self.parameters[param_name][i].Bind(wx.EVT_TEXT, f)
+
+    def mk_change_list_param(self,param_name, i ):
         def on_change(evt):
-            if isinstance(self.parameters[k], list):
-                for i in range(1, len(self.parameters[k])):
-                    self.sc.set_parameter(k, self.parameters[k][i].GetValue(), point = i)
-            else:
+            self.sc.set_parameter(param_name, self.parameters[param_name][i].GetValue(), i)
+        
+        return on_change
+    
+    def mk_change_param(self, k, i=0):
+        def on_change(evt):
+            if (not isinstance(self.parameters[k], list)):
                 self.sc.set_parameter(k, self.parameters[k].GetValue())
+            else:
+                self.sc.set_parameter(k, self.parameters[k][i].GetValue(), i)
         return on_change
 
     def update_parameters(self):
@@ -1072,7 +1087,7 @@ class SatPanel(wx.Panel):
                     else:
                         ctrl.SetValue(self.sc.parameters[p])
             except KeyError:
-                pass
+                print str(KeyError)
     def get_panel_param(self, p):
         return self.parameters[p]
 
@@ -1504,8 +1519,9 @@ class PointPanel(SatPanel):
         add_table_header(panel, pp, params_d)
         self.parameters.update(add_text_ctrls(panel, pp, params_d, rows = row, point = True))
         for p,d in params_d:
+            self.bind_list_parameter(p)
             self.sc.parameters[p] = []
-            for i in range(1, row + 1):
+            for i in range(row):
                 self.sc.parameters[p].append(defval)
         return pp
     
@@ -1540,7 +1556,7 @@ class PointPanel(SatPanel):
         cp = wx.BoxSizer(orient=wx.HORIZONTAL)
         p0 = wx.BoxSizer(orient=wx.VERTICAL)
         p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
-        self.pp = self.params_grid(self.fieldPanel, self.header1, '0', 4, self.rows)
+        self.pp = self.params_grid(self.fieldPanel, self.header1, '0', width=4, row=self.rows)
         p0.Add(self.pp)
         cp.Add(p0)
         p1 = wx.BoxSizer(orient=wx.VERTICAL)
@@ -1562,7 +1578,7 @@ class PointPanel(SatPanel):
 
         bp = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.spin_value = self.rows
-        self.row_ctrl = wx.SpinCtrl(self, min = 1, value = str(self.rows))
+        self.row_ctrl = wx.SpinCtrl(self, min = 1, value = str(self.rows), style=wx.TE_PROCESS_ENTER)
 
         self.save_b = wx.Button(self, label=u'Save to File')
         self.b = wx.Button(self, label=u'Calculate Stress')
@@ -1594,6 +1610,7 @@ class PointPanel(SatPanel):
         self.SetSizer(sz)
 
         self.row_ctrl.Bind(wx.EVT_SPINCTRL, self.spinCtrl)
+        self.row_ctrl.Bind(wx.EVT_TEXT, self.spinCtrl)
         #self.row_ctrl.Bind(wx.EVT_SPIN_DOWN, lambda evt, szr = pp: self.spin_down(evt, szr))
         # Here we bind the load and save buttons to the respective events
         wx.EVT_BUTTON(self, self.b.GetId(), self.on_calc)
@@ -1608,6 +1625,7 @@ class PointPanel(SatPanel):
             self.parameters['orbit'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_orbit_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_t_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_t_update(evt, row))
+
 
     #updates the orbit text ctrls when t is changed
     def on_t_update(self, evt, row = 1):
@@ -1645,28 +1663,32 @@ class PointPanel(SatPanel):
     
     #These functions were meant to handle events generated by the spin control used to change number of points to calculate
     def spinCtrl(self, evt):
-        if (evt.GetEventObject().GetValue() > self.spin_value):
-            self.onUp()
-            self.spin_value += 1
+        spin_value = evt.GetEventObject().GetValue()
+        if spin_value == '':
+            spin_value = 1
+        
+        if (int(spin_value) > self.rows):
+            self.onUp(int(spin_value))
         else:
-            self.spin_value -= 1
-            self.spin_down()
+            self.spin_down(int(spin_value))
     
-    def onUp(self):
-        self.rows +=1
-        self.pp.SetRows(self.rows)
-        self.tp.SetRows(self.rows)
-        self.sp.SetRows(self.rows)
-        self.add_row(self.fieldPanel, self.pp, self.header1, '0')
-        self.add_row(self.fieldPanel,self.tp, self.header2, '')
-        self.add_row(self.fieldPanel,self.sp, self.header3, '')
-    
+    def onUp(self, spin_value):
+        self.pp.SetRows(spin_value)
+        self.tp.SetRows(spin_value)
+        self.sp.SetRows(spin_value)
+        for i in range(spin_value-self.rows):
+            self.add_row(self.fieldPanel, self.pp, self.header1, '0')
+            self.add_row(self.fieldPanel,self.tp, self.header2, '')
+            self.add_row(self.fieldPanel,self.sp, self.header3, '')
+        self.rows = spin_value
+
         self.fieldPanel.Layout()
         self.Layout()
         self.update_parameters()
         self.fieldPanel.SetupScrolling()
         self.sc.set_parameter('point_rows',self.rows)
-
+        for p,d in self.header1+self.header2+self.header3:
+            self.bind_list_parameter(p)
 
     def add_row(self, panel, sz, params_d, defaultval):
         for p,d in params_d:
@@ -1675,16 +1697,21 @@ class PointPanel(SatPanel):
             self.parameters[p].append(text)
             self.sc.parameters[p].append(defaultval)
 
-    def spin_down(self):
-    	self.rows -= 1
-        self.pp.SetRows(self.rows)
-        for p,d in self.header1+self.header2+self.header3:
-            self.parameters[p][-1].Destroy()
-            del self.parameters[p][-1]
-            del self.sc.parameters[p][-1]
+
+    def spin_down(self, spin_value):
+    	self.pp.SetRows(spin_value)
+        self.tp.SetRows(spin_value)
+        self.sp.SetRows(spin_value)
+        for i in range(self.rows - spin_value):
+            for p,d in self.header1+self.header2+self.header3:
+                self.parameters[p][-1].Destroy()
+                del self.parameters[p][-1]
+                del self.sc.parameters[p][-1]
+        self.rows = spin_value
         self.sc.set_parameter('point_rows',self.rows)
         self.fieldPanel.Layout()
-	
+
+
     def load(self, evt):
         try:
             file_dialog(self,
@@ -1716,6 +1743,7 @@ class PointPanel(SatPanel):
         self.sc.set_parameter('point_rows',self.rows)
         self.fieldPanel.Layout()
         self.fieldPanel.SetupScrolling()
+        
     def load_entries(self, filename):
         f = open(filename)
         csvreader = csv.reader(f)
