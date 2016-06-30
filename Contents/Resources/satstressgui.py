@@ -3177,7 +3177,7 @@ class ScalarPlotPanel(PlotPanel):
                                   self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
             self.cycloid_changed = False
         
-        self.sc.cyc.plotcoordsonbasemap(self.basemap_ax)
+        self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
         
                           
 
