@@ -1153,6 +1153,7 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u'It is assumed to behave in a viscoelastic manner.'))
         sz.Add(wx.StaticText(self, label=u'Each layer is considered to be homogenous throughout, with no differences in density or thickness based on location, but decreasing in mass out from the core.'))
         sz.Add(wx.StaticText(self, label=u'The Polar Wander stress assumes that the body is in a circular, zero-inclination, synchronous orbit.'))
+        sz.Add(wx.StaticText(self, label=u'Polar Wander stress is calculated using an elastic model.'))
         sz.Add(wx.StaticText(self, label=u'The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
         
         self.SetSizer(sz)
@@ -4163,6 +4164,7 @@ Sometimes, this also results in a reorientation of the poles. \
 The north pole appears to wander over the surface as the crust reorients itself. \
 This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, \
 as well as the parent planet appearing to hange its location in the sky. \n\n\
+This stressing mechanism is calculated using an elastic model.\n\n\
 For more information on Polar Wander as a stressing mechanism, please see:\n\
     Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.\n\
     Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
@@ -4316,3 +4318,4 @@ def main():
 if __name__ == '__main__':
     main()
 
+#GNU Terry Pratchett
