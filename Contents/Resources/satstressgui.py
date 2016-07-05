@@ -1287,7 +1287,7 @@ class StressListPanel(SatPanel):
         #but it's the simplest one that I could find (and the only one that worked).
         polarlat_sz.Add(self.lat_label, flag=wx.ALIGN_CENTER_VERTICAL)
         polarlat_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlat_sz, [ ('polarlat_tc', 'polarlat_tc') ]))
+        self.parameters.update(add_text_ctrls(self, polarlat_sz, [ ('PWthetaRi', 'PWthetaRi') ]))
         polarParams_sz.Add(polarlat_sz)
         polarParams_sz.AddSpacer(5)
         
@@ -1296,8 +1296,26 @@ class StressListPanel(SatPanel):
         self.long_label = wx.StaticText(self, label=u'Initial Pole longitude [°]           ')
         polarlong_sz.Add(self.long_label, flag=wx.ALIGN_CENTER_VERTICAL)
         polarlong_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('polarlong_tc', 'polarlong_tc') ]))
+        self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('PWphiRi', 'PWphiRi') ]))
         polarParams_sz.Add(polarlong_sz)
+        polarParams_sz.AddSpacer(5)
+
+        polarlatfinal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        polarlatfinal_sz.AddSpacer(28)
+        self.latfinal_label = wx.StaticText(self, label=u'Final Pole Latitude [°]              ')
+        polarlatfinal_sz.Add(self.latfinal_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        polarlatfinal_sz.Add(filler)
+        self.parameters.update(add_text_ctrls(self, polarlatfinal_sz, [ ('PWthetaRf', 'PWthetaRf') ]))
+        polarParams_sz.Add(polarlatfinal_sz)
+        polarParams_sz.AddSpacer(5)
+
+        polarlongfinal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        polarlongfinal_sz.AddSpacer(28)
+        self.longfinal_label = wx.StaticText(self, label=u'Final Pole Longitude [°]           ')
+        polarlongfinal_sz.Add(self.longfinal_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        polarlongfinal_sz.Add(filler)
+        self.parameters.update(add_text_ctrls(self, polarlongfinal_sz, [ ('PWphiRf', 'PWphiRf') ]))
+        polarParams_sz.Add(polarlongfinal_sz)
         polarParams_sz.AddSpacer(5)
 
         polarlattidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -1305,7 +1323,7 @@ class StressListPanel(SatPanel):
         self.tlat_label = wx.StaticText(self, label=u'Initial Tidal Bulge latitude [°]   ')
         polarlattidal_sz.Add(self.tlat_label, flag=wx.ALIGN_CENTER_VERTICAL)
         polarlattidal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlattidal_sz, [ ('polarlattidal_tc', 'polarlattidal_tc') ]))
+        self.parameters.update(add_text_ctrls(self, polarlattidal_sz, [ ('PWthetaTi', 'PWthetaTi') ]))
         polarParams_sz.Add(polarlattidal_sz)
         polarParams_sz.AddSpacer(5)
 
@@ -1314,8 +1332,8 @@ class StressListPanel(SatPanel):
         self.tlong_label = wx.StaticText(self, label=u'Initial Tidal Bulge longitude [°]')
         polarlongtidal_sz.Add(self.tlong_label, flag=wx.ALIGN_CENTER_VERTICAL)
         polarlongtidal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlongtidal_sz, [ ('polarlongtidal_tc', 'polarlongtidal_tc') ]))
-        polarParams_sz.Add(polarlongtidal_sz)       
+        self.parameters.update(add_text_ctrls(self, polarlongtidal_sz, [ ('PWphiTi', 'PWphiTi') ]))
+        polarParams_sz.Add(polarlongtidal_sz)
         
     
         # include thermal diffusivity parameter for IST
@@ -1434,11 +1452,11 @@ class StressListPanel(SatPanel):
 
 
     def enable_polar(self):
-        for e in [self.lat_label, self.parameters['polarlat_tc'], self.long_label, self.parameters['polarlong_tc']]:
+        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi']]:
             e.Enable()
 
     def disable_polar(self):
-        for e in [self.lat_label, self.parameters['polarlat_tc'], self.long_label, self.parameters['polarlong_tc']]:
+        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi']]:
             e.Disable()
 
     def on_set_diurn(self, evt):
@@ -1622,8 +1640,8 @@ class PointPanel(SatPanel):
 
         sz.AddSpacer(15)
 
-        sz.Add(wx.StaticText(self, label=u'θ: Latitude (-90.00-90.00) [°]'))
-        sz.Add(wx.StaticText(self, label=u'φ: Longitude (-180.00-180.00 (positive West or East to choose from)) [°]'))
+        sz.Add(wx.StaticText(self, label=u'θ: Latitude (-90.00 to 90.00) [°]'))
+        sz.Add(wx.StaticText(self, label=u'φ: Longitude (-180.00 to180.00 (positive West or East to choose from)) [°]'))
         sz.Add(wx.StaticText(self, label=u't: Time since periapse (Periapse = 0) [yrs], used for secular stress calculations'))
         sz.Add(wx.StaticText(self, label=u'orbital pos: Orbital position since periapse (Periapse = 0) [°], used for diurnal stress calculations'))
         sz.AddSpacer(15)
@@ -1749,6 +1767,7 @@ class PointPanel(SatPanel):
                         action=self.load_entries)
         except Exception, e:
             traceback.print_exc()
+
     def set_num_rows(self,num_rows):
         self.pp.SetRows(num_rows)
         self.sp.SetRows(num_rows)
@@ -2705,7 +2724,7 @@ class PlotPanel(SatPanel):
                     error_dialog(self, e.__class__.__name__ + ': ' + str(e), "Plot Error")
 
     def plot_no_draw(self):
-        print 'Plot_no_draw'
+        #print 'Plot_no_draw'
         self.grid = self.sc.get_grid()
         self.calc = self.sc.get_calc()
         self.basemap_ax = self.get_basemap_ax()
