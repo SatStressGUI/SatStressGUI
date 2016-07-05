@@ -1,7 +1,7 @@
 This repository contains the code for SatStressGUI, a program which models stresses in icy satellites.
 
-To run this program, download the executable file, SatStressGUI4.0.
-Currently, this program only functions on Apple operating systems.
+To run this program, download the package.
+Run the satstressgui executable file located in Contents/MacOS.
 Instructions for using the program can be found in the Help menu or by pressing f1.
 
 SatStressGUI V4.0 was developed at the Jet Propulsion Laboratory, California Institute of Technology
@@ -9,6 +9,8 @@ and is based on SatStressGUI.
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho.
 SatStress GUI is based on SatStress, which was designed by Zane Selvans and is available at
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress
+
+New versions should be made in new branches, then merged with the Master or hosted in new repositories.
 
 SatStressGUI 4.0 has been created upon efforts by
 Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang,
