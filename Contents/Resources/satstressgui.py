@@ -348,6 +348,7 @@ class SatelliteCalculation(object):
         if self.stresses_changed or self.satellite_changed or not self.stresses:
             sat = self.get_satellite()
             self.stresses = [ self.stress_d[v](sat) for v in filter(lambda v: self.parameters.get(v), self.stress_d.keys()) ]
+            print self.stresses
         return self.stresses
 
     # updates grid or makes one if one does not already exist
@@ -3256,6 +3257,7 @@ class ScalarPlotPanel(PlotPanel):
         
         else:
             if (self.sc.cyc == None or self.cycloid_changed):
+                print 'h'
                 self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
@@ -4065,7 +4067,7 @@ class SatStressFrame(wx.Frame):
     def saveFile(self,filename):
         f = open(filename,'w')
         for p,v in self.p.sc.parameters.items():
-            if v:
+            if v or v == 'to_plot_many_cycloids': #Don't want to save to_plot_many_cycloids simply because this option shouldn't be loaded since the cycloids from the cycloids file aren't saved
                 f.write(p + ' = ' + str(v) + '\n')
         f.close()
 
