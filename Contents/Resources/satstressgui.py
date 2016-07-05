@@ -1199,13 +1199,12 @@ class StressListPanel(SatPanel):
         filler.AddSpacer(15)
 
         topsizer = wx.BoxSizer(wx.VERTICAL)
-        othersz = wx.BoxSizer(wx.HORIZONTAL)
+        othersz = wx.BoxSizer(wx.HORIZONTAL) #Does this have a purpose?
         
         sz = wx.BoxSizer(orient=wx.VERTICAL)
 
         topsizer.Add(WrapStaticText(self, label=
-            u'Select the stress types to use in further computation, such as Love ' +\
-            u'numbers, stress tensors, plotting of stress trajectories.'),
+            u'Select the stress types to use in further computation, such as Love numbers, stress tensors, plotting of stress trajectories.'),
             0, wx.ALL|wx.EXPAND)
         topsizer.AddSpacer(10)
 
@@ -1276,25 +1275,47 @@ class StressListPanel(SatPanel):
         
         
         
-        self.parameters.update(add_checkboxes_to_sizer(self, sz,
-                                                       [ ('Polar Wander', 'Polar Wander') ]))
+        self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
                                                        
         polarParams_sz = wx.BoxSizer(wx.VERTICAL)
         # include ice thickness parameter for IST aka Ice Shell Thickening
+
+
         polarlat_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         polarlat_sz.AddSpacer(28)
-        self.lat_label = wx.StaticText(self, label=u'Final latitude [degrees] ')
+        self.lat_label = wx.StaticText(self, label=u'Initial Pole latitude [°]              ') #Not a very elegant spacing solution, and the boxes don't quite line up,
+        #but it's the simplest one that I could find (and the only one that worked).
         polarlat_sz.Add(self.lat_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        polarlat_sz.Add(filler)
         self.parameters.update(add_text_ctrls(self, polarlat_sz, [ ('polarlat_tc', 'polarlat_tc') ]))
         polarParams_sz.Add(polarlat_sz)
         polarParams_sz.AddSpacer(5)
         
         polarlong_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         polarlong_sz.AddSpacer(28)
-        self.long_label = wx.StaticText(self, label=u'Final longitude [degrees] ')
+        self.long_label = wx.StaticText(self, label=u'Initial Pole longitude [°]           ')
         polarlong_sz.Add(self.long_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        polarlong_sz.Add(filler)
         self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('polarlong_tc', 'polarlong_tc') ]))
         polarParams_sz.Add(polarlong_sz)
+        polarParams_sz.AddSpacer(5)
+
+        polarlattidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        polarlattidal_sz.AddSpacer(28)
+        self.tlat_label = wx.StaticText(self, label=u'Initial Tidal Bulge latitude [°]   ')
+        polarlattidal_sz.Add(self.tlat_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        polarlattidal_sz.Add(filler)
+        self.parameters.update(add_text_ctrls(self, polarlattidal_sz, [ ('polarlattidal_tc', 'polarlattidal_tc') ]))
+        polarParams_sz.Add(polarlattidal_sz)
+        polarParams_sz.AddSpacer(5)
+
+        polarlongtidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        polarlongtidal_sz.AddSpacer(28)
+        self.tlong_label = wx.StaticText(self, label=u'Initial Tidal Bulge longitude [°]')
+        polarlongtidal_sz.Add(self.tlong_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        polarlongtidal_sz.Add(filler)
+        self.parameters.update(add_text_ctrls(self, polarlongtidal_sz, [ ('polarlongtidal_tc', 'polarlongtidal_tc') ]))
+        polarParams_sz.Add(polarlongtidal_sz)       
         
     
         # include thermal diffusivity parameter for IST
