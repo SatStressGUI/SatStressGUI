@@ -3813,55 +3813,6 @@ class ScalarPlotPanel(PlotPanel):
         self.plot()
         del b
 
-# ===============================================================================
-# FILLER TAB (remove when done)
-# ===============================================================================
-class cycloidSlider(wx.Slider):
-    def __init__(self, parent, label, initVal=0, minVal=0, maxVal=360, *args, **kw):
-        # make widgets
-        self.sliderLabel = wx.StaticText(parent, label=label)
-        self.sliderTxt = wx.TextCtrl(parent, -1, size=(-1, -1), style=wx.TE_PROCESS_ENTER)
-        self.sliderbar = wx.Slider(parent, -1, initVal, minVal, maxVal, \
-                                   style=wx.SL_HORIZONTAL | wx.AUTOTICKS | wx.LABELS)
-        # bind widgets
-
-        # add to sizer
-        slidersz = wx.BoxSizer(wx.HORIZONTAL)
-        slidersz.Add(self.sliderLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        slidersz.Add(self.sliderTxt, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        slidersz.Add(self.sliderbar, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        self.SetSizer(slidersz)
-
-
-class PlainTab(SatPanel):
-    """ Dummy tab with nothing in it -- used for experimentation"""
-    
-    def __init__(self, *args, **kw):
-        super(PlainTab, self).__init__(*args, **kw)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(sizer)
-        cyc = cycloidSlider(self, 'Orbital Position', 0, self.parameters['ORBIT_MIN'], \
-                            self.parameters['ORBIT_MAX'])
-        sizer.Add(cyc)
-
-# class guiStepSlider(wx.Slider):
-#     def __init__(self, parent, label, *args, **kw):
-#         self.sliderLabel = wx.StaticText(parent, label=label)
-#         self.sliderText = wx.TextCtrl(parent, -1, size=(-1, 10), style=wx.TE_PROCESS_ENTER)
-#         self.slider = wx.Slider(parent, -1, 180, 0, 360, size=(360, -1),\
-#                                 style=wx.SL_AUTOTICKS| wx.SL_LABELS)
-#         self.slider.SetTickFreq(10, 1)
-        
-#         sizer = wx.BoxSizer(wx.HORIZONTAL)
-#         sizer.Add(self.sliderLabel, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, border=2)
-#         sizer.Add(self.sliderText, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, border=2)
-#         sizer.Add(self.slider, 1, wx.EXPAND)
-#         self.sizer = sizer
-
-#         self.slider.Bind(wx.EVT_SLIDER, self.sliderHandler)
-#         self.sliderText.Bind(wx.EVT_, self.sliderTextHandler) 
-
 
 # ===============================================================================
 # PANEL CONTAINING ALL TABS
@@ -3889,9 +3840,6 @@ class SatStressPanel(wx.Panel):
         spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
         
         self.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
-
-
-        #dummy = PlainTab(self.nb, satellite_calculation=self.sc)
         
         # Assign each panel to a page and give it a name
         self.nb.AddPage(slp, u"Satellite")
