@@ -136,6 +136,9 @@ class SatelliteCalculation(object):
         'VARY_VELOCITY': None,
         'k': None}
 
+
+
+
     def __init__(self):
         self.satellite = None
         self.satellite_changed = False
@@ -148,6 +151,12 @@ class SatelliteCalculation(object):
         self.grid_changed = False
         self.grid_save_changed = False
 
+
+        #Holds all the cycloid objects and their respective parameters. Only used for multiple cycloid loading
+        self.cycloids = {}
+        params_for_cycloids = {}
+        self.many_changed = False #indicates if new csv file was loaded
+        
         self.cycl_save_changed = False
         
         self.calc = None
@@ -590,6 +599,9 @@ class SatelliteCalculation(object):
         self.set_parameter('Diurnal', True)
         self.satellite_save_changed = self.grid_save_changed = False
         nc.close()
+
+
+
 
 # ===============================================================================
 # Class containing overhead functions for configuring, used in PlotPanel
@@ -2024,6 +2036,8 @@ class CycloidsPanel(SatPanel):
         self.start_dir = wx.ComboBox(self, size=(100, 50) ,choices=all_dir, style=wx.CB_DROPDOWN|wx.CB_READONLY)
         # bind
         self.Bind(wx.EVT_COMBOBOX, self.EvtSetDir, self.start_dir)
+        self.parameters['STARTING_DIRECTION'] = self.start_dir
+
 
         # create load/save buttons
         save_bt = wx.Button(self, label='Save to file')
@@ -2035,15 +2049,26 @@ class CycloidsPanel(SatPanel):
         buttonSizer.Add(save_bt, wx.ALIGN_CENTER)
 
 
-
         self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
         self.Bind(wx.EVT_CHECKBOX, self.EvtSetVary, self.vary)
+        self.parameters['VARY_VELOCITY'] = self.vary
+        
         self.constant = wx.TextCtrl(self, wx.ID_ANY, '0', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.EvtSetConstant, self.constant)
         self.constant.Disable()
+        self.parameters['k'] = self.constant
+
+
+        
+
+        self.use_multiple = wx.CheckBox(self, wx.ID_ANY, 'Use loaded CSV file')
+        self.Bind(wx.EVT_CHECKBOX, self.EvtSetUseMultiple, self.use_multiple)
+        self.use_multiple.Disable()
+        self.parameters['to_plot_many_cycloids'] = self.use_multiple
 
         varyvSizer.Add(self.vary, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         varyvSizer.Add(self.constant, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        
         # add widgets into grid
         # Set the TextCtrl to expand on resize
         
@@ -2052,10 +2077,10 @@ class CycloidsPanel(SatPanel):
 
         self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
      
+     
         gridSizer.Add(dirSizer)
         gridSizer.Add(self.start_dir)
         gridSizer.Add(varyvSizer)
-    
         many_params = wx.Button(self, label='Load Multiple Cycloid Parameters')
         wx.EVT_BUTTON(self, many_params.GetId(), self.load_many)
 
@@ -2075,6 +2100,7 @@ class CycloidsPanel(SatPanel):
         sz.Add(buttonSizer, 0, wx.ALL, 5)
         #sz.Add(filler2)
         sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
+        sz.Add(self.use_multiple,0, wx.ALL|wx.EXPAND, 5)
         sz.Add(many_params)
         self.SetSizer(sz)
         sz.Fit(self)
@@ -2088,6 +2114,7 @@ class CycloidsPanel(SatPanel):
             txtCtrlObj.Bind(wx.EVT_TEXT, self.OnText)
             txtCtrls[p] = txtCtrlObj
             sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
+            self.parameters[p] = txtCtrlObj
         return txtCtrls
     def OnChar(self,event):
         charEntered= event.GetKeyCode()
@@ -2109,35 +2136,6 @@ class CycloidsPanel(SatPanel):
                 action=self.load_many_params)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-
-    def load_many_params(self, filename):
-
-        self.sc.parameters['to_plot_many_cycloids'] = True
-
-        paramFile = open(filename, 'rU')
-
-        try:
-            temp = list(csv.reader(paramFile))
-
-            paramSpace = [list(col) for col in zip(*temp)]
-            
-            params = {}
-            for paramType in paramSpace:
-                params[paramType.pop(0)] = paramType
-
-            self.parameters['YIELD'] = params["Yield Threshold"]
-            self.parameters['PROPAGATION_STRENGTH'] = params["Propagation Strength"]
-            self.parameters['PROPAGATION_SPEED'] = params["Propagation Speed"]
-            self.parameters['STARTING_LATITUDE'] = params["Starting Lat"]
-            self.parameters['STARTING_LONGITUDE'] = params["Starting Lon"]
-
-            if ("Vary Velocity" in params.keys()) and ('k' in params.keys()):
-                self.parameters['VARY_VELOCITY'] = params["Vary Velocity"]
-                self.parameters['k'] = params["k"]
-    
-        finally:
-            paramFile.close()
-
     def on_save_cyclparams(self, evt):
         try:
             file_dialog(self,
@@ -2217,6 +2215,41 @@ class CycloidsPanel(SatPanel):
         self.cycloid_saved = True
         f.close()
 
+
+
+    #For loading multiple cycloids
+    def load_many_params(self, filename):
+        self.use_multiple.Enable()
+        self.use_multiple.SetValue(True)
+        self.EvtSetUseMultiple(None)
+        self.sc.parameters['to_plot_many_cycloids'] = True
+        self.sc.many_changed = True
+        
+        paramFile = open(filename, 'rU')
+        try:
+            rows = list(csv.reader(paramFile))
+            params_to_load = rows[0]
+            
+            self.sc.params_for_cycloids = {}
+            i = -1
+            for row in rows[1:]:
+                if row[0].startswith('cycloid'):
+                    i +=1
+                    self.sc.params_for_cycloids[i] = {}
+                else:
+                    for j, param in enumerate(params_to_load):
+                        self.sc.params_for_cycloids[i].update({param: row[j]})
+                    self.sc.params_for_cycloids[i].update({'degree_step':0.1})
+    
+        except:
+            error_dialog(self,"Error loading file")
+        
+        paramFile.close()
+
+
+
+
+
     def updateFields(self):
         if self.sc.parameters['VARY_VELOCITY'] == 'True' or self.sc.parameters['VARY_VELOCITY'] == '1':
             self.vary.SetValue(True)
@@ -2269,6 +2302,19 @@ class CycloidsPanel(SatPanel):
 
     def EvtSetConstant(self, event):
         self.sc.parameters['k'] = float(event.GetString())
+
+    def EvtSetUseMultiple(self, event):
+        if self.use_multiple.GetValue():
+            self.sc.parameters['to_plot_many_cycloids'] = True
+            for ctrl in [self.parameters[p] for p in self.sc.cycloid_parameters_d]:
+                ctrl.Disable()
+
+        else:
+            self.sc.parameters['to_plot_many_cycloids'] = False
+            self.use_multiple.SetValue(False)
+            for ctrl in [self.parameters[p] for p in self.sc.cycloid_parameters_d]:
+                ctrl.Enable()
+
 
     def EvtSetStartLat(self, event):
         lat = float(event.GetString())
@@ -3197,17 +3243,27 @@ class ScalarPlotPanel(PlotPanel):
             self.plot()
 
     def plot_cycloids(self):
-        print 'plot_cycloids(self)'
         
-        if (self.sc.cyc == None or self.cycloid_changed):
-            self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
-                                  self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
-                                  self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
-            self.cycloid_changed = False
+        if self.sc.parameters['to_plot_many_cycloids']:
+            for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
         
-        self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+                if not self.sc.cycloids.has_key(i) or self.sc.many_changed:
+    
+                    self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
+                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+            self.sc.many_changed = False
+
         
-                          
+        else:
+            if (self.sc.cyc == None or self.cycloid_changed):
+                self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
+                                      self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
+                                      self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
+                self.cycloid_changed = False
+            
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+            
+            
 
     
 
@@ -3576,7 +3632,6 @@ class ScalarPlotPanel(PlotPanel):
         or self.sc.parameters['to_plot_shear_vectors']:
             self.plot_stress_vectors()
         if self.sc.parameters['to_plot_lineaments']:
-            #print "plot_grid_calc"
             self.plot_lineaments()
 
         if self.sc.parameters['to_plot_cycloids']:
