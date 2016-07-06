@@ -337,7 +337,7 @@ class SatelliteCalculation(object):
         t = self.parameters['NSR_PERIOD']
         self.nsr_period_years2seconds()
         f.write(self.dump_satellite())
-        self.parameters['NSR_PERIOD'] = t
+        self.parameters['NSR_PERIOD'] = t #why does it do this?
         f.close()
         if not tmp:
             self.satellite_save_changed = False
@@ -357,7 +357,7 @@ class SatelliteCalculation(object):
             self.mk_grid()
         return self.grid
 
-    # converts years to seconds in the paramters
+    # converts years to seconds in the parameters
     def parameter_yrs2secs(self, p):
         v = self.get_parameter(float, p)
         if v:
@@ -471,7 +471,7 @@ class SatelliteCalculation(object):
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
         try:
-            self.calc = StressCalc(self.get_stresses())
+            self.calc = StressCalc(self.get_stresses(), 500)
             self.satellite_changed = self.grid_changed = self.stresses_changed = False
             self.calc_changed = True
             return self.calc
