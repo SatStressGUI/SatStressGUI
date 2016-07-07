@@ -111,7 +111,8 @@ class SatelliteCalculation(object):
         u'Nonsynchronous Rotation': NSR,
         u'Diurnal': Diurnal,
         u'Ice Shell Thickening': IST,
-        u'Obliquity': DiurnalObliquity}
+        u'Obliquity': DiurnalObliquity,
+        u'Polar Wander': PolarWander}
     
     grid_vars_d = [
         ("MIN", u'Minimum value'),
@@ -136,6 +137,9 @@ class SatelliteCalculation(object):
         'VARY_VELOCITY': None,
         'k': None}
 
+
+
+
     def __init__(self):
         self.satellite = None
         self.satellite_changed = False
@@ -148,6 +152,12 @@ class SatelliteCalculation(object):
         self.grid_changed = False
         self.grid_save_changed = False
 
+
+        #Holds all the cycloid objects and their respective parameters. Only used for multiple cycloid loading
+        self.cycloids = {}
+        params_for_cycloids = {}
+        self.many_changed = False #indicates if new csv file was loaded
+        
         self.cycl_save_changed = False
         
         self.calc = None
@@ -328,7 +338,7 @@ class SatelliteCalculation(object):
         t = self.parameters['NSR_PERIOD']
         self.nsr_period_years2seconds()
         f.write(self.dump_satellite())
-        self.parameters['NSR_PERIOD'] = t
+        self.parameters['NSR_PERIOD'] = t #why does it do this?
         f.close()
         if not tmp:
             self.satellite_save_changed = False
@@ -339,6 +349,7 @@ class SatelliteCalculation(object):
         if self.stresses_changed or self.satellite_changed or not self.stresses:
             sat = self.get_satellite()
             self.stresses = [ self.stress_d[v](sat) for v in filter(lambda v: self.parameters.get(v), self.stress_d.keys()) ]
+            print self.stresses
         return self.stresses
 
     # updates grid or makes one if one does not already exist
@@ -347,7 +358,7 @@ class SatelliteCalculation(object):
             self.mk_grid()
         return self.grid
 
-    # converts years to seconds in the paramters
+    # converts years to seconds in the parameters
     def parameter_yrs2secs(self, p):
         v = self.get_parameter(float, p)
         if v:
@@ -590,6 +601,9 @@ class SatelliteCalculation(object):
         self.set_parameter('Diurnal', True)
         self.satellite_save_changed = self.grid_save_changed = False
         nc.close()
+
+
+
 
 # ===============================================================================
 # Class containing overhead functions for configuring, used in PlotPanel
@@ -1240,7 +1254,7 @@ class StressListPanel(SatPanel):
            [ ('periapsis_arg', 'periapsis_arg') ]))
         DiObliq_sz.Add(peri_sz)
         DiObliq_sz.AddSpacer(5)
-        # inclue degree of obliquity for Diurnal w/ Obliquity
+        # include degree of obliquity for Diurnal w/ Obliquity
         obliq_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         obliq_sz.AddSpacer(30)
         self.obliq_label = wx.StaticText(self, label=u'Degree of Obliquity [°]  ')
@@ -1276,51 +1290,43 @@ class StressListPanel(SatPanel):
         
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
-                                                       
-        polarParams_sz = wx.BoxSizer(wx.VERTICAL)
-        # include ice thickness parameter for IST aka Ice Shell Thickening
-
-
-        polarlat_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlat_sz.AddSpacer(28)
-        self.lat_label = wx.StaticText(self, label=u'Initial Pole latitude [°]              ') #Not a very elegant spacing solution, and the boxes don't quite line up,
-        #but it's the simplest one that I could find (and the only one that worked).
-        polarlat_sz.Add(self.lat_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlat_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlat_sz, [ ('polarlat_tc', 'polarlat_tc') ]))
-        polarParams_sz.Add(polarlat_sz)
-        polarParams_sz.AddSpacer(5)
         
-        polarlong_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlong_sz.AddSpacer(28)
-        self.long_label = wx.StaticText(self, label=u'Initial Pole longitude [°]           ')
-        polarlong_sz.Add(self.long_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlong_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('polarlong_tc', 'polarlong_tc') ]))
-        polarParams_sz.Add(polarlong_sz)
-        polarParams_sz.AddSpacer(5)
 
-        polarlattidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlattidal_sz.AddSpacer(28)
-        self.tlat_label = wx.StaticText(self, label=u'Initial Tidal Bulge latitude [°]   ')
-        polarlattidal_sz.Add(self.tlat_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlattidal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlattidal_sz, [ ('polarlattidal_tc', 'polarlattidal_tc') ]))
-        polarParams_sz.Add(polarlattidal_sz)
-        polarParams_sz.AddSpacer(5)
+        Polargrid = wx.FlexGridSizer(rows=5, cols=3, hgap=3, vgap=5)
+        self.Latitude_label = wx.StaticText(self, label=u'Latitude')
+        self.Longitude_label = wx.StaticText(self, label=u'Longitude')
+        self.Blank_label = wx.StaticText(self, label=u' ')
+        self.PoleInitial = wx.StaticText(self, label=u'Initial Pole Location')
+        self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
+        self.TidalInitial = wx.StaticText(self, label=u'Initial Tidal Bulge Location')
+        self.TidalFinal = wx.StaticText(self, label=u'Final Tidal Bulge Location')
 
-        polarlongtidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlongtidal_sz.AddSpacer(28)
-        self.tlong_label = wx.StaticText(self, label=u'Initial Tidal Bulge longitude [°]')
-        polarlongtidal_sz.Add(self.tlong_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlongtidal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlongtidal_sz, [ ('polarlongtidal_tc', 'polarlongtidal_tc') ]))
-        polarParams_sz.Add(polarlongtidal_sz)       
-        
-    
-        # include thermal diffusivity parameter for IST
+        self.PWthetaRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaRi, self.PWthetaRi)
+        self.PWphiRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiRi, self.PWphiRi)
+        self.PWthetaRf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaRf, self.PWthetaRf)
+        self.PWphiRf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiRf, self.PWphiRf)
+        self.PWthetaTi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaTi, self.PWthetaTi)
+        self.PWphiTi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiTi, self.PWphiTi)
+        self.PWthetaTf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaTf, self.PWthetaTf)
+        self.PWphiTf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiTf, self.PWphiTf)
 
-        sz.Add(polarParams_sz)
+        Polargrid.AddMany([
+            (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
+            (self.PoleInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaRi, 0, wx.ALL|wx.EXPAND), (self.PWphiRi, 0, wx.ALL|wx.EXPAND),
+            (self.PoleFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaRf, 0, wx.ALL|wx.EXPAND), (self.PWphiRf, 0, wx.ALL|wx.EXPAND),
+            (self.TidalInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaTi, 0, wx.ALL|wx.EXPAND), (self.PWphiTi, 0, wx.ALL|wx.EXPAND),
+            (self.TidalFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaTf, 0, wx.ALL|wx.EXPAND), (self.PWphiTf, 0, wx.ALL|wx.EXPAND)
+            ])
+
+        sz.Add(Polargrid)
 
         sz.AddSpacer(15)
         save_love_bt = wx.Button(self, label='Save Love numbers')
@@ -1434,11 +1440,25 @@ class StressListPanel(SatPanel):
 
 
     def enable_polar(self):
-        for e in [self.lat_label, self.parameters['polarlat_tc'], self.long_label, self.parameters['polarlong_tc']]:
+        for e in [
+         self.PWthetaRi, self.PWphiRi,
+         self.PWthetaRf, self.PWphiRf,
+         self.PWthetaTi, self.PWphiTi,
+         self.PWthetaTf, self.PWphiTf,
+         self.Longitude_label, self.Latitude_label,
+         self.PoleInitial, self.PoleFinal,
+         self.TidalInitial, self.TidalFinal]:
             e.Enable()
 
     def disable_polar(self):
-        for e in [self.lat_label, self.parameters['polarlat_tc'], self.long_label, self.parameters['polarlong_tc']]:
+        for e in [
+         self.PWthetaRi, self.PWphiRi,
+         self.PWthetaRf, self.PWphiRf,
+         self.PWthetaTi, self.PWphiTi,
+         self.PWthetaTf, self.PWphiTf,
+         self.Longitude_label, self.Latitude_label,
+         self.PoleInitial, self.PoleFinal,
+         self.TidalInitial, self.TidalFinal]:
             e.Disable()
 
     def on_set_diurn(self, evt):
@@ -1473,6 +1493,7 @@ class StressListPanel(SatPanel):
             self.enable_obliq()
         else:
             self.disable_obliq()
+
     def on_set_polar(self,evt):
         s = self.parameters['Polar Wander'].GetValue()
         self.sc.set_parameter('Polar Wander', s)
@@ -1523,6 +1544,38 @@ class StressListPanel(SatPanel):
     def set_l2NSR(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Nonsynchronous Rotation'].loveUser.update_l2(self.parse_complex(evt.GetString()))
+
+    def set_thetaRi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRi(float(evt.GetString()))
+    
+    def set_phiRi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRi(float(evt.GetString()))
+
+    def set_thetaRf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRf(float(evt.GetString()))
+
+    def set_phiRf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRf(float(evt.GetString()))
+
+    def set_thetaTi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTi(float(evt.GetString()))  
+
+    def set_phiTi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTi(float(evt.GetString()))
+
+    def set_thetaTf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTf(float(evt.GetString()))
+
+    def set_phiTf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTf(float(evt.GetString()))
 
     def on_save_love(self, evt):
         try:
@@ -1621,19 +1674,6 @@ class PointPanel(SatPanel):
      
 
         sz.AddSpacer(15)
-
-        sz.Add(wx.StaticText(self, label=u'θ: Latitude (-90.00-90.00) [°]'))
-        sz.Add(wx.StaticText(self, label=u'φ: Longitude (-180.00-180.00 (positive West or East to choose from)) [°]'))
-        sz.Add(wx.StaticText(self, label=u't: Time since periapse (Periapse = 0) [yrs], used for secular stress calculations'))
-        sz.Add(wx.StaticText(self, label=u'orbital pos: Orbital position since periapse (Periapse = 0) [°], used for diurnal stress calculations'))
-        sz.AddSpacer(15)
-        sz.Add(wx.StaticText(self, label=u'Stt: East-West component of stress field [kPa]'))
-        sz.Add(wx.StaticText(self, label=u'Spt: Off diagonal component of stress field [kPa]'))
-        sz.Add(wx.StaticText(self, label=u'Spp: North-South component of stress field [kPa]'))
-        sz.AddSpacer(15)
-        sz.Add(wx.StaticText(self, label=u'σ1: Maximum tension [kPa]'))
-        sz.Add(wx.StaticText(self, label=u'σ3: Maximum compression [kPa]'))
-        sz.Add(wx.StaticText(self, label=u'α: The angle between σ1 and due north (clockwise is positive) [°]'))
 
         self.SetSizer(sz)
 
@@ -1749,6 +1789,7 @@ class PointPanel(SatPanel):
                         action=self.load_entries)
         except Exception, e:
             traceback.print_exc()
+
     def set_num_rows(self,num_rows):
         self.pp.SetRows(num_rows)
         self.sp.SetRows(num_rows)
@@ -1869,15 +1910,6 @@ class GridCalcPanel(SatPanel):
         gmcp.Add(self.nsr_labels[-1])
         self.parameters.update(
             add_text_ctrls(self, gmcp, [ ('TIME_MIN', ''), ('nsr_time', ''), ('TIME_NUM', '') ]))
-        # Polar Wander
-        for i in range(4):
-            gmcp.AddSpacer(20)
-        self.pw_labels = add_static_texts(self, gmcp,
-            [('',''), ('', u'Final Pole Latitude [°]'), ('',u'Final Pole Longitude [°]'), ('',u'Number of increments')])
-        self.pw_labels.append(wx.StaticText(self, label=u'Final Pole Location'))
-        gmcp.Add(self.pw_labels[-1])
-        self.parameters.update(
-            add_text_ctrls(self, gmcp, [ ('FINAL_LAT', ''), ('FINAL_LONG', ''), ('NUM_INCREMENTS', '') ]))
         self.parameters['nsr_time'].SetMinSize((250, 10))
         top = wx.BoxSizer(orient=wx.HORIZONTAL)
         top.Add(grid_id_p)
@@ -1926,18 +1958,6 @@ class GridCalcPanel(SatPanel):
         for sts in self.orbit_labels:
             sts.Disable()
 
-    def enable_pw(self):
-        for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
-            self.parameters[p].Enable()
-        for sts in self.pw_labels:
-            sts.Enable()
-
-    def disable_pw(self):
-        for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
-            self.parameters[p].Disable()
-        for sts in self.pw_labels:
-            sts.Disable()
-
     def update_parameters(self):
         super(GridCalcPanel, self).update_parameters()
         if self.sc.parameters.get('Nonsynchronous Rotation', False):
@@ -1949,10 +1969,6 @@ class GridCalcPanel(SatPanel):
             self.enable_orbit()
         else:
             self.disable_orbit()
-        if self.sc.parameters.get('Polar Wander', False):
-            self.enable_pw()
-        else:
-            self.disable_pw()
         for p in [ "%s_%s" % (p, v)
                 for p,pd in self.sc.grid_parameters_d
                 for v, vd in self.sc.grid_vars_d ]:
@@ -2018,6 +2034,8 @@ class CycloidsPanel(SatPanel):
         self.start_dir = wx.ComboBox(self, size=(100, 50) ,choices=all_dir, style=wx.CB_DROPDOWN|wx.CB_READONLY)
         # bind
         self.Bind(wx.EVT_COMBOBOX, self.EvtSetDir, self.start_dir)
+        self.parameters['STARTING_DIRECTION'] = self.start_dir
+
 
         # create load/save buttons
         save_bt = wx.Button(self, label='Save to file')
@@ -2029,15 +2047,26 @@ class CycloidsPanel(SatPanel):
         buttonSizer.Add(save_bt, wx.ALIGN_CENTER)
 
 
-
         self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
         self.Bind(wx.EVT_CHECKBOX, self.EvtSetVary, self.vary)
+        self.parameters['VARY_VELOCITY'] = self.vary
+        
         self.constant = wx.TextCtrl(self, wx.ID_ANY, '0', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.EvtSetConstant, self.constant)
         self.constant.Disable()
+        self.parameters['k'] = self.constant
+
+
+        
+
+        self.use_multiple = wx.CheckBox(self, wx.ID_ANY, 'Use loaded CSV file')
+        self.Bind(wx.EVT_CHECKBOX, self.EvtSetUseMultiple, self.use_multiple)
+        self.use_multiple.Disable()
+        self.parameters['to_plot_many_cycloids'] = self.use_multiple
 
         varyvSizer.Add(self.vary, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         varyvSizer.Add(self.constant, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        
         # add widgets into grid
         # Set the TextCtrl to expand on resize
         
@@ -2046,10 +2075,10 @@ class CycloidsPanel(SatPanel):
 
         self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
      
+     
         gridSizer.Add(dirSizer)
         gridSizer.Add(self.start_dir)
         gridSizer.Add(varyvSizer)
-    
         many_params = wx.Button(self, label='Load Multiple Cycloid Parameters')
         wx.EVT_BUTTON(self, many_params.GetId(), self.load_many)
 
@@ -2069,6 +2098,7 @@ class CycloidsPanel(SatPanel):
         sz.Add(buttonSizer, 0, wx.ALL, 5)
         #sz.Add(filler2)
         sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
+        sz.Add(self.use_multiple,0, wx.ALL|wx.EXPAND, 5)
         sz.Add(many_params)
         self.SetSizer(sz)
         sz.Fit(self)
@@ -2082,6 +2112,7 @@ class CycloidsPanel(SatPanel):
             txtCtrlObj.Bind(wx.EVT_TEXT, self.OnText)
             txtCtrls[p] = txtCtrlObj
             sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
+            self.parameters[p] = txtCtrlObj
         return txtCtrls
     def OnChar(self,event):
         charEntered= event.GetKeyCode()
@@ -2103,35 +2134,6 @@ class CycloidsPanel(SatPanel):
                 action=self.load_many_params)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-
-    def load_many_params(self, filename):
-
-        self.sc.parameters['to_plot_many_cycloids'] = True
-
-        paramFile = open(filename, 'rU')
-
-        try:
-            temp = list(csv.reader(paramFile))
-
-            paramSpace = [list(col) for col in zip(*temp)]
-            
-            params = {}
-            for paramType in paramSpace:
-                params[paramType.pop(0)] = paramType
-
-            self.parameters['YIELD'] = params["Yield Threshold"]
-            self.parameters['PROPAGATION_STRENGTH'] = params["Propagation Strength"]
-            self.parameters['PROPAGATION_SPEED'] = params["Propagation Speed"]
-            self.parameters['STARTING_LATITUDE'] = params["Starting Lat"]
-            self.parameters['STARTING_LONGITUDE'] = params["Starting Lon"]
-
-            if ("Vary Velocity" in params.keys()) and ('k' in params.keys()):
-                self.parameters['VARY_VELOCITY'] = params["Vary Velocity"]
-                self.parameters['k'] = params["k"]
-    
-        finally:
-            paramFile.close()
-
     def on_save_cyclparams(self, evt):
         try:
             file_dialog(self,
@@ -2211,6 +2213,41 @@ class CycloidsPanel(SatPanel):
         self.cycloid_saved = True
         f.close()
 
+
+
+    #For loading multiple cycloids
+    def load_many_params(self, filename):
+        self.use_multiple.Enable()
+        self.use_multiple.SetValue(True)
+        self.EvtSetUseMultiple(None)
+        self.sc.parameters['to_plot_many_cycloids'] = True
+        self.sc.many_changed = True
+        
+        paramFile = open(filename, 'rU')
+        try:
+            rows = list(csv.reader(paramFile))
+            params_to_load = rows[0]
+            
+            self.sc.params_for_cycloids = {}
+            i = -1
+            for row in rows[1:]:
+                if row[0].startswith('cycloid'):
+                    i +=1
+                    self.sc.params_for_cycloids[i] = {}
+                else:
+                    for j, param in enumerate(params_to_load):
+                        self.sc.params_for_cycloids[i].update({param: row[j]})
+                    self.sc.params_for_cycloids[i].update({'degree_step':0.1})
+    
+        except:
+            error_dialog(self,"Error loading file")
+        
+        paramFile.close()
+
+
+
+
+
     def updateFields(self):
         if self.sc.parameters['VARY_VELOCITY'] == 'True' or self.sc.parameters['VARY_VELOCITY'] == '1':
             self.vary.SetValue(True)
@@ -2263,6 +2300,19 @@ class CycloidsPanel(SatPanel):
 
     def EvtSetConstant(self, event):
         self.sc.parameters['k'] = float(event.GetString())
+
+    def EvtSetUseMultiple(self, event):
+        if self.use_multiple.GetValue():
+            self.sc.parameters['to_plot_many_cycloids'] = True
+            for ctrl in [self.parameters[p] for p in self.sc.cycloid_parameters_d]:
+                ctrl.Disable()
+
+        else:
+            self.sc.parameters['to_plot_many_cycloids'] = False
+            self.use_multiple.SetValue(False)
+            for ctrl in [self.parameters[p] for p in self.sc.cycloid_parameters_d]:
+                ctrl.Enable()
+
 
     def EvtSetStartLat(self, event):
         lat = float(event.GetString())
@@ -2705,7 +2755,7 @@ class PlotPanel(SatPanel):
                     error_dialog(self, e.__class__.__name__ + ': ' + str(e), "Plot Error")
 
     def plot_no_draw(self):
-        print 'Plot_no_draw'
+        #print 'Plot_no_draw'
         self.grid = self.sc.get_grid()
         self.calc = self.sc.get_calc()
         self.basemap_ax = self.get_basemap_ax()
@@ -3139,7 +3189,7 @@ class ScalarPlotPanel(PlotPanel):
         return ll
  
     def plot_lineaments(self):
-        print 'plot lineaments'
+        #print 'plot lineaments'
         for l in [self.generated, self.loaded]:
             if l['data']:
                 l['lines'] = plotlinmap(l['data'], map=self.basemap_ax, color=self.mpl_color(l['color'].GetColour()))[0]
@@ -3191,17 +3241,28 @@ class ScalarPlotPanel(PlotPanel):
             self.plot()
 
     def plot_cycloids(self):
-        print 'plot_cycloids(self)'
         
-        if (self.sc.cyc == None or self.cycloid_changed):
-            self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
-                                  self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
-                                  self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
-            self.cycloid_changed = False
+        if self.sc.parameters['to_plot_many_cycloids']:
+            for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
         
-        self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+                if not self.sc.cycloids.has_key(i) or self.sc.many_changed:
+    
+                    self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
+                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+            self.sc.many_changed = False
+
         
-                          
+        else:
+            if (self.sc.cyc == None or self.cycloid_changed):
+                print 'h'
+                self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
+                                      self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
+                                      self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
+                self.cycloid_changed = False
+            
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+            
+            
 
     
 
@@ -3570,7 +3631,6 @@ class ScalarPlotPanel(PlotPanel):
         or self.sc.parameters['to_plot_shear_vectors']:
             self.plot_stress_vectors()
         if self.sc.parameters['to_plot_lineaments']:
-            print "plot_grid_calc"
             self.plot_lineaments()
 
         if self.sc.parameters['to_plot_cycloids']:
@@ -3813,55 +3873,6 @@ class ScalarPlotPanel(PlotPanel):
         self.plot()
         del b
 
-# ===============================================================================
-# FILLER TAB (remove when done)
-# ===============================================================================
-class cycloidSlider(wx.Slider):
-    def __init__(self, parent, label, initVal=0, minVal=0, maxVal=360, *args, **kw):
-        # make widgets
-        self.sliderLabel = wx.StaticText(parent, label=label)
-        self.sliderTxt = wx.TextCtrl(parent, -1, size=(-1, -1), style=wx.TE_PROCESS_ENTER)
-        self.sliderbar = wx.Slider(parent, -1, initVal, minVal, maxVal, \
-                                   style=wx.SL_HORIZONTAL | wx.AUTOTICKS | wx.LABELS)
-        # bind widgets
-
-        # add to sizer
-        slidersz = wx.BoxSizer(wx.HORIZONTAL)
-        slidersz.Add(self.sliderLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        slidersz.Add(self.sliderTxt, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        slidersz.Add(self.sliderbar, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
-        self.SetSizer(slidersz)
-
-
-class PlainTab(SatPanel):
-    """ Dummy tab with nothing in it -- used for experimentation"""
-    
-    def __init__(self, *args, **kw):
-        super(PlainTab, self).__init__(*args, **kw)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(sizer)
-        cyc = cycloidSlider(self, 'Orbital Position', 0, self.parameters['ORBIT_MIN'], \
-                            self.parameters['ORBIT_MAX'])
-        sizer.Add(cyc)
-
-# class guiStepSlider(wx.Slider):
-#     def __init__(self, parent, label, *args, **kw):
-#         self.sliderLabel = wx.StaticText(parent, label=label)
-#         self.sliderText = wx.TextCtrl(parent, -1, size=(-1, 10), style=wx.TE_PROCESS_ENTER)
-#         self.slider = wx.Slider(parent, -1, 180, 0, 360, size=(360, -1),\
-#                                 style=wx.SL_AUTOTICKS| wx.SL_LABELS)
-#         self.slider.SetTickFreq(10, 1)
-        
-#         sizer = wx.BoxSizer(wx.HORIZONTAL)
-#         sizer.Add(self.sliderLabel, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, border=2)
-#         sizer.Add(self.sliderText, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, border=2)
-#         sizer.Add(self.slider, 1, wx.EXPAND)
-#         self.sizer = sizer
-
-#         self.slider.Bind(wx.EVT_SLIDER, self.sliderHandler)
-#         self.sliderText.Bind(wx.EVT_, self.sliderTextHandler) 
-
 
 # ===============================================================================
 # PANEL CONTAINING ALL TABS
@@ -3889,9 +3900,6 @@ class SatStressPanel(wx.Panel):
         spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
         
         self.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
-
-
-        #dummy = PlainTab(self.nb, satellite_calculation=self.sc)
         
         # Assign each panel to a page and give it a name
         self.nb.AddPage(slp, u"Satellite")
@@ -4056,7 +4064,7 @@ class SatStressFrame(wx.Frame):
     def saveFile(self,filename):
         f = open(filename,'w')
         for p,v in self.p.sc.parameters.items():
-            if v:
+            if v or v == 'to_plot_many_cycloids': #Don't want to save to_plot_many_cycloids simply because this option shouldn't be loaded since the cycloids from the cycloids file aren't saved
                 f.write(p + ' = ' + str(v) + '\n')
         f.close()
 
@@ -4105,7 +4113,7 @@ To find detailed notes of all the changes, please visit the GitHub page."""
         self.makeMsgDialog(updates, u'Version 4.0')
 
     def onRef(self, evt):
-        references = """ For more information, please see:\n\n \
+        references = u""" For more information, please see:\n\n \
 1) Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
 and orbital eccentricity using gravitational potential theory, \
@@ -4127,7 +4135,7 @@ case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickeni
                            u"Primary Contact")
 
     def onDiurnalref(self, evt):
-        Resources = """Diurnal tidal stresses arise when a satellite is in an eccentric orbit. \
+        Resources = u"""Diurnal tidal stresses arise when a satellite is in an eccentric orbit. \
 This is due to two reasons. \
 First, the amplitude of the planet's gravitational force is greater at periapse than it is at apoapse. \
 Secondly, the planet is rotating slightly faster (compared to its synchronous rotation rate) at periapse \
@@ -4142,7 +4150,7 @@ Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
         self.makeMsgDialog(Resources, u'About Diurnal Tides')
 
     def onNSRref(self, evt):
-        Resources = """Nonsynchronous rotation (NSR) occurs when a satellite's lithosphere is decoupled from its core. \
+        Resources = u"""Nonsynchronous rotation (NSR) occurs when a satellite's lithosphere is decoupled from its core. \
 When this happens, the tidal bulge of the shell causes it to experience a net torque, and could rotate more quickly than the synchronous rate. \
 Thus, the planet appears to move across the sky, and the tidal bulge moves beneath the shell. \
 This results in surface stresses. \
@@ -4156,7 +4164,7 @@ Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
         self.makeMsgDialog(Resources, u'About Nonsynchronous Rotation')
 
     def onObliquityref(self, evt):
-        Resources = """A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. \
+        Resources = u"""A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. \
 A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. \
 However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.\n\n\
 For more information on stresses due to oblique orbits, see:\n\
@@ -4167,7 +4175,7 @@ case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickeni
         self.makeMsgDialog(Resources, u'About Olibque Orbits')
 
     def onISTref(self, evt):
-        Resources = """As satellites age, they could become cooler. \
+        Resources = u"""As satellites age, they could become cooler. \
 This would result in more of the liquid ocean freezing, increasing the thickness of the icy crust. \
 This process would force the ice shell to expand, putting extensional stress on the surface.\n\n\
 For more information on Ice Shell Thickening as a stressing mechanism, please see:\n\
@@ -4178,7 +4186,7 @@ to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
 
 
     def onPWref(self, evt):
-        Resources = """
+        Resources = u"""
 Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. \
 If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). \
 Sometimes, this also results in a reorientation of the poles. \
@@ -4193,7 +4201,7 @@ For more information on Polar Wander as a stressing mechanism, please see:\n\
         self.makeMsgDialog(Resources, u'About Polar Wander')
 
     def onCycloidsref(self, evt):
-        Resources = """ Cycloids are arcuate lineaments found on the surface of Europa.  \
+        Resources = u""" Cycloids are arcuate lineaments found on the surface of Europa.  \
 They are thought to be created when a fracture in the ice is propagated because of the stresses. \
 In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.\
 Once the fracture has started, it will propagate through the ice at a certain velocity.\
@@ -4208,7 +4216,7 @@ features on Europa. Science 285, 1899-1902"""
         self.makeMsgDialog(Resources, u'About Cycloids')
 
     def onTutorial(self, evt):
-        Tutorial = """Welcome to SatStressGUI!  This program is designed to model stresses icy satellites \
+        Tutorial = u"""Welcome to SatStressGUI!  This program is designed to model stresses icy satellites \
 experience as they orbit their primary.  For more information on this program and the mathematics behind it, \
 check the "Information" menu. \n\n\
 1) Input the satellite's physical parameters on the Satellite tab.\n\
@@ -4227,7 +4235,7 @@ leave them blank to allow the program to calculate Love numbers based on the sat
         self.makeMsgDialog(Tutorial, u'Getting Started')
 
     def onHelpSat(self, evt):
-        Help = """The Satellite Tab is used to input the physical properties of the satellite.\n\n\
+        Help = u"""The Satellite Tab is used to input the physical properties of the satellite.\n\n\
 - Each entry should use the units denoted in the square brackets next to the box.\n\
 - The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.\n\
 - The NSR period is usually on the order of 100,000 years.  If you are not using NSR, you can leave it as 'infinity'.\n\
@@ -4237,26 +4245,38 @@ leave them blank to allow the program to calculate Love numbers based on the sat
         self.makeMsgDialog(Help, u'The Satellite Tab')
 
     def onHelpStresses(self, evt):
-        Help = """The Stresses Tab is used to select which stresses to use.\n\n\
+        Help = u"""The Stresses Tab is used to select which stresses to use.\n\n\
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
 When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do not use scientific notation. \
 1.2 + 3e-05j would look like 1.2+0.00003j.\n\
-- Most stresses should be used independently, however the Obliquity stress must be used with Diurnal or NSR.\n\
+- The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
+- Polar Wander uses an elastic, time-independent calculation, so it should not be used with other stresses.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
 
     def onHelpPoint(self, evt):
-        Help = """The Point Tab can be used to calculate the stress at up to 10 discrete points in space and time.\n\n\
+        Help = u"""The Point Tab can be used to calculate the stress at up to 10 discrete points in space and time.\n\n\
 - Enter a latitude, longitude, year, and orbital position for up to 10 points.\n\
 - Press the "Calculate Stress" button.\n\
-- Use the "Save to File" button to save the results as a .cvs file.\n\
+- Use the "Save to File" button to save the results as a .cvs file.\n\n\
+- θ: Latitude (-90.00 to 90.00) [°]\n\
+- φ: Longitude (-180.00 to180.00 (positive West or East to choose from)) [°]\n\
+- t: Time since periapse (Periapse = 0) [yrs], used for secular stress calculations\n\
+- orbital pos: Orbital position since periapse (Periapse = 0) [°], used for diurnal stress calculations\n\
+- Stt: East-West component of stress field [kPa]\n\
+- Spt: Off diagonal component of stress field [kPa]\n\
+- Spp: North-South component of stress field [kPa]\n\
+- σ1: Maximum tension [kPa]\n\
+- σ3: Maximum compression [kPa]\n\
+- α: The angle between σ1 and due north (clockwise is positive) [°]
 """
         self.makeMsgDialog(Help, u'The Point Tab')
 
+
     def onHelpGrid(self, evt):
-        Help = """The Grid Tab is used to specify what section of the satellite to look at.\n\n\
+        Help = u"""The Grid Tab is used to specify what section of the satellite to look at.\n\n\
 - For more information about each stress, see the Information menu.
 - NOTE: The number of latitude and longitude grid points must be equal.\n\
 - To examine the whole moon, use a latitude range from -90 to 90 and a longitude range of -180 to 180.\n\
@@ -4270,7 +4290,7 @@ The Start Time is when the plotting starts, and the End Time is when the plottin
         self.makeMsgDialog(Help, u'The Grid Tab')
 
     def onHelpCycloids(self, evt):
-        Help = """The Cycloids Tab allows the user to generate a cycloidal feature on the map.\n\n\
+        Help = u"""The Cycloids Tab allows the user to generate a cycloidal feature on the map.\n\n\
 - The cycloids are modeled and plotted on the Plot Tab.\n\
 - The Yield Threshold is how much stress must be put on the crust to break the ice and initiate a fracture.\n\
 - The Propagation Strength is how much stress must be put on the crust to make the split continue, and the split continues at the Propagation Speed.\n\
@@ -4281,7 +4301,7 @@ The Start Time is when the plotting starts, and the End Time is when the plottin
         self.makeMsgDialog(Help, u'The Cycloids Tab')
 
     def onHelpPlot(self, evt):
-        Help = """The Plot Tab shows a map of the stresses on the surface of the satellite.\n\n\
+        Help = u"""The Plot Tab shows a map of the stresses on the surface of the satellite.\n\n\
 - Tension on the map is shown as positive, and compression as negative.
 - You can step through the plots by using the buttons to the bottom right of the graph.\n\
 - Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "Save Series" \
