@@ -472,7 +472,7 @@ class SatelliteCalculation(object):
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
         try:
-            self.calc = StressCalc(self.get_stresses(), 500)
+            self.calc = StressCalc(self.get_stresses())
             self.satellite_changed = self.grid_changed = self.stresses_changed = False
             self.calc_changed = True
             return self.calc
@@ -1290,69 +1290,43 @@ class StressListPanel(SatPanel):
         
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
-                                                       
-        polarParams_sz = wx.BoxSizer(wx.VERTICAL)
-        # include ice thickness parameter for IST aka Ice Shell Thickening
-
-
-        polarlat_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlat_sz.AddSpacer(28)
-        self.lat_label = wx.StaticText(self, label=u'Initial Pole latitude [°]              ') #Not a very elegant spacing solution, and the boxes don't quite line up,
-        #but it's the simplest one that I could find (and the only one that worked).
-        polarlat_sz.Add(self.lat_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlat_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlat_sz, [ ('PWthetaRi', 'PWthetaRi') ]))
-        polarParams_sz.Add(polarlat_sz)
-        polarParams_sz.AddSpacer(5)
         
-        polarlong_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlong_sz.AddSpacer(28)
-        self.long_label = wx.StaticText(self, label=u'Initial Pole longitude [°]           ')
-        polarlong_sz.Add(self.long_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlong_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlong_sz, [ ('PWphiRi', 'PWphiRi') ]))
-        polarParams_sz.Add(polarlong_sz)
-        polarParams_sz.AddSpacer(5)
 
-        polarlatfinal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlatfinal_sz.AddSpacer(28)
-        self.latfinal_label = wx.StaticText(self, label=u'Final Pole Latitude [°]              ')
-        polarlatfinal_sz.Add(self.latfinal_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlatfinal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlatfinal_sz, [ ('PWthetaRf', 'PWthetaRf') ]))
-        polarParams_sz.Add(polarlatfinal_sz)
-        polarParams_sz.AddSpacer(5)
+        Polargrid = wx.FlexGridSizer(rows=5, cols=3, hgap=3, vgap=5)
+        self.Latitude_label = wx.StaticText(self, label=u'Latitude')
+        self.Longitude_label = wx.StaticText(self, label=u'Longitude')
+        self.Blank_label = wx.StaticText(self, label=u' ')
+        self.PoleInitial = wx.StaticText(self, label=u'Initial Pole Location')
+        self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
+        self.TidalInitial = wx.StaticText(self, label=u'Initial Tidal Bulge Location')
+        self.TidalFinal = wx.StaticText(self, label=u'Final Tidal Bulge Location')
 
-        polarlongfinal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlongfinal_sz.AddSpacer(28)
-        self.longfinal_label = wx.StaticText(self, label=u'Final Pole Longitude [°]           ')
-        polarlongfinal_sz.Add(self.longfinal_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlongfinal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlongfinal_sz, [ ('PWphiRf', 'PWphiRf') ]))
-        polarParams_sz.Add(polarlongfinal_sz)
-        polarParams_sz.AddSpacer(5)
+        self.PWthetaRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaRi, self.PWthetaRi)
+        self.PWphiRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiRi, self.PWphiRi)
+        self.PWthetaRf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaRf, self.PWthetaRf)
+        self.PWphiRf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiRf, self.PWphiRf)
+        self.PWthetaTi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaTi, self.PWthetaTi)
+        self.PWphiTi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiTi, self.PWphiTi)
+        self.PWthetaTf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_thetaTf, self.PWthetaTf)
+        self.PWphiTf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_phiTf, self.PWphiTf)
 
-        polarlattidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlattidal_sz.AddSpacer(28)
-        self.tlat_label = wx.StaticText(self, label=u'Initial Tidal Bulge latitude [°]   ')
-        polarlattidal_sz.Add(self.tlat_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlattidal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlattidal_sz, [ ('PWthetaTi', 'PWthetaTi') ]))
-        polarParams_sz.Add(polarlattidal_sz)
-        polarParams_sz.AddSpacer(5)
+        Polargrid.AddMany([
+            (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
+            (self.PoleInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaRi, 0, wx.ALL|wx.EXPAND), (self.PWphiRi, 0, wx.ALL|wx.EXPAND),
+            (self.PoleFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaRf, 0, wx.ALL|wx.EXPAND), (self.PWphiRf, 0, wx.ALL|wx.EXPAND),
+            (self.TidalInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaTi, 0, wx.ALL|wx.EXPAND), (self.PWphiTi, 0, wx.ALL|wx.EXPAND),
+            (self.TidalFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaTf, 0, wx.ALL|wx.EXPAND), (self.PWphiTf, 0, wx.ALL|wx.EXPAND)
+            ])
 
-        polarlongtidal_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        polarlongtidal_sz.AddSpacer(28)
-        self.tlong_label = wx.StaticText(self, label=u'Initial Tidal Bulge longitude [°]')
-        polarlongtidal_sz.Add(self.tlong_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        polarlongtidal_sz.Add(filler)
-        self.parameters.update(add_text_ctrls(self, polarlongtidal_sz, [ ('PWphiTi', 'PWphiTi') ]))
-        polarParams_sz.Add(polarlongtidal_sz)
-        
-    
-        # include thermal diffusivity parameter for IST
-
-        sz.Add(polarParams_sz)
+        sz.Add(Polargrid)
 
         sz.AddSpacer(15)
         save_love_bt = wx.Button(self, label='Save Love numbers')
@@ -1466,15 +1440,25 @@ class StressListPanel(SatPanel):
 
 
     def enable_polar(self):
-        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi'], 
-         self.latfinal_label, self.parameters['PWthetaRf'], self.longfinal_label, self.parameters['PWphiRf'],
-         self.tlat_label, self.parameters['PWthetaTi'], self.tlong_label, self.parameters['PWphiTi']]:
+        for e in [
+         self.PWthetaRi, self.PWphiRi,
+         self.PWthetaRf, self.PWphiRf,
+         self.PWthetaTi, self.PWphiTi,
+         self.PWthetaTf, self.PWphiTf,
+         self.Longitude_label, self.Latitude_label,
+         self.PoleInitial, self.PoleFinal,
+         self.TidalInitial, self.TidalFinal]:
             e.Enable()
 
     def disable_polar(self):
-        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi'],
-         self.latfinal_label, self.parameters['PWthetaRf'], self.longfinal_label, self.parameters['PWphiRf'],
-         self.tlat_label, self.parameters['PWthetaTi'], self.tlong_label, self.parameters['PWphiTi']]:
+        for e in [
+         self.PWthetaRi, self.PWphiRi,
+         self.PWthetaRf, self.PWphiRf,
+         self.PWthetaTi, self.PWphiTi,
+         self.PWthetaTf, self.PWphiTf,
+         self.Longitude_label, self.Latitude_label,
+         self.PoleInitial, self.PoleFinal,
+         self.TidalInitial, self.TidalFinal]:
             e.Disable()
 
     def on_set_diurn(self, evt):
@@ -1563,27 +1547,35 @@ class StressListPanel(SatPanel):
 
     def set_thetaRi(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].PW_vars.update_thetaRi(int(evt.GetString()))
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRi(float(evt.GetString()))
     
     def set_phiRi(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].PW_vars.update_phiRi(int(evt.GetString()))
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRi(float(evt.GetString()))
 
     def set_thetaRf(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].PW_vars.update_thetaRf(int(evt.GetString()))
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRf(float(evt.GetString()))
 
     def set_phiRf(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].PW_vars.update_phiRf(int(evt.GetString()))
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRf(float(evt.GetString()))
 
     def set_thetaTi(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].PW_vars.update_thetaTi(int(evt.GetString()))  
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTi(float(evt.GetString()))  
 
     def set_phiTi(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].PW_vars.update_phiTi(int(evt.GetString()))   
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTi(float(evt.GetString()))
+
+    def set_thetaTf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTf(float(evt.GetString()))
+
+    def set_phiTf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTf(float(evt.GetString()))
 
     def on_save_love(self, evt):
         try:
