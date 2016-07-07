@@ -111,7 +111,8 @@ class SatelliteCalculation(object):
         u'Nonsynchronous Rotation': NSR,
         u'Diurnal': Diurnal,
         u'Ice Shell Thickening': IST,
-        u'Obliquity': DiurnalObliquity}
+        u'Obliquity': DiurnalObliquity,
+        u'Polar Wander': PolarWander}
     
     grid_vars_d = [
         ("MIN", u'Minimum value'),
@@ -1253,7 +1254,7 @@ class StressListPanel(SatPanel):
            [ ('periapsis_arg', 'periapsis_arg') ]))
         DiObliq_sz.Add(peri_sz)
         DiObliq_sz.AddSpacer(5)
-        # inclue degree of obliquity for Diurnal w/ Obliquity
+        # include degree of obliquity for Diurnal w/ Obliquity
         obliq_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         obliq_sz.AddSpacer(30)
         self.obliq_label = wx.StaticText(self, label=u'Degree of Obliquity [°]  ')
@@ -1465,11 +1466,15 @@ class StressListPanel(SatPanel):
 
 
     def enable_polar(self):
-        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi']]:
+        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi'], 
+         self.latfinal_label, self.parameters['PWthetaRf'], self.longfinal_label, self.parameters['PWphiRf'],
+         self.tlat_label, self.parameters['PWthetaTi'], self.tlong_label, self.parameters['PWphiTi']]:
             e.Enable()
 
     def disable_polar(self):
-        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi']]:
+        for e in [self.lat_label, self.parameters['PWthetaRi'], self.long_label, self.parameters['PWphiRi'],
+         self.latfinal_label, self.parameters['PWthetaRf'], self.longfinal_label, self.parameters['PWphiRf'],
+         self.tlat_label, self.parameters['PWthetaTi'], self.tlong_label, self.parameters['PWphiTi']]:
             e.Disable()
 
     def on_set_diurn(self, evt):
@@ -1504,6 +1509,7 @@ class StressListPanel(SatPanel):
             self.enable_obliq()
         else:
             self.disable_obliq()
+
     def on_set_polar(self,evt):
         s = self.parameters['Polar Wander'].GetValue()
         self.sc.set_parameter('Polar Wander', s)
@@ -1554,6 +1560,30 @@ class StressListPanel(SatPanel):
     def set_l2NSR(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Nonsynchronous Rotation'].loveUser.update_l2(self.parse_complex(evt.GetString()))
+
+    def set_thetaRi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].PW_vars.update_thetaRi(int(evt.GetString()))
+    
+    def set_phiRi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].PW_vars.update_phiRi(int(evt.GetString()))
+
+    def set_thetaRf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].PW_vars.update_thetaRf(int(evt.GetString()))
+
+    def set_phiRf(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].PW_vars.update_phiRf(int(evt.GetString()))
+
+    def set_thetaTi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].PW_vars.update_thetaTi(int(evt.GetString()))  
+
+    def set_phiTi(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].PW_vars.update_phiTi(int(evt.GetString()))   
 
     def on_save_love(self, evt):
         try:
