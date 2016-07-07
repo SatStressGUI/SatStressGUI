@@ -1237,6 +1237,7 @@ class StressListPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u'To input custom Love numbers, use the format <Re> +/- <Im>j.'))
         sz.Add(wx.StaticText(self, label=u'Do not use scientific notation when inputting custom Love numbers.'))
         sz.Add(wx.StaticText(self, label=u'"3.0-1.0e-03j" should be written as "3.0-0.001j".'))
+        sz.Add(wx.StaticText(self, label=u"If no Love Numbers are input, the program will calculate them automatically."))
 
         sz.AddSpacer(8)
         
