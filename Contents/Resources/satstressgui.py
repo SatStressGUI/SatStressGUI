@@ -1910,15 +1910,6 @@ class GridCalcPanel(SatPanel):
         gmcp.Add(self.nsr_labels[-1])
         self.parameters.update(
             add_text_ctrls(self, gmcp, [ ('TIME_MIN', ''), ('nsr_time', ''), ('TIME_NUM', '') ]))
-        # Polar Wander
-        for i in range(4):
-            gmcp.AddSpacer(20)
-        self.pw_labels = add_static_texts(self, gmcp,
-            [('',''), ('', u'Final Pole Latitude [°]'), ('',u'Final Pole Longitude [°]'), ('',u'Number of increments')])
-        self.pw_labels.append(wx.StaticText(self, label=u'Final Pole Location'))
-        gmcp.Add(self.pw_labels[-1])
-        self.parameters.update(
-            add_text_ctrls(self, gmcp, [ ('FINAL_LAT', ''), ('FINAL_LONG', ''), ('NUM_INCREMENTS', '') ]))
         self.parameters['nsr_time'].SetMinSize((250, 10))
         top = wx.BoxSizer(orient=wx.HORIZONTAL)
         top.Add(grid_id_p)
@@ -1967,18 +1958,6 @@ class GridCalcPanel(SatPanel):
         for sts in self.orbit_labels:
             sts.Disable()
 
-    def enable_pw(self):
-        for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
-            self.parameters[p].Enable()
-        for sts in self.pw_labels:
-            sts.Enable()
-
-    def disable_pw(self):
-        for p in ['FINAL_LAT', 'FINAL_LONG', 'NUM_INCREMENTS']:
-            self.parameters[p].Disable()
-        for sts in self.pw_labels:
-            sts.Disable()
-
     def update_parameters(self):
         super(GridCalcPanel, self).update_parameters()
         if self.sc.parameters.get('Nonsynchronous Rotation', False):
@@ -1990,10 +1969,6 @@ class GridCalcPanel(SatPanel):
             self.enable_orbit()
         else:
             self.disable_orbit()
-        if self.sc.parameters.get('Polar Wander', False):
-            self.enable_pw()
-        else:
-            self.disable_pw()
         for p in [ "%s_%s" % (p, v)
                 for p,pd in self.sc.grid_parameters_d
                 for v, vd in self.sc.grid_vars_d ]:
@@ -4275,8 +4250,9 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
 When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do not use scientific notation. \
 1.2 + 3e-05j would look like 1.2+0.00003j.\n\
-- Most stresses should be used independently, however the Obliquity stress must be used with Diurnal or NSR.\n\
+- The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
+- Polar Wander uses an elastic, time-independent calculation, so it should not be used with other stresses.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
 
