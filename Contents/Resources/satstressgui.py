@@ -1298,8 +1298,8 @@ class StressListPanel(SatPanel):
         
 
         Polargrid = wx.FlexGridSizer(rows=5, cols=3, hgap=3, vgap=5)
-        self.Latitude_label = wx.StaticText(self, label=u'Latitude')
-        self.Longitude_label = wx.StaticText(self, label=u'Longitude')
+        self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
+        self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
         self.PoleInitial = wx.StaticText(self, label=u'Initial Pole Location')
         self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
@@ -4260,7 +4260,8 @@ When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do n
 1.2 + 3e-05j would look like 1.2+0.00003j.\n\
 - The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
-- Polar Wander uses an elastic, time-independent calculation, so it should not be used with other stresses.
+- Polar Wander uses an elastic, time-independent calculation, so it should not be used with other stresses.\n\
+- The coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
 
@@ -4293,7 +4294,6 @@ When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do n
 Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be added by increasing the maximum beyond 360 degrees.\n\
 - The "Amount of NSR Buildup" row is used to determine how long the ice shell has been rotating. \
 The Start Time is when the plotting starts, and the End Time is when the plotting ends.\n\
-- The "Final Pole Location" is used for the Polar Wander stress.
 """
         self.makeMsgDialog(Help, u'The Grid Tab')
 
