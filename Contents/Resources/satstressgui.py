@@ -2349,6 +2349,10 @@ class CycloidsPanel(SatPanel):
 
 #================================================================================
 
+#Polar Wander slider is currently disabled.  All of the code has been left in, but it is commented out.
+#If the calculations for Polar Wander are improved to be viscoelastic, they can be re-implemented.
+#-Peter Sinclair, 2016
+
 class StepSlider(matplotlib.widgets.Slider):
     """
     Custom designed class for discrete slider control at bottom of plot panel to control 
@@ -2488,7 +2492,7 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax = self.figure.add_axes([scale_left, self.scale_y, scale_bar_length, self.slider_h], frame_on=False)
         #
         self.add_orbit()
-        self.add_polar()
+        #self.add_polar()
         self.add_nsr()
 
     def get_ax_orbit(self):
@@ -2496,9 +2500,11 @@ class StressPlotPanel(MatPlotPanel):
 
     def get_ax_nsr(self):
         return self.figure.add_axes([scale_left, self.nsr_y, scale_bar_length, self.slider_h])
-    
+
+    """
     def get_ax_polar(self):
         return self.figure.add_axes([scale_left, self.polar_y, scale_bar_length, self.slider_h])
+    """
 
     def del_orbit(self):
         self.figure.delaxes(self.ax_orbit)
@@ -2508,9 +2514,11 @@ class StressPlotPanel(MatPlotPanel):
         self.figure.delaxes(self.ax_nsr)
         self.del_nsr_controls()
     
+    """
     def del_polar(self):
         self.figure.delaxes(self.ax_polar)
         self.del_polar_controls()
+    """
 
     def del_orbit_controls(self):
         for a in [self.ax_orbit_first, self.ax_orbit_prev, \
@@ -2522,11 +2530,12 @@ class StressPlotPanel(MatPlotPanel):
             self.ax_nsr_next, self.ax_nsr_last, self.ax_nsr_save]:
             self.figure.delaxes(a)
 
-
+    """
     def del_polar_controls(self):
         for a in [self.ax_polar_first, self.ax_polar_prev, \
             self.ax_polar_next, self.ax_polar_last, self.ax_polar_save]:
             self.figure.delaxes(a)
+    """
 
     def add_orbit(self):
         self.ax_orbit = self.get_ax_orbit()
@@ -2559,7 +2568,9 @@ class StressPlotPanel(MatPlotPanel):
         self.orbit_last_button.on_clicked(lambda e: self.orbit_slider.last())
         # hack
         self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_orbit_series, e))
-    
+
+
+    """
     def add_polar(self):
         self.ax_polar = self.get_ax_polar()
         self.add_polar_controls()
@@ -2591,7 +2602,7 @@ class StressPlotPanel(MatPlotPanel):
         self.polar_last_button.on_clicked(lambda e: self.polar_slider.last())
         # hack
         self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_polar_series, e))
-    
+    """
     
     def add_nsr(self):
         self.ax_nsr = self.get_ax_nsr()
@@ -2655,7 +2666,7 @@ class StressPlotPanel(MatPlotPanel):
         self.nsr_slider = self.change_slider(
             self.ax_nsr, self.nsr_slider, valmin=valmin, valmax=valmax, numsteps=numsteps, valinit=valmin, valfmt="%.1g")
 
-
+    """
     def change_polar_slider(self, valmin, valmax, numsteps, valinit=None):
         if valinit is None:
             valinit = valmin
@@ -2663,6 +2674,7 @@ class StressPlotPanel(MatPlotPanel):
         self.ax_polar = self.get_ax_polar()
         self.polar_slider = self.change_slider(
                                              self.ax_polar, self.polar_slider, valmin=valmin, valmax=valmax, numsteps=numsteps, valinit=valmin, valfmt="%.1g")
+    """
 
     def plot_scale(self, scale, valfmt):
         self.scale_ax.clear()
@@ -2693,7 +2705,7 @@ class StressPlotPanel(MatPlotPanel):
         except LocalError, e:
             error_dialog(self, str(e), e.title)
 
-
+    """
     def on_save_polar_series(self, evt):
         try:
             dir_dialog(self,
@@ -2702,12 +2714,7 @@ class StressPlotPanel(MatPlotPanel):
                        action=self.save_polar_series)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-
-    # def save_nsr_series(self, path):
-    #     pass
-    
-    # def save_orbit_series(self, path):
-    #     pass
+    """
 
 class PlotPanel(SatPanel):
     """
@@ -2720,7 +2727,6 @@ class PlotPanel(SatPanel):
         self.sc.parameters['projection'] = 'cyl'
         self.load_step()
 
-    #@into_hbox
     def add_stepspin(self, sz):
         sz.Add(wx.StaticText(self, label=u"Tick mark increment"), flag=wx.ALIGN_CENTER_VERTICAL)
         self.stepspin = wx.SpinCtrl(self, initial=int(self.step), min=0, max=180)
@@ -2842,7 +2848,8 @@ class ScalarPlotPanel(PlotPanel):
     def __init__(self, *args, **kw):
         super(ScalarPlotPanel, self).__init__(*args, **kw)
 
-        self.orbit_hidden = self.nsr_hidden = self.polar_hidden = False
+        #self.orbit_hidden = self.nsr_hidden = self.polar_hidden = False
+        self.orbit_hidden = self.nsr_hidden = False
 
         main_sz = wx.BoxSizer(orient=wx.VERTICAL)
 
@@ -2880,7 +2887,7 @@ class ScalarPlotPanel(PlotPanel):
         self.scp = self.stress_plot_panel()
         self.init_orbit_slider()
         self.init_nsr_slider()
-        self.init_polar_slider()
+        #self.init_polar_slider()
         
         p = self.parameters_sizer()
 
@@ -2895,13 +2902,13 @@ class ScalarPlotPanel(PlotPanel):
         scp.canvas.callbacks.connect('motion_notify_event', self.on_move_in_plot)
         scp.orbit_slider.on_changed(self.on_orbit_updated)
         scp.nsr_slider.on_changed(self.on_nsr_updated)
-        scp.polar_slider.on_changed(self.on_polar_updated)
+        #scp.polar_slider.on_changed(self.on_polar_updated)
         scp.save_orbit_series = self.save_orbit_series
         scp.save_nsr_series = self.save_nsr_series
-        scp.save_polar_series = self.save_polar_series
+        #scp.save_polar_series = self.save_polar_series
         self.orbit_pos = self.sc.get_parameter(int, 'ORBIT_MIN', 0)
         self.nsr_pos = self.sc.get_parameter(float, 'TIME_MIN', 0)
-        self.polar_pos = self.sc.get_parameter(float,'TIME_MIN',0)
+        #self.polar_pos = self.sc.get_parameter(float,'TIME_MIN',0)
         self.updating = False
         scp.Fit()
         return scp
@@ -3689,10 +3696,12 @@ class ScalarPlotPanel(PlotPanel):
         else:
             self.hide_orbit_slider()
 
+        """
         if self.sc.parameters.get('Polar Wander', False):
             self.reveal_polar_slider()
         else:
             self.hide_polar_slider()
+        """
 
     def init_orbit_slider(self):
         self.scp.change_orbit_slider(
@@ -3726,15 +3735,17 @@ class ScalarPlotPanel(PlotPanel):
             self.nsr_hidden = True
             self.scp.del_nsr()
 
+    """
     def hide_polar_slider(self):
         if not self.polar_hidden:
             self.polar_hidden = True
             self.scp.del_polar()
+    """
 
     def hide_sliders(self):
         self.hide_nsr_slider()
         self.hide_orbit_slider()
-        self.hide_polar_slider()
+        #self.hide_polar_slider()
 
     def reveal_orbit_slider(self):
         if self.orbit_hidden:
@@ -3752,7 +3763,7 @@ class ScalarPlotPanel(PlotPanel):
             self.init_nsr_slider()
             self.scp.save_nsr_series = self.save_nsr_series
 
-
+    """
     def reveal_polar_slider(self):
         if self.polar_hidden:
             self.polar_hidden = False
@@ -3760,6 +3771,7 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.polar_slider.on_changed(self.on_polar_updated)
             self.init_polar_slider()
             self.scp.save_polar_series = self.save_polar_series
+    """
 
 
     def hide_orbit_controls(self):
@@ -3846,6 +3858,8 @@ class ScalarPlotPanel(PlotPanel):
         self.plot()
         del b
 
+
+    """
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving images. Please wait.", self)
         wx.SafeYield()
@@ -3865,6 +3879,7 @@ class ScalarPlotPanel(PlotPanel):
         self.scp.polar_slider.set_val(self.polar_pos)
         self.plot()
         del b
+    """
 
 
 # ===============================================================================
