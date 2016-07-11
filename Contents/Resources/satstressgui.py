@@ -1165,8 +1165,7 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(HelpText)
         sz.AddSpacer(10)
 
-        sz.Add(wx.StaticText(self, label=u'ASSUMPTIONS: '))
-        sz.Add(wx.StaticText(self, label=u'-This model makes several assumptions when calculating stresses.'))
+        sz.Add(wx.StaticText(self, label=u'This model makes several assumptions when calculating stresses.'))
         sz.Add(wx.StaticText(self, label=u'-The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
         sz.Add(wx.StaticText(self, label=u'-It is assumed to behave in a viscoelastic manner.'))
         sz.Add(wx.StaticText(self, label=u'-Each layer is considered to be homogenous throughout, with no differences in density or thickness based on location, but decreasing in mass out from the core.'))
@@ -2348,11 +2347,11 @@ class CycloidsPanel(SatPanel):
 # ===============================================================================
 
 #================================================================================
-
-#Polar Wander slider is currently disabled.  All of the code has been left in, but it is commented out.
-#If the calculations for Polar Wander are improved to be viscoelastic, they can be re-implemented.
-#-Peter Sinclair, 2016
-
+"""
+Polar Wander slider is currently disabled.  All of the code has been left in, but it is commented out.
+If the calculations for Polar Wander are improved to be viscoelastic, they can be re-implemented.
+-Peter Sinclair, 2016
+"""
 class StepSlider(matplotlib.widgets.Slider):
     """
     Custom designed class for discrete slider control at bottom of plot panel to control 
@@ -2381,13 +2380,11 @@ class StepSlider(matplotlib.widgets.Slider):
             f(self.val)
             self.updating = False
             self.eventson = True
-        
         self.on_changed_f = f
         matplotlib.widgets.Slider.on_changed(self, f2)
         
     def set_stepval(self, val):
         if val < self.valmin:
-
             self.set_val(self.valmin)
         elif val > self.valmax:
             self.set_val(self.valmax)
@@ -2486,11 +2483,10 @@ class StressPlotPanel(MatPlotPanel):
 
     def __init__(self, *args, **kw):
         super(StressPlotPanel, self).__init__(*args, **kw)
-        #
         self.figure.subplots_adjust(bottom=0.25)
         # creates scale bar for the vectors (arrows) i.e. |-----| 91 kPa
         self.scale_ax = self.figure.add_axes([scale_left, self.scale_y, scale_bar_length, self.slider_h], frame_on=False)
-        #
+
         self.add_orbit()
         #self.add_polar()
         self.add_nsr()
@@ -2787,7 +2783,6 @@ class PlotPanel(SatPanel):
             p.update({'boundinglat': 0,
                 'lat_0': (self.grid.lat_min+self.grid.lat_max)/2,
                 'lon_0': (self.grid.lon_min+self.grid.lon_max)/2})
-
         return p
 
     def get_basemap_ax(self):
@@ -3180,7 +3175,6 @@ class ScalarPlotPanel(PlotPanel):
             self.l_count_tc.SetValue(str(self.l_count))
 
         self.plot_lineaments()
-
         print 'end generate_lins'
 
     def lingen(self, number):
@@ -3212,7 +3206,6 @@ class ScalarPlotPanel(PlotPanel):
         cycl = wx.BoxSizer(wx.HORIZONTAL)
         ckSizer = wx.BoxSizer(wx.VERTICAL)
 
-
         self.plot_cycl = wx.CheckBox(self, label='Show Cycloids')
         # wrap in sizer
         ckSizer.Add(self.plot_cycl, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
@@ -3230,7 +3223,6 @@ class ScalarPlotPanel(PlotPanel):
         cycl.AddSpacer(5)
         cycl.AddSpacer(15)
         cycl.Add(self.load_save_buttons(), wx.ALL|wx.ALIGN_RIGHT)
-
         return cycl
 
     def generate_cycl(self, evt):
@@ -3242,7 +3234,6 @@ class ScalarPlotPanel(PlotPanel):
             self.plot()
 
     def plot_cycloids(self):
-        
         if self.sc.parameters['to_plot_many_cycloids']:
             for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
         
@@ -3251,8 +3242,6 @@ class ScalarPlotPanel(PlotPanel):
                     self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
                 self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
             self.sc.many_changed = False
-
-        
         else:
             if (self.sc.cyc == None or self.cycloid_changed):
                 print 'h'
@@ -3260,13 +3249,9 @@ class ScalarPlotPanel(PlotPanel):
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.cycloid_changed = False
-            
             self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
             
             
-
-    
-
     def save_many_cycloids(self, evt):
         # if a set of parameters from *.csv hasn't been uploaded, treat it like an error
         # with a popup window
@@ -3275,24 +3260,18 @@ class ScalarPlotPanel(PlotPanel):
             msg = wx.MessageDialog(self, errorMsg, "No input file found!", wx.OK | wx.ICON_ERROR)
             msg.ShowModal()
             msg.Destroy()
-
         # otherwise generate and save plots in designated folder
         else:
             chooseFolder = wx.DirDialog(self, "Choose a directory:", style=wx.DD_DEFAULT_STYLE)
-            
             # so that folderName can accessed outside
             folderName = ""
-
             if chooseFolder.ShowModal() == wx.ID_OK:
                 folderName = chooseFolder.GetPath()
-
             # Blanks out the entire window, which prevents people from changing tabs
             # or doing anything else, which happens naturally anyways.
             # self.Hide()
-
             i = 0
             while i < len(self.parameters['YIELD']):
-
                 # create cycloid
                 threshold = float(self.parameters['YIELD'][i])
                 strength = float(self.parameters['PROPAGATION_STRENGTH'][i])
@@ -3300,32 +3279,23 @@ class ScalarPlotPanel(PlotPanel):
                 lon = float(self.parameters['STARTING_LONGITUDE'][i])
                 lat = float(self.parameters['STARTING_LATITUDE'][i])
                 propdir = self.parameters['STARTING_DIRECTION']
-                
-                print threshold, strength, speed, lon, lat, propdir
-                print self.calc
-                print "\n"
-
+                #print threshold, strength, speed, lon, lat, propdir
+                #print self.calc
+                #print "\n"
                 plotcoordsonbasemap(self.calc, self.basemap_ax,
                                     threshold, strength, speed, lon, lat,
                                     propdir,
                                     self.sc.get_parameter(float, 'ORBIT_MAX', 360))
-
                 # save cycloid
                 plotName = str(threshold) + "_" + str(strength) + "_" +  str(speed) + "_" + str(lat) + "_" + str(lon) + "_" + str(propdir)
                 self.scp.figure.savefig(folderName + '/' + plotName + ".png", bbox_inches='tight')
-
                 # To have one cycloid saved per image, clear basemap if cycloid was plotted
                 if self.ax.lines != []:
                     # self.ax.lines.pop(0)
                     self.ax.lines = []
-
                 i += 1
-            
-            # when thread is done, show GUI again
-            # self.Show()
-
-
     ###########################################################################
+
     def on_orbit_updated(self, val):
         if self.updating:
             return
@@ -3346,7 +3316,7 @@ class ScalarPlotPanel(PlotPanel):
         self.updating = False
         self.plot()
     
-    
+    """
     def on_polar_updated(self, val):
         if self.updating:
             return
@@ -3356,7 +3326,7 @@ class ScalarPlotPanel(PlotPanel):
         self.orbit_pos = 0
         self.updating = False
         self.plot()
-
+    """
 
     def prepare_plot(self):
         b = wx.BusyInfo(u"Performing calculations. Please wait.", self)
@@ -3430,7 +3400,6 @@ class ScalarPlotPanel(PlotPanel):
 
     def get_axes(self):
         return self.ax
-
 
     def draw(self):
         self.scp.draw()
@@ -3717,6 +3686,8 @@ class ScalarPlotPanel(PlotPanel):
             nm + self.sc.get_parameter(float, 'nsr_time', 0)*self.sc.get_parameter(float, 'TIME_NUM', 0),
             self.sc.get_parameter(int, 'TIME_NUM', 1),
             self.nsr_pos)
+
+    """
     def init_polar_slider(self):
         nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
         self.scp.change_polar_slider(
@@ -3724,6 +3695,7 @@ class ScalarPlotPanel(PlotPanel):
            nm + self.sc.get_parameter(float, 'nsr_time', 0)*self.sc.get_parameter(float, 'TIME_NUM', 0),
            self.sc.get_parameter(int, 'TIME_NUM', 1),
            self.polar_pos)
+    """
 
     def hide_orbit_slider(self):
         if not self.orbit_hidden:
