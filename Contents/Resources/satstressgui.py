@@ -494,9 +494,7 @@ class SatelliteCalculation(object):
 
     # calculates tensor stresses
     def calc_tensor(self, rows=1):
-        # print self.parameters
         for i in range(rows):
-            print 'th: ', self.parameters['theta'][i], 'phi: ', self.parameters['phi'][i], 't', self.parameters['t'][i]
             theta, phi, t = [ float(self.parameters[p][i]) for p in ['theta', 'phi', 't'] ]
             t *= seconds_in_year
             theta, phi = map(numpy.radians, [theta, phi])
@@ -1010,7 +1008,6 @@ def add_table_header(parent, sz, parameters_d):
 #takes a dictionary of parameters and adds it to a wx.TextCtrl object
 def add_text_ctrls(parent, sz, parameters_d, rows = 1, point=False):
     parameters = {}
-    #print parameters_d
     if point:
         for i in range(rows):
             for p, d in parameters_d:
@@ -1682,7 +1679,6 @@ class PointPanel(SatPanel):
         self.update_parameters()
         self.bind_parameters()
         self.updating = False
-        #print self.parameters
         for i in range(1, self.rows + 1):
             self.parameters['orbit'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_orbit_update(evt, row))
             self.parameters['orbit'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_orbit_update(evt, row))
@@ -2380,10 +2376,8 @@ class StepSlider(matplotlib.widgets.Slider):
 
             self.set_val(self.valmin)
         elif val > self.valmax:
-            #print 'val >'
             self.set_val(self.valmax)
         elif self.valmax - self.valmin > 0 and self.steps_n > 0:
-            #print 'elseif'
             step = float(self.valmax - self.valmin)/self.steps_n
             n0 = int((val - self.valmin)/step)
             n1 = n0 + 1
@@ -2750,7 +2744,6 @@ class PlotPanel(SatPanel):
                     error_dialog(self, e.__class__.__name__ + ': ' + str(e), "Plot Error")
 
     def plot_no_draw(self):
-        #print 'Plot_no_draw'
         self.grid = self.sc.get_grid()
         self.calc = self.sc.get_calc()
         self.basemap_ax = self.get_basemap_ax()
@@ -3184,7 +3177,6 @@ class ScalarPlotPanel(PlotPanel):
         return ll
  
     def plot_lineaments(self):
-        #print 'plot lineaments'
         for l in [self.generated, self.loaded]:
             if l['data']:
                 l['lines'] = plotlinmap(l['data'], map=self.basemap_ax, color=self.mpl_color(l['color'].GetColour()))[0]
@@ -3226,9 +3218,6 @@ class ScalarPlotPanel(PlotPanel):
 
     def generate_cycl(self, evt):
         if self.plot_cycl.GetValue(): # plot only if box is checked
-            # print self.basemap_ax
-            # print self.calc
-            # print self.parameters
             self.sc.parameters['to_plot_cycloids'] = True
             self.plot()
         else:
@@ -3310,7 +3299,6 @@ class ScalarPlotPanel(PlotPanel):
 
                 # To have one cycloid saved per image, clear basemap if cycloid was plotted
                 if self.ax.lines != []:
-                    # print self.ax.lines
                     # self.ax.lines.pop(0)
                     self.ax.lines = []
 
