@@ -1157,15 +1157,22 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(top)
         sz.Add(filler)
         sz.Add(lp)
-        
+
+        sz.AddSpacer(10)
+        HelpText = wx.StaticText(self, label=u'For help in using this program, select "Getting Started", in the Help menu.')
+        HelpFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        HelpText.SetFont(HelpFont)
+        sz.Add(HelpText)
+        sz.AddSpacer(10)
+
         sz.Add(wx.StaticText(self, label=u'ASSUMPTIONS: '))
-        sz.Add(wx.StaticText(self, label=u'This model makes several assumptions when calculating stresses.'))
-        sz.Add(wx.StaticText(self, label=u'The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
-        sz.Add(wx.StaticText(self, label=u'It is assumed to behave in a viscoelastic manner.'))
-        sz.Add(wx.StaticText(self, label=u'Each layer is considered to be homogenous throughout, with no differences in density or thickness based on location, but decreasing in mass out from the core.'))
-        sz.Add(wx.StaticText(self, label=u'The Polar Wander stress assumes that the body is in a circular, zero-inclination, synchronous orbit.'))
-        sz.Add(wx.StaticText(self, label=u'Polar Wander stress is calculated using an elastic model.'))
-        sz.Add(wx.StaticText(self, label=u'The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
+        sz.Add(wx.StaticText(self, label=u'-This model makes several assumptions when calculating stresses.'))
+        sz.Add(wx.StaticText(self, label=u'-The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
+        sz.Add(wx.StaticText(self, label=u'-It is assumed to behave in a viscoelastic manner.'))
+        sz.Add(wx.StaticText(self, label=u'-Each layer is considered to be homogenous throughout, with no differences in density or thickness based on location, but decreasing in mass out from the core.'))
+        sz.Add(wx.StaticText(self, label=u'-The Polar Wander stress assumes that the body is in a circular, zero-inclination, synchronous orbit.'))
+        sz.Add(wx.StaticText(self, label=u'-Polar Wander stress is calculated using an elastic model.'))
+        sz.Add(wx.StaticText(self, label=u'-The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
         
         self.SetSizer(sz)
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
@@ -1870,6 +1877,9 @@ class GridCalcPanel(SatPanel):
         super(GridCalcPanel, self).__init__(*args, **kw)
 
         sz = wx.BoxSizer(orient=wx.VERTICAL)
+
+        sz.Add(wx.StaticText(self, label = u'This tab is used to define the limits of the plot, both spatially and temporally.'))
+        sz.AddSpacer(8)
 
         grid_id_p = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.parameters = add_parameters_to_sizer(self, grid_id_p, [('GRID_ID', u"Grid ID")])
