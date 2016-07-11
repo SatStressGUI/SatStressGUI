@@ -1336,7 +1336,7 @@ class StressListPanel(SatPanel):
 
         ##### Create boxes for inputting love number #####
         ## todo: display calcuated love numbers in these boxes also ##
-        grid = wx.FlexGridSizer(rows=4, cols=3, hgap=0, vgap=5)
+        grid = wx.FlexGridSizer(rows=4, cols=4, hgap=0, vgap=5)
         
         self.h2 = wx.StaticText(self, label=u'h\u2082')
         self.k2 = wx.StaticText(self, label=u'k\u2082')
@@ -1361,20 +1361,14 @@ class StressListPanel(SatPanel):
         self.Bind(wx.EVT_CHECKBOX, self.useUserLove_nsr, self.userNSR)
         
         grid.AddMany([
-            (self.h2, 0, wx.ALL|wx.EXPAND), (self.k2, 0, wx.ALL|wx.EXPAND), (self.l2, 0, wx.ALL|wx.EXPAND), 
-            (self.h2Diurn, 0, wx.ALL|wx.EXPAND), (self.k2Diurn, 0, wx.ALL|wx.EXPAND), (self.l2Diurn, 0, wx.ALL|wx.EXPAND),
-            (self.h2NSR, 0, wx.ALL|wx.EXPAND), (self.k2NSR, 0, wx.ALL|wx.EXPAND), (self.l2NSR, 0, wx.ALL|wx.EXPAND)
+            (self.h2, 0, wx.ALL|wx.EXPAND), (self.k2, 0, wx.ALL|wx.EXPAND), (self.l2, 0, wx.ALL|wx.EXPAND), (self.Blank_label, 0, wx.ALL|wx.EXPAND),
+            (self.h2Diurn, 0, wx.ALL|wx.EXPAND), (self.k2Diurn, 0, wx.ALL|wx.EXPAND), (self.l2Diurn, 0, wx.ALL|wx.EXPAND), (self.userDiurn, 0, wx.ALL|wx.EXPAND),
+            (self.h2NSR, 0, wx.ALL|wx.EXPAND), (self.k2NSR, 0, wx.ALL|wx.EXPAND), (self.l2NSR, 0, wx.ALL|wx.EXPAND), (self.userNSR, 0, wx.ALL|wx.EXPAND)
             ])
 
-        ck = wx.BoxSizer(wx.VERTICAL)
-        ck.AddSpacer(23)
-        ck.Add(self.userDiurn)
-        ck.AddSpacer(8)
-        ck.Add(self.userNSR)
-        
+
         othersz.Add(sz, 5, wx.ALL|wx.EXPAND)
         othersz.Add(grid, 5, wx.ALL|wx.EXPAND)
-        othersz.Add(ck, 10, wx.ALL|wx.EXPAND)
 
         topsizer.Add(othersz, wx.ALL|wx.EXPAND)
         self.SetSizer(topsizer)
