@@ -2114,9 +2114,10 @@ class CycloidsPanel(SatPanel):
             sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
             self.parameters[p] = txtCtrlObj
         return txtCtrls
+
     def OnChar(self,event):
         charEntered= event.GetKeyCode()
-        if (charEntered >= 48 and charEntered <= 57) or charEntered == 8 or charEntered == 9 or charEntered == 13:
+        if (charEntered >= 48 and charEntered <= 57) or charEntered == 8 or charEntered == 9 or charEntered == 13 or charEntered == 45 or charEntered ==46:
             event.Skip()
 
     def OnText(self,event):
