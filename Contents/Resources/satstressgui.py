@@ -137,6 +137,16 @@ class SatelliteCalculation(object):
         'VARY_VELOCITY': None,
         'k': None}
 
+    polarwander_coordinates = {
+        'thetaRInitial': None,
+        'phiRInitial': None,
+        'thetaRFinal': None,
+        'phiRFinal': None,
+        'thetaTInitial': None,
+        'phiTInitial': None,
+        'thetaTFinal': None,
+        'phiTFinal': None}
+
 
 
 
@@ -1546,34 +1556,42 @@ class StressListPanel(SatPanel):
     def set_thetaRi(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRi(float(evt.GetString()))
+        self.sc.polarwander_coordinates['thetaRInitial'] = float(evt.GetString())
     
     def set_phiRi(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRi(float(evt.GetString()))
+        self.sc.polarwander_coordinates['phiRInitial'] = float(evt.GetString())
 
     def set_thetaRf(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRf(float(evt.GetString()))
+        self.sc.polarwander_coordinates['thetaRFinal'] = float(evt.GetString())
 
     def set_phiRf(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRf(float(evt.GetString()))
+        self.sc.polarwander_coordinates['phiRFinal'] = float(evt.GetString())
 
     def set_thetaTi(self, evt):
         self.sc.stresses_changed = True
-        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTi(float(evt.GetString()))  
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTi(float(evt.GetString()))
+        self.sc.polarwander_coordinates['thetaTInitial'] = float(evt.GetString())
 
     def set_phiTi(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTi(float(evt.GetString()))
+        self.sc.polarwander_coordinates['phiTInitial'] = float(evt.GetString())
 
     def set_thetaTf(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaTf(float(evt.GetString()))
+        self.sc.polarwander_coordinates['thetaTFinal'] = float(evt.GetString())
 
     def set_phiTf(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTf(float(evt.GetString()))
+        self.sc.polarwander_coordinates['phiTFinal'] = float(evt.GetString())
 
     def on_save_love(self, evt):
         try:
@@ -2407,6 +2425,7 @@ class StepSlider(matplotlib.widgets.Slider):
     def first(self):
         self.set_stepval(self.valmin)
         # HERE initial_split()
+        # ^ I think that these comments have to do with cycloid generation
     
     def last(self):
         self.set_stepval(self.valmax)
@@ -2762,6 +2781,42 @@ class PlotPanel(SatPanel):
         self.basemap_ax = self.get_basemap_ax()
         self.plot_grid_calc()
         self.draw_coords()
+        if self.sc.parameters.get('Polar Wander', False):
+            self.place_pw_coordinates()
+
+
+    def place_pw_coordinates(self):
+        """
+        Places the user-given polar wander coordinates on the map.
+        Also places their antipodes (the anti-jove point and south pole).
+        """
+        print "Placing PW Coordinates"
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'],
+            self.sc.polarwander_coordinates['thetaRInitial'],
+            'wo', markersize=10)
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] - 180,
+            0 - self.sc.polarwander_coordinates['thetaRInitial'],
+            'wo', markersize=10)
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'],
+            self.sc.polarwander_coordinates['thetaTInitial'],
+            'ws', markersize=10)
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] - 180,
+            0 - self.sc.polarwander_coordinates['thetaTInitial'],
+            'ws', markersize=10)
+
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'],
+            self.sc.polarwander_coordinates['thetaRFinal'],
+            'ko', markersize=10)
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] - 180,
+             0 - self.sc.polarwander_coordinates['thetaRFinal'],
+            'ko', markersize=10)
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'],
+            self.sc.polarwander_coordinates['thetaTFinal'],
+            'ks', markersize=10)
+        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] - 180,
+            0 - self.sc.polarwander_coordinates['thetaTFinal'],
+            'ks', markersize=10)
+
 
     def basemap_parameters(self, proj):
         p = { 'projection': proj }
@@ -3486,6 +3541,7 @@ class ScalarPlotPanel(PlotPanel):
         self.vector_mesh_lons, self.vector_mesh_lats = self.vector_meshes()
 
         # monkey patching not to touch library code
+        # ^ what does that even mean?  -PS
         def imshow(plot_field, cmap=None, **kw):
             plot_field1 = scipy.ndimage.map_coordinates(plot_field, [i,j])
             self.plot_fields[self.plot_time][self.plot_field] = (x, y, plot_field1)
