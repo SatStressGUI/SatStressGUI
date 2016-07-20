@@ -181,6 +181,7 @@ class SatelliteCalculation(object):
         self.parameters['NSR_PERIOD'] = 'infinity'   # initial value of NSRperiod in Satellite tab
         self.parameters['to_plot_cycloids'] = False
         self.parameters['to_plot_triangles'] = False
+        self.parameters['to_plot_pw_markers'] = True
         self.parameters['to_plot_many_cycloids'] = False
         self.parameters['VARY_VELOCITY'] = False
         self.parameters['k'] = 0
@@ -2782,15 +2783,14 @@ class PlotPanel(SatPanel):
         self.basemap_ax = self.get_basemap_ax()
         self.plot_grid_calc()
         self.draw_coords()
-        if self.sc.parameters.get('Polar Wander', False):
+        if self.sc.parameters.get('Polar Wander', False) and self.sc.parameters['to_plot_pw_markers']:
             self.place_pw_coordinates()
 
 
+    
     def place_pw_coordinates(self):
-        """
-        Places the user-given polar wander coordinates on the map.
-        Also places their antipodes (the anti-jove point and south pole).
-        """
+        #Places the user-given polar wander coordinates on the map.
+        #Also places their antipodes (the anti-jove point and south pole).
 
         #Plot rotational poles if the coordinates of the initial and final pole differ
         if (self.sc.polarwander_coordinates['thetaRInitial'] != self.sc.polarwander_coordinates['thetaRFinal']
@@ -2847,7 +2847,7 @@ class PlotPanel(SatPanel):
                 self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] + 180,
                     0 - self.sc.polarwander_coordinates['thetaTFinal'],
                     'ks', markersize=10)
-
+    
 
     def basemap_parameters(self, proj):
         p = { 'projection': proj }
@@ -3039,10 +3039,24 @@ class ScalarPlotPanel(PlotPanel):
 
         lp.Add(spp1)
         lp.AddSpacer(15)
+
+        self.pw_marker_box = wx.CheckBox(self, label='Hide Polar Wander coordinates')
+        lp.Add(self.pw_marker_box, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        self.pw_marker_box.Bind(wx.EVT_CHECKBOX, self.hide_pw_markers)
         
         lp.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
         return lp
+
+    def hide_pw_markers(self, evt):
+        if self.pw_marker_box.GetValue():
+            print 'not plotting pw'
+            self.sc.parameters['to_plot_pw_markers'] = False
+            self.plot()
+        else:
+            print 'plotting pw'
+            self.sc.parameters['to_plot_pw_markers'] = True
+            self.plot()
 
     def update_parameters(self):
         self.show_needed_sliders()
