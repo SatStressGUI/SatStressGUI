@@ -180,6 +180,7 @@ class SatelliteCalculation(object):
         self.parameters = {}
         self.parameters['NSR_PERIOD'] = 'infinity'   # initial value of NSRperiod in Satellite tab
         self.parameters['to_plot_cycloids'] = False
+        self.parameters['to_plot_triangles'] = False
         self.parameters['to_plot_many_cycloids'] = False
         self.parameters['VARY_VELOCITY'] = False
         self.parameters['k'] = 0
@@ -3298,6 +3299,10 @@ class ScalarPlotPanel(PlotPanel):
         # bind to event
         self.plot_cycl.Bind(wx.EVT_CHECKBOX, self.generate_cycl)
 
+        self.plot_triangles = wx.CheckBox(self, label='Plot marker if unable to create cycloid')
+        ckSizer.Add(self.plot_triangles, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        self.plot_triangles.Bind(wx.EVT_CHECKBOX, self.generate_cycloid_markers)
+
         saveMany = wx.Button(self, label="Save Multiple Cycloids")
         saveMany.Bind(wx.EVT_BUTTON, self.save_many_cycloids)
         ckSizer.AddSpacer(5)
@@ -3319,6 +3324,14 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.parameters['to_plot_cycloids'] = False
             self.plot()
 
+    def generate_cycloid_markers(self, evt):
+        if self.plot_triangles.GetValue():
+            self.sc.parameters['to_plot_triangles'] = True
+            self.plot()
+        else:
+            self.sc.parameters['to_plot_triangles'] = False
+            self.plot()
+
     def plot_cycloids(self):
         if self.sc.parameters['to_plot_many_cycloids']:
             for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
@@ -3326,7 +3339,7 @@ class ScalarPlotPanel(PlotPanel):
                 if not self.sc.cycloids.has_key(i) or self.sc.many_changed:
     
                     self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
-                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos, self.sc.parameters['to_plot_triangles'])
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.cycloid_changed):
@@ -3334,7 +3347,7 @@ class ScalarPlotPanel(PlotPanel):
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.cycloid_changed = False
-            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos)
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos, self.sc.parameters['to_plot_triangles'])
             
             
     def save_many_cycloids(self, evt):
@@ -3370,7 +3383,7 @@ class ScalarPlotPanel(PlotPanel):
                 plotcoordsonbasemap(self.calc, self.basemap_ax,
                                     threshold, strength, speed, lon, lat,
                                     propdir,
-                                    self.sc.get_parameter(float, 'ORBIT_MAX', 360))
+                                    self.sc.get_parameter(float, 'ORBIT_MAX', 360), self.sc.parameters['to_plot_triangles'])
                 # save cycloid
                 plotName = str(threshold) + "_" + str(strength) + "_" +  str(speed) + "_" + str(lat) + "_" + str(lon) + "_" + str(propdir)
                 self.scp.figure.savefig(folderName + '/' + plotName + ".png", bbox_inches='tight')
