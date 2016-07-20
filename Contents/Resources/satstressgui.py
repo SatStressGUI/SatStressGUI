@@ -2794,28 +2794,50 @@ class PlotPanel(SatPanel):
         self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'],
             self.sc.polarwander_coordinates['thetaRInitial'],
             'wo', markersize=10)
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] - 180,
-            0 - self.sc.polarwander_coordinates['thetaRInitial'],
-            'wo', markersize=10)
         self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'],
             self.sc.polarwander_coordinates['thetaTInitial'],
             'ws', markersize=10)
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] - 180,
-            0 - self.sc.polarwander_coordinates['thetaTInitial'],
-            'ws', markersize=10)
+
+        if self.sc.polarwander_coordinates['phiRInitial'] >=0:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] - 180,
+                0 - self.sc.polarwander_coordinates['thetaRInitial'],
+                'wo', markersize=10)
+        else:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] + 180,
+                0- self.sc.polarwander_coordinates['thetaRInitial'],
+                'wo', markersize=10)
+        if self.sc.polarwander_coordinates['phiTInitial'] >=0:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] - 180,
+                0 - self.sc.polarwander_coordinates['thetaTInitial'],
+                'ws', markersize=10)
+        else:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] + 180,
+                0- self.sc.polarwander_coordinates['thetaTInitial'],
+                'ws', markersize=10)
 
         self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'],
             self.sc.polarwander_coordinates['thetaRFinal'],
             'ko', markersize=10)
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] - 180,
-             0 - self.sc.polarwander_coordinates['thetaRFinal'],
-            'ko', markersize=10)
         self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'],
             self.sc.polarwander_coordinates['thetaTFinal'],
             'ks', markersize=10)
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] - 180,
-            0 - self.sc.polarwander_coordinates['thetaTFinal'],
-            'ks', markersize=10)
+
+        if self.sc.polarwander_coordinates['phiRFinal'] >=0:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] - 180,
+                0 - self.sc.polarwander_coordinates['thetaRFinal'],
+                'ko', markersize=10)
+        else:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] + 180,
+                0- self.sc.polarwander_coordinates['thetaRFinal'],
+                'ko', markersize=10)
+        if self.sc.polarwander_coordinates['phiTFinal'] >=0:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] - 180,
+                0 - self.sc.polarwander_coordinates['thetaTFinal'],
+                'ks', markersize=10)
+        else:
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] + 180,
+                0 - self.sc.polarwander_coordinates['thetaTFinal'],
+                'ks', markersize=10)
 
 
     def basemap_parameters(self, proj):
