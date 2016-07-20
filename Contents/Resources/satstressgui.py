@@ -4319,7 +4319,7 @@ When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do n
 1.2 + 3e-05j would look like 1.2+0.00003j.\n\
 - The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
-- Polar Wander uses an elastic, time-independent calculation, so it should not be used with other stresses.\n\
+- Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - The coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
@@ -4375,6 +4375,11 @@ The Start Time is when the plotting starts, and the End Time is when the plottin
 button to the lower right.\n\
 - The panel on the right allows manipulation of the map, changing the scale and type of map, as well as the stresses showed.\n\
 - The bottom panel enables and disables cycloids.\n\
+- When using Polar Wander, the initial and final locations of the rotational poles and/or sub- and anti-jove points will appear on the graph.\n\
+  - The initial North and South poles will be white circles.\n\
+  - The final North and South poles will be black circles.\n\
+  - The initial sub- and anti-jove points will be white squares.\n\
+  - The final sub- and anti-jove points will be black squares.\n\
 - NOTE: The cycloids cannot be saved as shape or netcdf files currently.\n\
 - NOTE: The Lineaments features does not function currently.
 """
