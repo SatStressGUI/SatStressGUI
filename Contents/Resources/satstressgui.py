@@ -361,7 +361,6 @@ class SatelliteCalculation(object):
         if self.stresses_changed or self.satellite_changed or not self.stresses:
             sat = self.get_satellite()
             self.stresses = [ self.stress_d[v](sat) for v in filter(lambda v: self.parameters.get(v), self.stress_d.keys()) ]
-            print self.stresses
         return self.stresses
 
     # updates grid or makes one if one does not already exist
@@ -3050,11 +3049,9 @@ class ScalarPlotPanel(PlotPanel):
 
     def hide_pw_markers(self, evt):
         if self.pw_marker_box.GetValue():
-            print 'not plotting pw'
             self.sc.parameters['to_plot_pw_markers'] = False
             self.plot()
         else:
-            print 'plotting pw'
             self.sc.parameters['to_plot_pw_markers'] = True
             self.plot()
 
@@ -3391,9 +3388,6 @@ class ScalarPlotPanel(PlotPanel):
                 lon = float(self.parameters['STARTING_LONGITUDE'][i])
                 lat = float(self.parameters['STARTING_LATITUDE'][i])
                 propdir = self.parameters['STARTING_DIRECTION']
-                #print threshold, strength, speed, lon, lat, propdir
-                #print self.calc
-                #print "\n"
                 plotcoordsonbasemap(self.calc, self.basemap_ax,
                                     threshold, strength, speed, lon, lat,
                                     propdir,
