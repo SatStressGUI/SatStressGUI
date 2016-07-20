@@ -2790,54 +2790,62 @@ class PlotPanel(SatPanel):
         Places the user-given polar wander coordinates on the map.
         Also places their antipodes (the anti-jove point and south pole).
         """
-        print "Placing PW Coordinates"
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'],
-            self.sc.polarwander_coordinates['thetaRInitial'],
-            'wo', markersize=10)
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'],
-            self.sc.polarwander_coordinates['thetaTInitial'],
-            'ws', markersize=10)
 
-        if self.sc.polarwander_coordinates['phiRInitial'] >=0:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] - 180,
-                0 - self.sc.polarwander_coordinates['thetaRInitial'],
+        #Plot rotational poles if the coordinates of the initial and final pole differ
+        if (self.sc.polarwander_coordinates['thetaRInitial'] != self.sc.polarwander_coordinates['thetaRFinal']
+         or self.sc.polarwander_coordinates['phiRInitial'] != self.sc.polarwander_coordinates['phiRFinal']):
+
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'],
+                self.sc.polarwander_coordinates['thetaRInitial'],
                 'wo', markersize=10)
-        else:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] + 180,
-                0- self.sc.polarwander_coordinates['thetaRInitial'],
-                'wo', markersize=10)
-        if self.sc.polarwander_coordinates['phiTInitial'] >=0:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] - 180,
-                0 - self.sc.polarwander_coordinates['thetaTInitial'],
-                'ws', markersize=10)
-        else:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] + 180,
-                0- self.sc.polarwander_coordinates['thetaTInitial'],
-                'ws', markersize=10)
+            if self.sc.polarwander_coordinates['phiRInitial'] >=0:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] - 180,
+                    0 - self.sc.polarwander_coordinates['thetaRInitial'],
+                    'wo', markersize=10)
+            else:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRInitial'] + 180,
+                    0- self.sc.polarwander_coordinates['thetaRInitial'],
+                    'wo', markersize=10)
 
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'],
-            self.sc.polarwander_coordinates['thetaRFinal'],
-            'ko', markersize=10)
-        self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'],
-            self.sc.polarwander_coordinates['thetaTFinal'],
-            'ks', markersize=10)
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'],
+                self.sc.polarwander_coordinates['thetaRFinal'],
+                'ko', markersize=10)
+            if self.sc.polarwander_coordinates['phiRFinal'] >=0:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] - 180,
+                    0 - self.sc.polarwander_coordinates['thetaRFinal'],
+                    'ko', markersize=10)
+            else:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] + 180,
+                    0- self.sc.polarwander_coordinates['thetaRFinal'],
+                    'ko', markersize=10)
 
-        if self.sc.polarwander_coordinates['phiRFinal'] >=0:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] - 180,
-                0 - self.sc.polarwander_coordinates['thetaRFinal'],
-                'ko', markersize=10)
-        else:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiRFinal'] + 180,
-                0- self.sc.polarwander_coordinates['thetaRFinal'],
-                'ko', markersize=10)
-        if self.sc.polarwander_coordinates['phiTFinal'] >=0:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] - 180,
-                0 - self.sc.polarwander_coordinates['thetaTFinal'],
+        #Plot tidal bulge locations if the coordinates of the initial and final location differ
+        if (self.sc.polarwander_coordinates['thetaTInitial'] != self.sc.polarwander_coordinates['thetaTFinal'] 
+            or self.sc.polarwander_coordinates['phiTInitial'] != self.sc.polarwander_coordinates['phiTFinal']):
+
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'],
+                self.sc.polarwander_coordinates['thetaTInitial'],
+                'ws', markersize=10)
+            if self.sc.polarwander_coordinates['phiTInitial'] >=0:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] - 180,
+                    0 - self.sc.polarwander_coordinates['thetaTInitial'],
+                    'ws', markersize=10)
+            else:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'] + 180,
+                    0- self.sc.polarwander_coordinates['thetaTInitial'],
+                    'ws', markersize=10)
+
+            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'],
+                self.sc.polarwander_coordinates['thetaTFinal'],
                 'ks', markersize=10)
-        else:
-            self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] + 180,
-                0 - self.sc.polarwander_coordinates['thetaTFinal'],
-                'ks', markersize=10)
+            if self.sc.polarwander_coordinates['phiTFinal'] >=0:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] - 180,
+                    0 - self.sc.polarwander_coordinates['thetaTFinal'],
+                    'ks', markersize=10)
+            else:
+                self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTFinal'] + 180,
+                    0 - self.sc.polarwander_coordinates['thetaTFinal'],
+                    'ks', markersize=10)
 
 
     def basemap_parameters(self, proj):
