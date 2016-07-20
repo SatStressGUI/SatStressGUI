@@ -4158,10 +4158,10 @@ information to foreign countries or providing access to foreign persons. """
         self.makeMsgDialog(spiel, copyright)
 
     def onDevelopment(self, evt):
-        spiel = u"""SatStressGUI V4.0 was developed at the Jet Propulsion Laboratory, \
+        spiel = u"""SatStressGUI v4.0 was developed at the Jet Propulsion Laboratory, \
 California Institute of Technology and is based on SatStressGUI. \
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho \
-SatStress GUI is based on SatStress, which was designed by Zane Selvans and is available at \
+SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at \
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress \
 \n\n SatStressGUI 4.0 has been created upon efforts by \
 Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang, \
@@ -4186,14 +4186,8 @@ M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-
 and orbital eccentricity using gravitational potential theory, \
 Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.\n\n \
 2) See chapter on Geodynamics of Europa's Ice Shell by Francis Nimmo and Michael Manga in \
-Europa for more information about the ice shell thickening model.\n\n \
-3) See Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal \
-features on Europa. Science 285, 1899-1902, or chapter on Geologic Stratigraphy and Evolution of \
-Europa's surface by Thomas Doggett, Ronald Greeley, Patricio Figueredo and Ken Tanaka in Europa \
-for additional information on cycloid formation, for diurnal potential including obliquity \n\n \
-4) Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
-obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
-case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickening."""
+Europa for more information about the ice shell thickening model.\n\n\
+For references for individual stresses, please look in the Information/References menu."""
         self.makeMsgDialog(references, u'Science References')
 
     def onContacts(self, evt):
@@ -4237,7 +4231,7 @@ However, when the obliquity is nonzero, it causes the stresses due to diurnal ti
 For more information on stresses due to oblique orbits, see:\n\
 Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
 obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
-case of Europa. Icarus, 215(1), 417-438, for stress cuased by ice shell thickening.
+case of Europa. Icarus, 215(1), 417-438.
 """
         self.makeMsgDialog(Resources, u'About Olibque Orbits')
 
@@ -4259,7 +4253,7 @@ If a satellite's crust is not coupled to its core, it may experience nonsynchron
 Sometimes, this also results in a reorientation of the poles. \
 The north pole appears to wander over the surface as the crust reorients itself. \
 This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, \
-as well as the parent planet appearing to hange its location in the sky. \n\n\
+as well as the parent planet appearing to change its location in the sky. \n\n\
 This stressing mechanism is calculated using an elastic model.\n\n\
 For more information on Polar Wander as a stressing mechanism, please see:\n\
     Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.\n\
@@ -4290,14 +4284,13 @@ check the "Information" menu. \n\n\
 2) Select which stresses to apply in the Stresses tab.\n\
 - When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
 leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
-- Please note that most stresses do not function well together.\n\
 - Obliquity must be used with either Diurnal or NSR.\n\
 3) In the Grid tab, input a latitude and longitude range to examine.\n\
 - The number of grid points must be equal for both latitude and longitude.\n\
 4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
 5) Change to the Plot tab to see the stress maps.\n\
 - For more information on how to use the maps, see "Plot" in the Help Menu.\n\
-6) Use the Point tab to calculate the stress at up to 10 discrete points in space and time.
+6) Use the Point tab to calculate the stress at discrete points in space and time.
 """
         self.makeMsgDialog(Tutorial, u'Getting Started')
 
@@ -4315,18 +4308,18 @@ leave them blank to allow the program to calculate Love numbers based on the sat
         Help = u"""The Stresses Tab is used to select which stresses to use.\n\n\
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
-When inputting custom love numbers, you must use the format <Re> +/ <Im>j.  Do not use scientific notation. \
+When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do not use scientific notation. \
 1.2 + 3e-05j would look like 1.2+0.00003j.\n\
 - The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
-- The coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
+- All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
 
     def onHelpPoint(self, evt):
-        Help = u"""The Point Tab can be used to calculate the stress at up to 10 discrete points in space and time.\n\n\
-- Enter a latitude, longitude, year, and orbital position for up to 10 points.\n\
+        Help = u"""The Point Tab can be used to calculate the stress at any discrete point in space and time.\n\n\
+- Enter a latitude, longitude, year, and orbital position for each point.\n\
 - Press the "Calculate Stress" button.\n\
 - Use the "Save to File" button to save the results as a .cvs file.\n\n\
 - θ: Latitude (-90.00 to 90.00) [°]\n\
