@@ -3330,7 +3330,6 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.cycloid_changed):
-                print 'h'
                 self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
@@ -4373,6 +4372,8 @@ button to the lower right.\n\
   - The final North and South poles will be black circles.\n\
   - The initial sub- and anti-jove points will be white squares.\n\
   - The final sub- and anti-jove points will be black squares.\n\
+- When using cycloids, if the program is unable to initiate a cycloid, it will plot a red triangle at the attempted location.\n\
+  - If it creates a split, but cannot propagate it, it will plot a blue triangle at the location.\n\
 - NOTE: The cycloids cannot be saved as shape or netcdf files currently.\n\
 - NOTE: The Lineaments features does not function currently.
 """
@@ -4388,7 +4389,7 @@ button to the lower right.\n\
     def OnCloseFrame(self, event):
         if self.p.sc.saveable_changed():
             dialog = wx.MessageDialog(self,
-                message = "To save your parameters and/or plot, return to the relavent tab and click the appropriate button",
+                message = "To save your parameters and/or plot, return to the relevant tab and click the appropriate button",
                 caption = "Are you sure you want to quit without saving?")
             response = dialog.ShowModal() # show and disallows other input until closed
 
