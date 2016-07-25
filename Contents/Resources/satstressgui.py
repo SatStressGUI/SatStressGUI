@@ -146,7 +146,8 @@ class SatelliteCalculation(object):
         'phiTInitial': None,
         'thetaTFinal': None,
         'phiTFinal': None,
-        'Locked': True}
+        'Locked': True,
+        'Despinning': False}
 
 
 
@@ -1308,14 +1309,19 @@ class StressListPanel(SatPanel):
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
         
 
-        Polargrid = wx.FlexGridSizer(rows=6, cols=3, hgap=3, vgap=5)
+        Polargrid = wx.FlexGridSizer(rows=8, cols=3, hgap=3, vgap=5)
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
+        self.Blank_label2 = wx.StaticText(self, label=u' ')
+        self.Blank_label3 = wx.StaticText(self, label=u' ')
+        self.Blank_label4 = wx.StaticText(self, label=u' ')
         self.PoleInitial = wx.StaticText(self, label=u'Initial Pole Location')
         self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
         self.TidalInitial = wx.StaticText(self, label=u'Initial Tidal Bulge Location')
         self.TidalFinal = wx.StaticText(self, label=u'Final Tidal Bulge Location')
+        self.InitialSpin_label = wx.StaticText(self, label=u'Initial Rotation Rate')
+        self.FinalSpin_label = wx.StaticText(self, label=u'Final Rotation Rate')
 
         self.PWthetaRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_thetaRi, self.PWthetaRi)
@@ -1336,6 +1342,12 @@ class StressListPanel(SatPanel):
         self.TidalLock = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Assume tidally locked satellite')
         self.TidalLock.SetValue(True)
         self.Bind(wx.EVT_CHECKBOX, self.Lock_Body, self.TidalLock)
+        self.DespinningBox = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Despinning')
+        self.Bind(wx.EVT_CHECKBOX, self.Despinning, self.DespinningBox)
+        self.InitialSpin = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_InitialSpin, self.InitialSpin)
+        self.FinalSpin = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_FinalSpin, self.FinalSpin)
 
         Polargrid.AddMany([
             (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
@@ -1343,7 +1355,9 @@ class StressListPanel(SatPanel):
             (self.PoleFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaRf, 0, wx.ALL|wx.EXPAND), (self.PWphiRf, 0, wx.ALL|wx.EXPAND),
             (self.TidalInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaTi, 0, wx.ALL|wx.EXPAND), (self.PWphiTi, 0, wx.ALL|wx.EXPAND),
             (self.TidalFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaTf, 0, wx.ALL|wx.EXPAND), (self.PWphiTf, 0, wx.ALL|wx.EXPAND),
-            (self.TidalLock, 0, wx.ALL|wx.EXPAND)])
+            (self.TidalLock, 0, wx.ALL|wx.EXPAND), (self.Blank_label2, 0, wx.ALL|wx.EXPAND), (self.Blank_label3, 0, wx.ALL|wx.EXPAND),
+            (self.Blank_label4, 0, wx.ALL|wx.EXPAND), (self.InitialSpin_label, 0, wx.ALL|wx.EXPAND), (self.FinalSpin_label, 0, wx.ALL|wx.EXPAND),
+            (self.DespinningBox, 0, wx.ALL|wx.EXPAND), (self.InitialSpin, 0, wx.ALL|wx.EXPAND), (self.FinalSpin, 0, wx.ALL|wx.EXPAND)])
 
         sz.Add(Polargrid)
 
@@ -1459,24 +1473,22 @@ class StressListPanel(SatPanel):
 
 
     def enable_polar(self):
-        if self.TidalLock.GetValue():
+        for e in [
+         self.PWthetaRi, self.PWphiRi,
+         self.PWthetaRf, self.PWphiRf,
+         self.Longitude_label, self.Latitude_label,
+         self.PoleInitial, self.PoleFinal,
+         self.TidalLock,
+         self.DespinningBox]:
+            e.Enable()
+        if not self.TidalLock.GetValue():
             for e in [
-             self.PWthetaRi, self.PWphiRi,
-             self.PWthetaRf, self.PWphiRf,
-             self.Longitude_label, self.Latitude_label,
-             self.PoleInitial, self.PoleFinal,
-             self.TidalLock]:
+             self.TidalInitial, self.TidalFinal]:
                 e.Enable()
-        else:
+        if self.DespinningBox.GetValue():
             for e in [
-             self.PWthetaRi, self.PWphiRi,
-             self.PWthetaRf, self.PWphiRf,
-             self.PWthetaTi, self.PWphiTi,
-             self.PWthetaTf, self.PWphiTf,
-             self.Longitude_label, self.Latitude_label,
-             self.PoleInitial, self.PoleFinal,
-             self.TidalInitial, self.TidalFinal,
-             self.TidalLock]:
+            self.InitialSpin, self.FinalSpin,
+            self.InitialSpin_label, self.FinalSpin_label]:
                 e.Enable()
 
     def disable_polar(self):
@@ -1488,7 +1500,10 @@ class StressListPanel(SatPanel):
          self.Longitude_label, self.Latitude_label,
          self.PoleInitial, self.PoleFinal,
          self.TidalInitial, self.TidalFinal,
-         self.TidalLock]:
+         self.TidalLock,
+         self.DespinningBox,
+         self.InitialSpin, self.FinalSpin,
+         self.InitialSpin_label, self.FinalSpin_label]:
             e.Disable()
 
     def on_set_diurn(self, evt):
@@ -1666,6 +1681,31 @@ class StressListPanel(SatPanel):
                 e.Enable()
             self.sc.stress_d['Polar Wander'].UserCoordinates.lock_body(False)
             self.sc.polarwander_coordinates['Locked'] = False
+
+    def Despinning(self, evt):
+        self.sc.stresses_changed = True
+        if self.DespinningBox.GetValue():
+            self.sc.polarwander_coordinates['Despinning'] = True
+            for e in [
+             self.InitialSpin, self.FinalSpin,
+             self.InitialSpin_label, self.FinalSpin_label]:
+                e.Enable()
+            self.sc.stress_d['Polar Wander'].UserCoordinates.spin_change(True)
+        else:
+            self.sc.polarwander_coordinates['Despinning'] = False
+            for e in [
+             self.InitialSpin, self.FinalSpin,
+             self.InitialSpin_label, self.FinalSpin_label]:
+                e.Disable()
+            self.sc.stress_d['Polar Wander'].UserCoordinates.spin_change(False)
+
+    def set_InitialSpin(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_InitialSpin(float(evt.GetString()))
+
+    def set_FinalSpin(self, evt):
+        self.sc.stresses_changed = True
+        self.sc.stress_d['Polar Wander'].UserCoordinates.update_FinalSpin(float(evt.GetString()))
 
     def on_save_love(self, evt):
         try:
