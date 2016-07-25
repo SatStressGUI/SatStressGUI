@@ -3068,7 +3068,10 @@ class ScalarPlotPanel(PlotPanel):
         return WrapStaticText(self,
             label=u"Display a rasterized scalar stress field defined by calculation on " +\
             u"satellite and grid parameters at the resolution defined by grid.  " +\
-            u"Tension is positive\n ")
+            u"Tension is positive\n " +\
+            u"White circles represent initial rotational poles, black circles are final rotational poles." +\
+            u"White squares are initial sub- and anti-jove points, black square are final points." +\
+            u"Black triangles are cycloids that could not be initiated, white triangles are cycloids that were initiated but unpropagated.")
 
     def plot_sizer(self):
         self.plot_fields = {}
