@@ -145,7 +145,8 @@ class SatelliteCalculation(object):
         'thetaTInitial': None,
         'phiTInitial': None,
         'thetaTFinal': None,
-        'phiTFinal': None}
+        'phiTFinal': None,
+        'Locked': True}
 
 
 
@@ -1307,7 +1308,7 @@ class StressListPanel(SatPanel):
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
         
 
-        Polargrid = wx.FlexGridSizer(rows=5, cols=3, hgap=3, vgap=5)
+        Polargrid = wx.FlexGridSizer(rows=6, cols=3, hgap=3, vgap=5)
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
@@ -1332,14 +1333,17 @@ class StressListPanel(SatPanel):
         self.Bind(wx.EVT_TEXT, self.set_thetaTf, self.PWthetaTf)
         self.PWphiTf = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_phiTf, self.PWphiTf)
+        self.TidalLock = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Assume tidally locked satellite')
+        self.TidalLock.SetValue(True)
+        self.Bind(wx.EVT_CHECKBOX, self.Lock_Body, self.TidalLock)
 
         Polargrid.AddMany([
             (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
             (self.PoleInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaRi, 0, wx.ALL|wx.EXPAND), (self.PWphiRi, 0, wx.ALL|wx.EXPAND),
             (self.PoleFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaRf, 0, wx.ALL|wx.EXPAND), (self.PWphiRf, 0, wx.ALL|wx.EXPAND),
             (self.TidalInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaTi, 0, wx.ALL|wx.EXPAND), (self.PWphiTi, 0, wx.ALL|wx.EXPAND),
-            (self.TidalFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaTf, 0, wx.ALL|wx.EXPAND), (self.PWphiTf, 0, wx.ALL|wx.EXPAND)
-            ])
+            (self.TidalFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaTf, 0, wx.ALL|wx.EXPAND), (self.PWphiTf, 0, wx.ALL|wx.EXPAND),
+            (self.TidalLock, 0, wx.ALL|wx.EXPAND)])
 
         sz.Add(Polargrid)
 
@@ -1455,15 +1459,25 @@ class StressListPanel(SatPanel):
 
 
     def enable_polar(self):
-        for e in [
-         self.PWthetaRi, self.PWphiRi,
-         self.PWthetaRf, self.PWphiRf,
-         self.PWthetaTi, self.PWphiTi,
-         self.PWthetaTf, self.PWphiTf,
-         self.Longitude_label, self.Latitude_label,
-         self.PoleInitial, self.PoleFinal,
-         self.TidalInitial, self.TidalFinal]:
-            e.Enable()
+        if self.TidalLock.GetValue():
+            for e in [
+             self.PWthetaRi, self.PWphiRi,
+             self.PWthetaRf, self.PWphiRf,
+             self.Longitude_label, self.Latitude_label,
+             self.PoleInitial, self.PoleFinal,
+             self.TidalLock]:
+                e.Enable()
+        else:
+            for e in [
+             self.PWthetaRi, self.PWphiRi,
+             self.PWthetaRf, self.PWphiRf,
+             self.PWthetaTi, self.PWphiTi,
+             self.PWthetaTf, self.PWphiTf,
+             self.Longitude_label, self.Latitude_label,
+             self.PoleInitial, self.PoleFinal,
+             self.TidalInitial, self.TidalFinal,
+             self.TidalLock]:
+                e.Enable()
 
     def disable_polar(self):
         for e in [
@@ -1473,7 +1487,8 @@ class StressListPanel(SatPanel):
          self.PWthetaTf, self.PWphiTf,
          self.Longitude_label, self.Latitude_label,
          self.PoleInitial, self.PoleFinal,
-         self.TidalInitial, self.TidalFinal]:
+         self.TidalInitial, self.TidalFinal,
+         self.TidalLock]:
             e.Disable()
 
     def on_set_diurn(self, evt):
@@ -1564,21 +1579,35 @@ class StressListPanel(SatPanel):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRi(float(evt.GetString()))
         self.sc.polarwander_coordinates['thetaRInitial'] = float(evt.GetString())
+        if self.sc.polarwander_coordinates['Locked']:
+            if float(evt.GetString()) >= 0:
+                self.sc.polarwander_coordinates['thetaTInitial'] = float(evt.GetString()) - 90
+            else:
+                self.sc.polarwander_coordinates['thetaTInitial'] = float(evt.GetString()) + 90
     
     def set_phiRi(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRi(float(evt.GetString()))
         self.sc.polarwander_coordinates['phiRInitial'] = float(evt.GetString())
+        if self.sc.polarwander_coordinates['Locked']:
+            self.sc.polarwander_coordinates['phiTInitial'] = float(evt.GetString())
 
     def set_thetaRf(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRf(float(evt.GetString()))
         self.sc.polarwander_coordinates['thetaRFinal'] = float(evt.GetString())
+        if self.sc.polarwander_coordinates['Locked']:
+            if float(evt.GetString()) >= 0:
+                self.sc.polarwander_coordinates['thetaTFinal'] = float(evt.GetString()) - 90
+            else:
+                self.sc.polarwander_coordinates['thetaTFinal'] = float(evt.GetString()) + 90
 
     def set_phiRf(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRf(float(evt.GetString()))
         self.sc.polarwander_coordinates['phiRFinal'] = float(evt.GetString())
+        if self.sc.polarwander_coordinates['Locked']:
+            self.sc.polarwander_coordinates['phiTFinal'] = float(evt.GetString())
 
     def set_thetaTi(self, evt):
         self.sc.stresses_changed = True
@@ -1599,6 +1628,44 @@ class StressListPanel(SatPanel):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiTf(float(evt.GetString()))
         self.sc.polarwander_coordinates['phiTFinal'] = float(evt.GetString())
+
+    def Lock_Body(self, evt):
+        self.sc.stresses_changed = True
+        if self.TidalLock.GetValue():
+            for e in [
+            self.PWthetaTi, self.PWphiTi,
+            self.PWthetaTf, self.PWphiTf,
+            self.TidalInitial, self.TidalFinal]:
+                e.Disable()
+            self.sc.stress_d['Polar Wander'].UserCoordinates.lock_body(True)
+
+            if not self.sc.polarwander_coordinates['Locked']:
+                self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRi(self.sc.polarwander_coordinates['thetaRInitial'])
+                if self.sc.polarwander_coordinates['thetaRInitial'] >= 0:
+                    self.sc.polarwander_coordinates['thetaTInitial'] = self.sc.polarwander_coordinates['thetaRInitial'] - 90
+                else:
+                    self.sc.polarwander_coordinates['thetaTInitial'] = self.sc.polarwander_coordinates['thetaRInitial'] + 90
+                self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRi(self.sc.polarwander_coordinates['phiRInitial'])
+                self.sc.polarwander_coordinates['phiTInitial'] = self.sc.polarwander_coordinates['phiRInitial']
+
+                self.sc.stress_d['Polar Wander'].UserCoordinates.update_thetaRf(self.sc.polarwander_coordinates['thetaRFinal'])
+                if self.sc.polarwander_coordinates['thetaRFinal'] >= 0:
+                    self.sc.polarwander_coordinates['thetaTFinal'] = self.sc.polarwander_coordinates['thetaRFinal'] - 90
+                else:
+                    self.sc.polarwander_coordinates['thetaTFinal'] = self.sc.polarwander_coordinates['thetaRFinal'] + 90
+                self.sc.stress_d['Polar Wander'].UserCoordinates.update_phiRf(self.sc.polarwander_coordinates['phiRFinal'])
+                self.sc.polarwander_coordinates['phiTFinal'] = self.sc.polarwander_coordinates['phiRFinal']
+
+            self.sc.polarwander_coordinates['Locked'] = True
+
+        else:
+            for e in [
+            self.PWthetaTi, self.PWphiTi,
+            self.PWthetaTf, self.PWphiTf,
+            self.TidalInitial, self.TidalFinal]:
+                e.Enable()
+            self.sc.stress_d['Polar Wander'].UserCoordinates.lock_body(False)
+            self.sc.polarwander_coordinates['Locked'] = False
 
     def on_save_love(self, evt):
         try:
@@ -2827,7 +2894,8 @@ class PlotPanel(SatPanel):
 
         #Plot tidal bulge locations if the coordinates of the initial and final location differ
         if (self.sc.polarwander_coordinates['thetaTInitial'] != self.sc.polarwander_coordinates['thetaTFinal'] 
-            or self.sc.polarwander_coordinates['phiTInitial'] != self.sc.polarwander_coordinates['phiTFinal']):
+            or self.sc.polarwander_coordinates['phiTInitial'] != self.sc.polarwander_coordinates['phiTFinal']
+            or self.sc.polarwander_coordinates['Locked']):
 
             self.basemap_ax.plot(self.sc.polarwander_coordinates['phiTInitial'],
                 self.sc.polarwander_coordinates['thetaTInitial'],
@@ -3045,20 +3113,21 @@ class ScalarPlotPanel(PlotPanel):
         lp.Add(spp1)
         lp.AddSpacer(15)
 
-        self.pw_marker_box = wx.CheckBox(self, label='Hide Polar Wander coordinates')
+        self.pw_marker_box = wx.CheckBox(self, label='Show Polar Wander coordinates')
+        self.pw_marker_box.SetValue(True)
         lp.Add(self.pw_marker_box, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        self.pw_marker_box.Bind(wx.EVT_CHECKBOX, self.hide_pw_markers)
+        self.pw_marker_box.Bind(wx.EVT_CHECKBOX, self.show_pw_markers)
         
         lp.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
         return lp
 
-    def hide_pw_markers(self, evt):
+    def show_pw_markers(self, evt):
         if self.pw_marker_box.GetValue():
-            self.sc.parameters['to_plot_pw_markers'] = False
+            self.sc.parameters['to_plot_pw_markers'] = True
             self.plot()
         else:
-            self.sc.parameters['to_plot_pw_markers'] = True
+            self.sc.parameters['to_plot_pw_markers'] = False
             self.plot()
 
     def update_parameters(self):
