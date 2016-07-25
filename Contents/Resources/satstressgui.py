@@ -4408,6 +4408,8 @@ When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do no
 - The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
+- By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
+- If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.\n\
 - All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
