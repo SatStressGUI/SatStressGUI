@@ -1320,8 +1320,8 @@ class StressListPanel(SatPanel):
         self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
         self.TidalInitial = wx.StaticText(self, label=u'Initial Tidal Bulge Location')
         self.TidalFinal = wx.StaticText(self, label=u'Final Tidal Bulge Location')
-        self.InitialSpin_label = wx.StaticText(self, label=u'Initial Rotation Rate')
-        self.FinalSpin_label = wx.StaticText(self, label=u'Final Rotation Rate')
+        self.InitialSpin_label = wx.StaticText(self, label=u'Initial Rotational Period')
+        self.FinalSpin_label = wx.StaticText(self, label=u'Final Rotational Period')
 
         self.PWthetaRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_thetaRi, self.PWthetaRi)
@@ -4450,6 +4450,8 @@ When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do no
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
 - If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.\n\
+- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite.  \
+The rotational period should be input in units of hours.\n\
 - All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 """
         self.makeMsgDialog(Help, u'The Stresses Tab')
