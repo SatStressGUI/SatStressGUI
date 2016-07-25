@@ -1400,6 +1400,12 @@ class StressListPanel(SatPanel):
     
         self.parameters['Polar Wander'].Bind(wx.EVT_CHECKBOX,self.on_set_polar)
 
+        self.disable_display_diurnlove()
+        self.disable_display_nsrlove()
+        self.disable_istparams()
+        self.disable_obliq()
+        self.disable_polar()
+
 
     def disable_display_diurnlove(self):
         for widg in [self.h2, self.k2, self.l2,
