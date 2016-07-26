@@ -1702,11 +1702,11 @@ class StressListPanel(SatPanel):
                 e.Disable()
             self.sc.stress_d['Polar Wander'].UserCoordinates.spin_change(False)
 
-    def set_InitialSpin(self, evt):
+    def set_InitialSpinPeriod(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_InitialSpin(float(evt.GetString()))
 
-    def set_FinalSpin(self, evt):
+    def set_FinalSpinPeriod(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_FinalSpin(float(evt.GetString()))
 
