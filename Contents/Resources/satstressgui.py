@@ -3552,16 +3552,15 @@ class ScalarPlotPanel(PlotPanel):
             for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
         
                 if not self.sc.cycloids.has_key(i) or self.sc.many_changed:
-    
                     self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
                 self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos, self.sc.parameters['to_plot_triangles'])
             self.sc.many_changed = False
         else:
-            if (self.sc.cyc == None or self.cycloid_changed):
+            if (self.sc.cyc == None or self.sc.cycloid_changed):
                 self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
-                self.cycloid_changed = False
+                self.sc.cycloid_changed = False
             self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos, self.sc.parameters['to_plot_triangles'])
             
             

@@ -1,3 +1,6 @@
+#About
+_________________
+
 This repository contains the code for SatStressGUI, a program which models stresses in icy satellites.
 
 To use this program, download the package and run the satstressgui executable file located in Contents/MacOS.
@@ -16,7 +19,7 @@ Andre Ismailyan, Peter Sinclair.
 SatStressGUI V4.0 was developed at the Jet Propulsion Laboratory, California Institute of Technology
 and is based on SatStressGUI.
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho.
-SatStress GUI is based on SatStress, which was designed by Zane Selvans and is available at
+SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress
 
 ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any 
@@ -28,6 +31,8 @@ licenses, or other export authority as may be required before exporting such
 information to foreign countries or providing access to foreign persons.
 
 Older versions of this program can be found at https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
+
+A fork which reqrote the program in a Model-View-Controller Architecture can be found at https://github.com/AndreI11/SatStressGui
 
 
 #Getting Started
@@ -77,9 +82,10 @@ If a satellite's crust is not coupled to its core, it may experience nonsynchron
 Sometimes, this also results in a reorientation of the poles. 
 The north pole appears to wander over the surface as the crust reorients itself. 
 This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, 
-as well as the parent planet appearing to change its location in the sky. nn
-This stressing mechanism is calculated using an elastic model.nn
-For more information on Polar Wander as a stressing mechanism, please see:n
+as well as the parent planet appearing to change its location in the sky. 
+This stressing mechanism is calculated using an elastic model.
+
+For more information on Polar Wander as a stressing mechanism, please see:
     Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.n
     Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
 
@@ -93,8 +99,9 @@ This velocity could be constant, or could vary depending on the magnitude of the
 During the cycloid's propagation, the satellite will continue orbiting around its primary.
 This causes the stress field on the satellite to change, making the cycloids curve.
 When the stress is no longer greater than the requisite propagation strength, the cycloid stops moving.
-If the stress reaches the propagation strength again, it will continue.nn
-For more information, please see:n
+If the stress reaches the propagation strength again, it will continue.
+
+For more information, please see:
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
 
 
@@ -107,7 +114,9 @@ To either plot or calculate stresses, the satellite, stresses, and grid must fir
 Information on the tabs and their parameters are given below:
 
 
-Satellite - The Satellite Tab is used to input the physical properties of the satellite.
+###Satellite 
+#####The Satellite Tab is used to input the physical properties of the satellite.
+
 - SatStressGUI assumes a 4-layer body (these might typically be the core, mantle, water ocean, and icy shell).
 - Each entry should use the units denoted in the square brackets next to the box.
 - The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.
@@ -115,7 +124,8 @@ Satellite - The Satellite Tab is used to input the physical properties of the sa
 - The orbital eccentricity must be < 0.25.  Otherwise the program cannot reasonably calculate stresses.
 - If you have changed a number, but nothing seems to happen, try hitting 'Enter' in the box you changed.
 
-Stresses - The Stresses Tab is used to select which stresses to use.
+###Stresses 
+#####The Stresses Tab is used to select which stresses to use.
 
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. 
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. 
@@ -130,7 +140,9 @@ When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do no
 The rotational period should be input in units of hours.
 - All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 
-Grid - The Grid Tab is used to specify what section of the satellite to look at in the plot.
+###Grid
+#####The Grid Tab is used to specify what section of the satellite to look at in the plot.
+
 - For more information about each stress, see the Information menu.
 - NOTE: The number of latitude and longitude grid points must be equal.
 - To examine the whole moon, use a latitude range from -90 to 90 and a longitude range of -180 to 180.
@@ -140,7 +152,9 @@ Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be add
 - The "Amount of NSR Buildup" row is used to determine how long the ice shell has been rotating. 
 The Start Time is when the plotting starts, and the End Time is when the plotting ends.
 
-Cycloids - The Cycloids Tab allows the user to generate a cycloidal feature on the map.
+###Cycloids
+#####The Cycloids Tab allows the user to generate a cycloidal feature on the map.
+
 - The cycloids are modeled and plotted on the Plot Tab.
 - The Yield Threshold is how much stress must be put on the crust to break the ice and initiate a fracture.
 - The Propagation Strength is how much stress must be put on the crust to make the split continue, and the split continues at the Propagation Speed. This is lower than the Yield since it is easier to continue breaking the ice once a crakc has been made. The cycloid will continue (perpendicular to the direction of the maximum tension. This is why cycloids become curved) so long as the stress at that point is greater than the propagation strength. 
@@ -148,7 +162,9 @@ Cycloids - The Cycloids Tab allows the user to generate a cycloidal feature on t
 - NOTE: The Vary Velocity option is currently untested.
 - For more information on cycloids, see the Information menu.
 
-Plot - the Plot Tab shows a map of the stresses on the surface of the satellite.
+###Plot
+#####the Plot Tab shows a map of the stresses on the surface of the satellite.
+
 - Tension on the map is shown as positive, and compression as negative.
 - You can step through the plots by using the buttons to the bottom right of the graph.
 - Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "Save Series" 
