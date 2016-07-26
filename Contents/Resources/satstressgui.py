@@ -1347,10 +1347,10 @@ class StressListPanel(SatPanel):
         self.Bind(wx.EVT_CHECKBOX, self.Lock_Body, self.TidalLock)
         self.DespinningBox = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Despinning [hours]')
         self.Bind(wx.EVT_CHECKBOX, self.Despinning, self.DespinningBox)
-        self.InitialSpin = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT, self.set_InitialSpin, self.InitialSpin)
-        self.FinalSpin = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT, self.set_FinalSpin, self.FinalSpin)
+        self.InitialSpinPeriod = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_InitialSpinPeriod, self.InitialSpinPeriod)
+        self.FinalSpinPeriod = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
+        self.Bind(wx.EVT_TEXT, self.set_FinalSpinPeriod, self.FinalSpinPeriod)
 
         Polargrid.AddMany([
             (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
@@ -1360,7 +1360,7 @@ class StressListPanel(SatPanel):
             (self.TidalFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaTf, 0, wx.ALL|wx.EXPAND), (self.PWphiTf, 0, wx.ALL|wx.EXPAND),
             (self.TidalLock, 0, wx.ALL|wx.EXPAND), (self.Blank_label2, 0, wx.ALL|wx.EXPAND), (self.Blank_label3, 0, wx.ALL|wx.EXPAND),
             (self.Blank_label4, 0, wx.ALL|wx.EXPAND), (self.InitialSpin_label, 0, wx.ALL|wx.EXPAND), (self.FinalSpin_label, 0, wx.ALL|wx.EXPAND),
-            (self.DespinningBox, 0, wx.ALL|wx.EXPAND), (self.InitialSpin, 0, wx.ALL|wx.EXPAND), (self.FinalSpin, 0, wx.ALL|wx.EXPAND)])
+            (self.DespinningBox, 0, wx.ALL|wx.EXPAND), (self.InitialSpinPeriod, 0, wx.ALL|wx.EXPAND), (self.FinalSpinPeriod, 0, wx.ALL|wx.EXPAND)])
 
         sz.Add(Polargrid)
 
@@ -1490,7 +1490,7 @@ class StressListPanel(SatPanel):
                 e.Enable()
         if self.DespinningBox.GetValue():
             for e in [
-            self.InitialSpin, self.FinalSpin,
+            self.InitialSpinPeriod, self.FinalSpinPeriod,
             self.InitialSpin_label, self.FinalSpin_label]:
                 e.Enable()
 
@@ -1505,7 +1505,7 @@ class StressListPanel(SatPanel):
          self.TidalInitial, self.TidalFinal,
          self.TidalLock,
          self.DespinningBox,
-         self.InitialSpin, self.FinalSpin,
+         self.InitialSpinPeriod, self.FinalSpinPeriod,
          self.InitialSpin_label, self.FinalSpin_label]:
             e.Disable()
 
@@ -1690,14 +1690,14 @@ class StressListPanel(SatPanel):
         if self.DespinningBox.GetValue():
             self.sc.polarwander_coordinates['Despinning'] = True
             for e in [
-             self.InitialSpin, self.FinalSpin,
+             self.InitialSpinPeriod, self.FinalSpinPeriod,
              self.InitialSpin_label, self.FinalSpin_label]:
                 e.Enable()
             self.sc.stress_d['Polar Wander'].UserCoordinates.spin_change(True)
         else:
             self.sc.polarwander_coordinates['Despinning'] = False
             for e in [
-             self.InitialSpin, self.FinalSpin,
+             self.InitialSpinPeriod, self.FinalSpinPeriod,
              self.InitialSpin_label, self.FinalSpin_label]:
                 e.Disable()
             self.sc.stress_d['Polar Wander'].UserCoordinates.spin_change(False)
