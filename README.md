@@ -30,14 +30,14 @@ information to foreign countries or providing access to foreign persons.
 Older versions of this program can be found at https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
 
 
-Getting Started
+#Getting Started
 _________________
 
 SatStressGUI is currently capable of calculating and plotting Diurnal, Non-Synchronous Rotation, Obliquity, Ice Shell Thickening, and Polar Wander stresses and is able to simulat the formation of cycloids.
 
 An explanation of these stresses and cycloids as well as additional references is given:
 
-#Diurnal
+###Diurnal
 Diurnal tidal stresses arise when a satellite is in an eccentric orbit. 
 This is due to two reasons. 
 First, the amplitude of the planet's gravitational force is greater at periapse than it is at apoapse. 
@@ -51,7 +51,7 @@ and orbital eccentricity using gravitational potential theory,
 Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
 
 
-#Obliquity
+###Obliquity
 A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. 
 A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. 
 However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.
@@ -61,7 +61,7 @@ obliquity on surface stresses induced by diurnal tides and non-synchronous rotat
 case of Europa. Icarus, 215(1), 417-438.
 
 
-#Ice Shell Thickening
+###Ice Shell Thickening
 As satellites age, they could become cooler. 
 This would result in more of the liquid ocean freezing, increasing the thickness of the icy crust. 
 This process would force the ice shell to expand, putting extensional stress on the surface.
@@ -71,7 +71,7 @@ to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
 
 
 
-#Polar
+###Polar
 Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. 
 If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). 
 Sometimes, this also results in a reorientation of the poles. 
@@ -84,7 +84,7 @@ For more information on Polar Wander as a stressing mechanism, please see:n
     Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
 
 
-#Cycloids
+###Cycloids
   Cycloids are arcuate lineaments found on the surface of Europa.  
 They are thought to be created when a fracture in the ice is propagated because of the stresses. 
 In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.
@@ -98,7 +98,7 @@ For more information, please see:n
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
 
 
-How To Use
+#How To Use
 ____________________
 
 
