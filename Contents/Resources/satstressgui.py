@@ -2352,7 +2352,9 @@ class CycloidsPanel(SatPanel):
 
 
     #For loading multiple cycloids
+    
     def load_many_params(self, filename):
+        #the CSV headers need to be the same name as the parameters for the Cycloids init object (threshold, propgataion_speed, etc)
         self.use_multiple.Enable()
         self.use_multiple.SetValue(True)
         self.EvtSetUseMultiple(None)
@@ -2360,26 +2362,20 @@ class CycloidsPanel(SatPanel):
         self.sc.many_changed = True
         
         paramFile = open(filename, 'rU')
-        try:
-            rows = list(csv.reader(paramFile))
-            params_to_load = rows[0]
-            
-            self.sc.params_for_cycloids = {}
-            i = -1
-            for row in rows[1:]:
-                if row[0].startswith('cycloid'):
-                    i +=1
-                    self.sc.params_for_cycloids[i] = {}
-                else:
-                    for j, param in enumerate(params_to_load):
-                        self.sc.params_for_cycloids[i].update({param: row[j]})
-                    self.sc.params_for_cycloids[i].update({'degree_step':0.1})
-    
-        except:
-            error_dialog(self,"Error loading file")
+        rows = list(csv.reader(paramFile))
+        params_to_load = rows[0]
+        
+        self.sc.params_for_cycloids = {}
+        i = 0
+        
+        for row in rows[1:]:
+            self.sc.params_for_cycloids[i] = {}
+            for j, param in enumerate(params_to_load):
+                self.sc.params_for_cycloids[i].update({param: str(row[j]) })
+                self.sc.params_for_cycloids[i].update({'degree_step':0.3}) # degree step can be higher
+            i += 1
         
         paramFile.close()
-
 
 
 
