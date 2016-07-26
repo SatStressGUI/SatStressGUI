@@ -185,7 +185,7 @@ class SatelliteCalculation(object):
         self.parameters = {}
         self.parameters['NSR_PERIOD'] = 'infinity'   # initial value of NSRperiod in Satellite tab
         self.parameters['to_plot_cycloids'] = False
-        self.parameters['to_plot_triangles'] = False
+        self.parameters['to_plot_triangles'] = True
         self.parameters['to_plot_pw_markers'] = True
         self.parameters['to_plot_many_cycloids'] = False
         self.parameters['VARY_VELOCITY'] = False
@@ -3519,6 +3519,7 @@ class ScalarPlotPanel(PlotPanel):
         self.plot_triangles = wx.CheckBox(self, label='Plot marker if unable to create cycloid')
         ckSizer.Add(self.plot_triangles, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.plot_triangles.Bind(wx.EVT_CHECKBOX, self.generate_cycloid_markers)
+        self.plot_triangles.SetValue(True)
 
         saveMany = wx.Button(self, label="Save Multiple Cycloids")
         saveMany.Bind(wx.EVT_BUTTON, self.save_many_cycloids)
