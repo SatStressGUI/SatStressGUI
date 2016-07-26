@@ -2257,6 +2257,7 @@ class CycloidsPanel(SatPanel):
             event.Skip()
 
     def OnText(self,event):
+        self.sc.cycloid_changed = True
         if not event.GetEventObject().GetValue() == 'None':
             self.sc.parameters[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
         
@@ -3558,6 +3559,7 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.sc.cycloid_changed):
+                print 'yo'
                 self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
