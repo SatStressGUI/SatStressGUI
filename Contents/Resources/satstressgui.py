@@ -242,8 +242,7 @@ class SatelliteCalculation(object):
             else:
                 self.parameters[parameter] = value
 
-            self.cycloid_changed = True
-                
+
         # if NSR related, grid would automatically update?
         elif parameter.startswith('nsr_'):
             self.grid_changed = True
@@ -274,6 +273,8 @@ class SatelliteCalculation(object):
                 numpy.radians(self.get_parameter(float, 'periapsis_arg', 0))
         #elif parameter in [k for k,v in self.cycloid_parameters_d]:
             # TODO
+            
+        self.cycloid_changed = True
 
     # accessor for parameters
     def get_parameter(self, f, parameter, default_value=None):
