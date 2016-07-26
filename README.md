@@ -28,3 +28,27 @@ licenses, or other export authority as may be required before exporting such
 information to foreign countries or providing access to foreign persons.
 
 Older versions of this program can be found at https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
+
+
+Getting Started
+_________________
+
+To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (Sample .sat and .grid files are included in the sample folder).  
+
+Information on the tabs and their parameters are given below:
+
+Stresses -The Stresses Tab is used to select which stresses to use.
+
+- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. 
+Checking the "Input Love Numbers" box will allow you to use custom Love numbers. 
+When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do not use scientific notation. 
+1.2 + 3e-05j would look like 1.2+0.00003j.
+- The Obliquity stress must be used with Diurnal or NSR.
+- The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.
+- Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.
+- By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.
+- If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.
+- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite.  
+The rotational period should be input in units of hours.
+- All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
+
