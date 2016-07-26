@@ -52,11 +52,14 @@ import numpy
 from satstress.satstress import *
 from satstress.gridcalc import *
 from satstress.lineament import plotlinmap, Lineament, lingen_nsr, shp2lins, lins2shp  
-from satstress.cycloid import Cycloid, plotcoordsonbasemap
+from satstress.cycloid import Cycloid, plotcoordsonbasemap, SaveCycloidAsShape
 from satstress.stressplot import scalar_grid, vector_points
 import satstress.physcon
 
 import re
+
+from osgeo import ogr
+from osgeo import osr
 
 # constants set as global variables
 seconds_in_year = 31556926.0  ## 365.24 days
@@ -1309,7 +1312,7 @@ class StressListPanel(SatPanel):
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
         
 
-        Polargrid = wx.FlexGridSizer(rows=8, cols=3, hgap=3, vgap=5)
+        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5)
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
@@ -1320,8 +1323,8 @@ class StressListPanel(SatPanel):
         self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
         self.TidalInitial = wx.StaticText(self, label=u'Initial Tidal Bulge Location')
         self.TidalFinal = wx.StaticText(self, label=u'Final Tidal Bulge Location')
-        self.InitialSpin_label = wx.StaticText(self, label=u'Initial Rotational Period')
-        self.FinalSpin_label = wx.StaticText(self, label=u'Final Rotational Period')
+        self.InitialSpin_label = wx.StaticText(self, label=u'Initial Period')
+        self.FinalSpin_label = wx.StaticText(self, label=u'Final Period')
 
         self.PWthetaRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_thetaRi, self.PWthetaRi)
@@ -1342,7 +1345,7 @@ class StressListPanel(SatPanel):
         self.TidalLock = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Assume tidally locked satellite')
         self.TidalLock.SetValue(True)
         self.Bind(wx.EVT_CHECKBOX, self.Lock_Body, self.TidalLock)
-        self.DespinningBox = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Despinning')
+        self.DespinningBox = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Despinning [hours]')
         self.Bind(wx.EVT_CHECKBOX, self.Despinning, self.DespinningBox)
         self.InitialSpin = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_InitialSpin, self.InitialSpin)
@@ -3246,7 +3249,7 @@ class ScalarPlotPanel(PlotPanel):
             self.val_p[p].SetEditable(False)
 
     ###########################################################################
-    # Plot Tab Load/Save buttons for lineament and cycloids and helper functions
+    # Plot Tab Load/Save buttons for lineament and helper functions
     def load_save_buttons(self):
         """
         creates and bind the buttons for loading and saving files
@@ -3409,6 +3412,93 @@ class ScalarPlotPanel(PlotPanel):
                 l['lines'] = plotlinmap(l['data'], map=self.basemap_ax, color=self.mpl_color(l['color'].GetColour()))[0]
 
     ###########################################################################
+    # Plot Tab Load/Save buttons for cycloids and helper functions
+    def load_save_buttons_cycloids(self):
+        """
+        creates and bind the buttons for loading and saving files
+        """
+        gridSizer = wx.FlexGridSizer(rows=2, cols=2, hgap=15, vgap=5)
+
+        # create and bind buttons
+        shapeLoad = wx.Button(self, label=u'Load from shape file')
+        shapeLoad.Bind(wx.EVT_BUTTON, self.on_load_shape_cycloid)
+        
+        shapeSave = wx.Button(self, label=u'Save as shape file')
+        shapeSave.Bind(wx.EVT_BUTTON, self.on_save_shape_cycloid)
+
+        netLoad = wx.Button(self, label=u'Load fom NetCDF file')
+        netLoad.Bind(wx.EVT_BUTTON, self.on_load_netcdf_cycloid)
+
+        netSave = wx.Button(self, label=u'Save as NetCDF file')
+        netSave.Bind(wx.EVT_BUTTON, self.on_save_netcdf_cycloid)
+
+        # add widgets to grid
+        gridSizer.AddMany([
+            (shapeLoad, 0, wx.ALIGN_CENTER|wx.EXPAND),
+            (shapeSave, 0, wx.ALIGN_CENTER|wx.EXPAND),
+            (netLoad, 0, wx.ALIGN_CENTER|wx.EXPAND),
+            (netSave, 0, wx.ALIGN_CENTER| wx.EXPAND)])
+
+        return gridSizer
+
+    def on_load_shape_cycloid(self, evt):
+        try:
+            file_dialog(self,
+                message = u"Load from shape file",
+                style = wx.OPEN,
+                wildcard = 'Shape files (*.shp)|*.shp',
+                action = self.load_shape_cycloid)
+        except Exception, e:
+            error_dialog(self, str(e), u'Shape Load Error')
+    
+    def load_shape_cycloid(self, filename):
+        # walk around char const * restriction
+        sf = os.path.splitext(str(filename))[0] + '.shp'
+        self.loaded['data'] = shp2lins(sf, stresscalc=self.calc)
+        self.loaded['lines'] = []
+        d = wx.ColourDialog(self, self.loaded['color'])
+        if (d.ShowModal() == wx.ID_OK):
+            self.loaded['color'] = d.GetColourData()
+        self.plot()
+
+    def on_save_shape_cycloid(self, evt):
+        file_dialog(self,
+            message = u"Save to shape file",
+            style = wx.SAVE | wx.OVERWRITE_PROMPT,
+            wildcard = 'Shape files (*.shp)|*.shp',
+            defaultFile = 'cycloids.shp',
+            action = self.save_shape_cycloid)
+
+    def save_shape_cycloid(self, filename):
+        SaveCycloidAsShape(filename)
+
+    def on_load_netcdf_cycloid(self, evt):
+        try:
+            file_dialog(self,
+                message=u"Load from NetCDF file",
+                style=wx.OPEN,
+                wildcard=u'NetCDF files (*.nc)|*.nc',
+                action=self.load_netcdf_cycloid)
+        except LocalError, e:
+            error_dialog(self, str(e), e.title)
+    
+    def load_netcdf_cycloid(self, filename):
+        self.sc.load_netcdf(filename)
+        self.update_parameters()
+        self.plot()
+
+    def on_save_netcdf_cycloid(self, evt):
+        try:
+            file_dialog(self,
+                message=u"Save to NetCDF file",
+                style=wx.SAVE | wx.OVERWRITE_PROMPT,
+                defaultFile='gridcalc.nc',
+                wildcard=u'NetCDF files (*.nc)|*.nc',
+                action=self.sc.save_netcdf)
+        except LocalError, e:
+            error_dialog(self, str(e), e.title)
+
+    ###########################################################################
     # Defining cycloid controls and related functions
     def cycloids_sizer(self):
         """
@@ -3442,7 +3532,7 @@ class ScalarPlotPanel(PlotPanel):
         cycl.Add(ckSizer, wx.ALL|wx.ALIGN_LEFT)
         cycl.AddSpacer(5)
         cycl.AddSpacer(15)
-        cycl.Add(self.load_save_buttons(), wx.ALL|wx.ALIGN_RIGHT)
+        cycl.Add(self.load_save_buttons_cycloids(), wx.ALL|wx.ALIGN_RIGHT)
         return cycl
 
     def generate_cycl(self, evt):
