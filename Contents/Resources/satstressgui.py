@@ -356,7 +356,7 @@ class SatelliteCalculation(object):
         t = self.parameters['NSR_PERIOD']
         self.nsr_period_years2seconds()
         f.write(self.dump_satellite())
-        self.parameters['NSR_PERIOD'] = t #why does it do this?
+        self.parameters['NSR_PERIOD'] = t #why does it do this? -PS
         f.close()
         if not tmp:
             self.satellite_save_changed = False
@@ -3411,6 +3411,8 @@ class ScalarPlotPanel(PlotPanel):
 
     ###########################################################################
     # Plot Tab Load/Save buttons for cycloids and helper functions
+    # Replicated from the load_save_buttons function which is used for lineaments.
+    # Created by Peter Sinclair (2016)
     def load_save_buttons_cycloids(self):
         """
         creates and bind the buttons for loading and saving files
