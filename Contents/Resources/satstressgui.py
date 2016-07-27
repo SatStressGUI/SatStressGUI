@@ -4608,7 +4608,8 @@ button to the lower right.\n\
   - The final sub- and anti-jove points will be black squares.\n\
 - When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.\n\
   - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.\n\
-- NOTE: The cycloids cannot be saved as shape or netcdf files currently.\n\
+- Cycloids can be saved as Shape files via the appropriate button.  Loading of shape files is currently not supported.\n\
+- NOTE: The cycloids cannot be saved as netcdf files currently.\n\
 - NOTE: The Lineaments features does not function currently.
 """
         self.makeMsgDialog(Help, u'The Plot Tab')
