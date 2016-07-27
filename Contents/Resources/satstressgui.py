@@ -3467,10 +3467,7 @@ class ScalarPlotPanel(PlotPanel):
             style = wx.SAVE | wx.OVERWRITE_PROMPT,
             wildcard = 'Shape files (*.shp)|*.shp',
             defaultFile = 'cycloids.shp',
-            action = self.save_shape_cycloid)
-
-    def save_shape_cycloid(self, filename):
-        SaveCycloidAsShape(filename)
+            action = SaveCycloidAsShape)
 
     def on_load_netcdf_cycloid(self, evt):
         try:
@@ -3562,7 +3559,6 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.sc.cycloid_changed):
-                print 'yo'
                 self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
