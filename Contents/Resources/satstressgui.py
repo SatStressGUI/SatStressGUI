@@ -185,7 +185,7 @@ class SatelliteCalculation(object):
         self.parameters = {}
         self.parameters['NSR_PERIOD'] = 'infinity'   # initial value of NSRperiod in Satellite tab
         self.parameters['to_plot_cycloids'] = False
-        self.parameters['to_plot_triangles'] = False
+        self.parameters['to_plot_triangles'] = True
         self.parameters['to_plot_pw_markers'] = True
         self.parameters['to_plot_many_cycloids'] = False
         self.parameters['VARY_VELOCITY'] = False
@@ -356,7 +356,7 @@ class SatelliteCalculation(object):
         t = self.parameters['NSR_PERIOD']
         self.nsr_period_years2seconds()
         f.write(self.dump_satellite())
-        self.parameters['NSR_PERIOD'] = t #why does it do this?
+        self.parameters['NSR_PERIOD'] = t #why does it do this? -PS
         f.close()
         if not tmp:
             self.satellite_save_changed = False
@@ -3427,6 +3427,8 @@ class ScalarPlotPanel(PlotPanel):
 
     ###########################################################################
     # Plot Tab Load/Save buttons for cycloids and helper functions
+    # Replicated from the load_save_buttons function which is used for lineaments.
+    # Created by Peter Sinclair (2016)
     def load_save_buttons_cycloids(self):
         """
         creates and bind the buttons for loading and saving files
@@ -3481,10 +3483,7 @@ class ScalarPlotPanel(PlotPanel):
             style = wx.SAVE | wx.OVERWRITE_PROMPT,
             wildcard = 'Shape files (*.shp)|*.shp',
             defaultFile = 'cycloids.shp',
-            action = self.save_shape_cycloid)
-
-    def save_shape_cycloid(self, filename):
-        SaveCycloidAsShape(filename)
+            action = SaveCycloidAsShape)
 
     def on_load_netcdf_cycloid(self, evt):
         try:
@@ -3535,6 +3534,7 @@ class ScalarPlotPanel(PlotPanel):
         self.plot_triangles = wx.CheckBox(self, label='Plot marker if unable to create cycloid')
         ckSizer.Add(self.plot_triangles, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.plot_triangles.Bind(wx.EVT_CHECKBOX, self.generate_cycloid_markers)
+        self.plot_triangles.SetValue(True)
 
         saveMany = wx.Button(self, label="Save Multiple Cycloids")
         saveMany.Bind(wx.EVT_BUTTON, self.save_many_cycloids)
@@ -3575,7 +3575,6 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.sc.cycloid_changed):
-                print 'yo'
                 self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
@@ -4621,7 +4620,8 @@ button to the lower right.\n\
   - The final sub- and anti-jove points will be black squares.\n\
 - When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.\n\
   - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.\n\
-- NOTE: The cycloids cannot be saved as shape or netcdf files currently.\n\
+- Cycloids can be saved as Shape files via the appropriate button.  Loading of shape files is currently not supported.\n\
+- NOTE: The cycloids cannot be saved as netcdf files currently.\n\
 - NOTE: The Lineaments features does not function currently.
 """
         self.makeMsgDialog(Help, u'The Plot Tab')
