@@ -2028,6 +2028,7 @@ class GridCalcPanel(SatPanel):
         for p, d in self.sc.grid_parameters_d[:2]:
             gmcp.Add(wx.StaticText(self, label=d))
             self.parameters.update(add_text_ctrls(self, gmcp, [ ("%s_%s" % (p,v), '') for v, dv in self.sc.grid_vars_d ]))
+          
         for i in range(4):
             gmcp.AddSpacer(20)
         # orbital
@@ -2070,6 +2071,16 @@ class GridCalcPanel(SatPanel):
         wx.EVT_BUTTON(self, sb.GetId(), self.save)
         wx.EVT_BUTTON(self, lb.GetId(), self.load)
 
+
+        self.parameters['LAT_MIN'].SetValue('-90')
+        self.parameters['LAT_MAX'].SetValue('90')
+        self.parameters['LAT_NUM'].SetValue('10')
+        self.parameters['LON_MIN'].SetValue('-180')
+        self.parameters['LON_MAX'].SetValue('180')
+        self.parameters['LON_NUM'].SetValue('10')
+        self.parameters['GRID_ID'].SetValue('default')
+
+
     def enable_nsr(self):
         for p in ['TIME_MIN', 'nsr_time', 'TIME_NUM']:
             self.parameters[p].Enable()
@@ -2087,6 +2098,11 @@ class GridCalcPanel(SatPanel):
             self.parameters[p].Enable()
         for sts in self.orbit_labels:
             sts.Enable()
+        self.parameters['ORBIT_MIN'].SetValue('0')
+        self.parameters['ORBIT_MAX'].SetValue('360')
+        self.parameters['ORBIT_NUM'].SetValue('10')
+
+
 
     def disable_orbit(self):
         for p in ['ORBIT_MIN', 'ORBIT_MAX', 'ORBIT_NUM']:
