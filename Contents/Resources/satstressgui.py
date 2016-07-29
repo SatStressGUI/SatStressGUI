@@ -2071,7 +2071,7 @@ class GridCalcPanel(SatPanel):
         wx.EVT_BUTTON(self, sb.GetId(), self.save)
         wx.EVT_BUTTON(self, lb.GetId(), self.load)
 
-
+        self.orbital_set = 0
         self.parameters['LAT_MIN'].SetValue('-90')
         self.parameters['LAT_MAX'].SetValue('90')
         self.parameters['LAT_NUM'].SetValue('10')
@@ -2098,10 +2098,11 @@ class GridCalcPanel(SatPanel):
             self.parameters[p].Enable()
         for sts in self.orbit_labels:
             sts.Enable()
-        self.parameters['ORBIT_MIN'].SetValue('0')
-        self.parameters['ORBIT_MAX'].SetValue('360')
-        self.parameters['ORBIT_NUM'].SetValue('10')
-
+        if not orbital_set:
+            self.parameters['ORBIT_MIN'].SetValue('0')
+            self.parameters['ORBIT_MAX'].SetValue('360')
+            self.parameters['ORBIT_NUM'].SetValue('10')
+            orbital_set = 1
 
 
     def disable_orbit(self):
