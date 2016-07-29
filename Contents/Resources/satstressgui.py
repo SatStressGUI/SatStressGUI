@@ -2098,11 +2098,11 @@ class GridCalcPanel(SatPanel):
             self.parameters[p].Enable()
         for sts in self.orbit_labels:
             sts.Enable()
-        if not orbital_set:
+        if not self.orbital_set:
             self.parameters['ORBIT_MIN'].SetValue('0')
             self.parameters['ORBIT_MAX'].SetValue('360')
             self.parameters['ORBIT_NUM'].SetValue('10')
-            orbital_set = 1
+            self.orbital_set = 1
 
 
     def disable_orbit(self):
