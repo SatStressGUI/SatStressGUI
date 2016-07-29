@@ -2072,6 +2072,7 @@ class GridCalcPanel(SatPanel):
         wx.EVT_BUTTON(self, lb.GetId(), self.load)
 
         self.orbital_set = 0
+        self.nsr_set = 0
         self.parameters['LAT_MIN'].SetValue('-90')
         self.parameters['LAT_MAX'].SetValue('90')
         self.parameters['LAT_NUM'].SetValue('10')
@@ -2086,6 +2087,11 @@ class GridCalcPanel(SatPanel):
             self.parameters[p].Enable()
         for sts in self.nsr_labels:
             sts.Enable()
+        if not self.nsr_set:
+            self.parameters['TIME_MIN'].SetValue('0')
+            self.parameters['nsr_time'].SetValue('1000000')
+            self.parameters['TIME_NUM'].SetValue('10')
+            self.nsr_set = 1
 
     def disable_nsr(self):
         for p in ['TIME_MIN', 'nsr_time', 'TIME_NUM']:
