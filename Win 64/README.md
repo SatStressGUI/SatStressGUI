@@ -38,6 +38,9 @@ A fork which reqrote the program in a Model-View-Controller Architecture can be 
 #Getting Started
 _________________
 
+To run the windows version, simply open up a command prompt, cd into the Win 64 folder and in the command prompt run "python run.py"
+
+
 SatStressGUI is currently capable of calculating and plotting Diurnal, Non-Synchronous Rotation, Obliquity, Ice Shell Thickening, and Polar Wander stresses and is able to simulate the formation of cycloids.
 
 An explanation of these stresses and cycloids as well as additional references is given:
