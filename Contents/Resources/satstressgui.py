@@ -204,6 +204,7 @@ class SatelliteCalculation(object):
     # sets a parameter to given value and sets changed to True  
     def set_parameter(self, parameter, value, point = False):
         
+        
         if point:
             self.parameters[parameter][point - 1] = value
         else:
@@ -273,6 +274,7 @@ class SatelliteCalculation(object):
                 numpy.radians(self.get_parameter(float, 'periapsis_arg', 0))
         #elif parameter in [k for k,v in self.cycloid_parameters_d]:
             # TODO
+        self.cycloid_changed = True
             
 
     # accessor for parameters
@@ -1093,7 +1095,9 @@ class SatPanel(wx.Panel):
     def mk_change_param(self, k, i=0):
         def on_change(evt):
             if (not isinstance(self.parameters[k], list)):
-                self.sc.set_parameter(k, self.parameters[k].GetValue())
+                if (not self.sc.parameters[k] == self.parameters[k].GetValue()):
+                    self.sc.set_parameter(k, self.parameters[k].GetValue())
+        
             else:
                 self.sc.set_parameter(k, self.parameters[k][i].GetValue(), i)
         return on_change
