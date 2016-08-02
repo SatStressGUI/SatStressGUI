@@ -274,7 +274,6 @@ class SatelliteCalculation(object):
         #elif parameter in [k for k,v in self.cycloid_parameters_d]:
             # TODO
             
-        self.cycloid_changed = True
 
     # accessor for parameters
     def get_parameter(self, f, parameter, default_value=None):
@@ -2128,13 +2127,7 @@ class GridCalcPanel(SatPanel):
             self.enable_orbit()
         else:
             self.disable_orbit()
-        for p in [ "%s_%s" % (p, v)
-                for p,pd in self.sc.grid_parameters_d
-                for v, vd in self.sc.grid_vars_d ]:
-            if self.sc.parameters.get(p) is None:
-                if p in self.parameters:
-                    self.parameters[p].SetValue('')
-
+    
     def load_grid(self, filename):
         self.sc.load_grid(filename)
         self.update_parameters()
@@ -4236,8 +4229,7 @@ class SatStressPanel(wx.Panel):
     def page_change(self, evt):
         p = self.nb.GetCurrentPage()
         if isinstance(p, SatPanel):
-            #p.update_parameters() This was causing bug where update_parameters would reset the values in cycloids panel, triggering the cycloids calculations to be dumped and recalculated everytime page was changed to satellite tab and back
-            pass
+            p.update_parameters()
         if isinstance(p, PlotPanel):
             p.plot()
     
