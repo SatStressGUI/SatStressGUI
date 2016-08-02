@@ -4236,7 +4236,8 @@ class SatStressPanel(wx.Panel):
     def page_change(self, evt):
         p = self.nb.GetCurrentPage()
         if isinstance(p, SatPanel):
-            p.update_parameters()
+            #p.update_parameters() This was causing bug where update_parameters would reset the values in cycloids panel, triggering the cycloids calculations to be dumped and recalculated everytime page was changed to satellite tab and back
+            pass
         if isinstance(p, PlotPanel):
             p.plot()
     
