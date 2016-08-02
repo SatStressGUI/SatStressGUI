@@ -1095,7 +1095,7 @@ class SatPanel(wx.Panel):
     def mk_change_param(self, k, i=0):
         def on_change(evt):
             if (not isinstance(self.parameters[k], list)):
-                if (not self.sc.parameters[k] == self.parameters[k].GetValue()):
+                if (not k in self.sc.parameters or (k in self.sc.parameters and not (self.sc.parameters[k] == self.parameters[k].GetValue() ) ) ):
                     self.sc.set_parameter(k, self.parameters[k].GetValue())
         
             else:
@@ -2131,7 +2131,13 @@ class GridCalcPanel(SatPanel):
             self.enable_orbit()
         else:
             self.disable_orbit()
-    
+
+        for p in [ "%s_%s" % (p, v)
+                  for p,pd in self.sc.grid_parameters_d
+                  for v, vd in self.sc.grid_vars_d ]:
+            if self.sc.parameters.get(p) is None:
+                if p in self.parameters:
+                    self.parameters[p].SetValue('')
     def load_grid(self, filename):
         self.sc.load_grid(filename)
         self.update_parameters()
