@@ -53,7 +53,7 @@ from satstress.satstress import *
 from satstress.gridcalc import *
 from satstress.lineament import plotlinmap, Lineament, lingen_nsr, shp2lins, lins2shp  
 from satstress.cycloid import Cycloid, plotcoordsonbasemap, SaveCycloidAsShape
-from satstress.stressplot import scalar_grid, vector_points
+from satstress.stressplot import scalar_grid
 import satstress.physcon
 
 import re
