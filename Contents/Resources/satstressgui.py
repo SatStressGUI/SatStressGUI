@@ -2233,10 +2233,10 @@ class CycloidsPanel(SatPanel):
         # Set the TextCtrl to expand on resize
         
         
-        fieldsToAdd = [('YIELD', 'Yield (Threshold) [kPa]: '),('PROPAGATION_STRENGTH','Propagation Strength [kPa]: '),('PROPAGATION_SPEED','Propagation Speed [m/s]: '), ('STARTING_LONGITUDE', 'Starting Longitude: '), ('STARTING_LATITUDE', 'Starting Latitude: ')]
+        fieldsToAdd = [ ('cycloid_name', 'Cycloid Name'), ('YIELD', 'Yield (Threshold) [kPa]: '),('PROPAGATION_STRENGTH','Propagation Strength [kPa]: '),('PROPAGATION_SPEED','Propagation Speed [m/s]: '), ('STARTING_LONGITUDE', 'Starting Longitude: '), ('STARTING_LATITUDE', 'Starting Latitude: ')]
 
         self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
-     
+        self.sc.parameters['cycloid_name'] = ""
      
         gridSizer.Add(dirSizer)
         gridSizer.Add(self.start_dir)
@@ -2270,7 +2270,7 @@ class CycloidsPanel(SatPanel):
         for p, d in parameters_d:
             sz.Add(wx.StaticText(self, label=d), flag=wx.ALIGN_CENTER_VERTICAL)
             txtCtrlObj = wx.TextCtrl(self, -1,name=p)
-            txtCtrlObj.Bind(wx.EVT_CHAR,self.OnChar)
+            #txtCtrlObj.Bind(wx.EVT_CHAR,self.OnChar)
             txtCtrlObj.Bind(wx.EVT_TEXT, self.OnText)
             txtCtrls[p] = txtCtrlObj
             sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
@@ -2285,8 +2285,10 @@ class CycloidsPanel(SatPanel):
     def OnText(self,event):
         self.sc.cycloid_changed = True
         if not event.GetEventObject().GetValue() == 'None':
-            self.sc.parameters[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
-        
+            try:
+                self.sc.parameters[event.GetEventObject().GetName()] = float(event.GetEventObject().GetValue())
+            except:
+                self.sc.parameters[event.GetEventObject().GetName()] = event.GetEventObject().GetValue()
         else:
             self.sc.parameters[event.GetEventObject().GetName()] = None
     def load_many(self, evt):
@@ -2404,10 +2406,8 @@ class CycloidsPanel(SatPanel):
             i += 1
         
         paramFile.close()
-
-
-
-
+        
+    
     def updateFields(self):
         if self.sc.parameters['VARY_VELOCITY'] == 'True' or self.sc.parameters['VARY_VELOCITY'] == '1':
             self.vary.SetValue(True)
@@ -3017,6 +3017,7 @@ class PlotPanel(SatPanel):
         ax.clear()
         p = self.basemap_parameters(self.sc.parameters['projection'])
         p.update({'resolution': None, 'ax': ax})
+        self.sc.parameters['ax'] = ax
         basemap_ax = basemap.Basemap(**p)
         return basemap_ax
 
@@ -3187,6 +3188,13 @@ class ScalarPlotPanel(PlotPanel):
         self.pw_marker_box.SetValue(True)
         lp.Add(self.pw_marker_box, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.pw_marker_box.Bind(wx.EVT_CHECKBOX, self.show_pw_markers)
+        
+        
+        
+        self.plot_cycl_names = wx.CheckBox(self, label='Show cycloid names')
+        lp.Add(self.plot_cycl_names, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        #self.plot_cycl_names.Bind(wx.EVT_CHECKBOX, self.show_cycl_names)
+        self.plot_cycl_names.SetValue(False)
         
         lp.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
@@ -3541,11 +3549,13 @@ class ScalarPlotPanel(PlotPanel):
         # bind to event
         self.plot_cycl.Bind(wx.EVT_CHECKBOX, self.generate_cycl)
 
+
+
         self.plot_triangles = wx.CheckBox(self, label='Plot marker if unable to create cycloid')
         ckSizer.Add(self.plot_triangles, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.plot_triangles.Bind(wx.EVT_CHECKBOX, self.generate_cycloid_markers)
         self.plot_triangles.SetValue(True)
-
+        
         saveMany = wx.Button(self, label="Save Multiple Cycloids")
         saveMany.Bind(wx.EVT_BUTTON, self.save_many_cycloids)
         ckSizer.AddSpacer(5)
@@ -3579,17 +3589,17 @@ class ScalarPlotPanel(PlotPanel):
         if self.sc.parameters['to_plot_many_cycloids']:
             for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
         
-                if not self.sc.cycloids.has_key(i) or self.sc.many_changed:
+                if not self.sc.cycloids.has_key(i) or self.sc.many_changed or self.sc.cycloid_changed:
                     self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
-                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.orbit_pos, self.sc.parameters['to_plot_triangles'])
+                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'],self.orbit_pos, self.sc.parameters['to_plot_triangles'])
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.sc.cycloid_changed):
-                self.sc.cyc = Cycloid(self.calc, self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
+                self.sc.cyc = Cycloid(self.calc, self.sc.parameters['cycloid_name'], self.sc.parameters['YIELD'], self.sc.parameters['PROPAGATION_STRENGTH'], self.sc.parameters['PROPAGATION_SPEED'], \
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.sc.cycloid_changed = False
-            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.orbit_pos, self.sc.parameters['to_plot_triangles'])
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'])
             
             
     def save_many_cycloids(self, evt):
@@ -4215,7 +4225,7 @@ class SatStressPanel(wx.Panel):
 
         gp = GridCalcPanel(self.nb, satellite_calculation=self.sc)
 
-        spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
+        self.spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
         
         self.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
         
@@ -4225,7 +4235,7 @@ class SatStressPanel(wx.Panel):
         self.nb.AddPage(self.tp, u"Point")
         self.nb.AddPage(gp, u"Grid")
         self.nb.AddPage(self.cy, u"Cycloids")
-        self.nb.AddPage(spp, u"Plot")
+        self.nb.AddPage(self.spp, u"Plot")
         # self.nb.AddPage(dummy, u'Test')
         
         sz.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -4667,17 +4677,18 @@ button to the lower right.\n\
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        frame = SatStressFrame(None, title=u'SatStressGUI V4.0')
-        frame.Show(True)
-        self.SetTopWindow(frame)
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0')
+        self.frame.Show(True)
+        self.SetTopWindow(self.frame)
         return True
 
 def main():
     #make Mac OS app be able to run calcLoveWahr4Layer from Resources
     #directory in application bundle
     os.environ['PATH'] += os.path.pathsep+os.path.abspath(os.curdir)
-    app = SatStressApp(1) # The 0 aka false parameter means "don't redirect stdout and stderr to a window"
+    app = SatStressApp(1) # The 0 aka false parameter means "don't redirect stdout and stderr to a window"    app.MainLoop()
     app.MainLoop()
+
 
 if __name__ == '__main__':
     main()
