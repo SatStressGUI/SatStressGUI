@@ -58,6 +58,8 @@ import satstress.physcon
 
 import re
 
+
+# Used for mapping and saving to a shapefile.
 from osgeo import ogr
 from osgeo import osr
 
@@ -151,7 +153,7 @@ class SatelliteCalculation(object):
         'phiTFinal': None,
         'Locked': True,
         'Despinning': False}
-
+        # These variables are used by the program to determine where to map the initial/final PW points.  -PS 2016
 
 
 
@@ -185,8 +187,8 @@ class SatelliteCalculation(object):
         self.parameters = {}
         self.parameters['NSR_PERIOD'] = 'infinity'   # initial value of NSRperiod in Satellite tab
         self.parameters['to_plot_cycloids'] = False
-        self.parameters['to_plot_triangles'] = True
-        self.parameters['to_plot_pw_markers'] = True
+        self.parameters['to_plot_triangles'] = True # A flag to know whether or not to put in cycloid markers if unable to initiate/propagate.  -PS 2016
+        self.parameters['to_plot_pw_markers'] = True # A flag to know whether or not to plot the PW initial/final points.  -PS 2016
         self.parameters['to_plot_many_cycloids'] = False
         self.parameters['VARY_VELOCITY'] = False
         self.parameters['k'] = 0
@@ -351,13 +353,13 @@ class SatelliteCalculation(object):
     def save_satellite(self, filename=None):
         tmp = False
         if not filename:
-            filename = os.tempnam(None, 'sat')
+            filename = os.tempnam(None, 'sat') # Saves to the temporary directory.  This is necessary b/c of how satstress.py handles reading in the variables.  -PS 2016
             tmp = True
         f = open(filename, 'w')
         t = self.parameters['NSR_PERIOD']
         self.nsr_period_years2seconds()
         f.write(self.dump_satellite())
-        self.parameters['NSR_PERIOD'] = t #why does it do this? -PS
+        self.parameters['NSR_PERIOD'] = t #why does it do this? -PS 2016
         f.close()
         if not tmp:
             self.satellite_save_changed = False
@@ -564,8 +566,7 @@ class SatelliteCalculation(object):
                 'lame_mu',
                 'lame_lambda',
                 'thickness',
-                'viscosity',
-                'tensile_str']:
+                'viscosity']:
                 self.write_var(fs, nc, "%s_%d" % (v,l))
             fs.write("\n")
         try:
@@ -683,6 +684,8 @@ def vector_points1(stresscalc=None, lons=None, lats=None, time_t=0.0,\
     basemap_ax=None, lonshift=0, w_stress=False,\
     scale=1e8, scale_arr=None, arrow_width=0.008):
     """
+    This function and vector_points2 were developed from stressplot.vector_points.
+
     Display the principal components of the tidal stresses defined by the input
     stresscalc object at the points defined by lons and lats, which are one
     dimensional arrays of equal length, and a time defined by time_t, in
@@ -799,6 +802,8 @@ def vector_points2(stresscalc=None, lons=None, lats=None, time_t=0.0,\
     basemap_ax=None, lonshift=0, \
     scale=1e8, arrow_width=0.008):
     """
+    This function and vector_points2 were developed from stressplot.vector_points.
+
     Display the normal and shear components of the tidal stresses defined by the input
     stresscalc object at the points defined by lons and lats, which are one
     dimensional arrays of equal length, and a time defined by time_t, in
@@ -1184,7 +1189,7 @@ class SatelliteLayersPanel(SatPanel):
         HelpText.SetFont(HelpFont)
         sz.Add(HelpText)
         sz.AddSpacer(10)
-
+        # This text was added to provide new users with important information. -PS 2016
         sz.Add(wx.StaticText(self, label=u'This model makes several assumptions when calculating stresses.'))
         sz.Add(wx.StaticText(self, label=u'-The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
         sz.Add(wx.StaticText(self, label=u'-It is assumed to behave in a viscoelastic manner.'))
@@ -1256,7 +1261,7 @@ class StressListPanel(SatPanel):
             [ ('Nonsynchronous Rotation', 'Nonsynchronous Rotation') ]))
 
         sz.AddSpacer(8)
-
+        # Added this text to provide users with important information. -PS 2016
         sz.Add(wx.StaticText(self, label=u'To input custom Love numbers, use the format <Re> +/- <Im>j.'))
         sz.Add(wx.StaticText(self, label=u'Do not use scientific notation when inputting custom Love numbers.'))
         sz.Add(wx.StaticText(self, label=u'"3.0-1.0e-03j" should be written as "3.0-0.001j".'))
@@ -1303,20 +1308,19 @@ class StressListPanel(SatPanel):
         ISTParams_sz.Add(delta_tc_sz)
         ISTParams_sz.AddSpacer(5)
         # include thermal diffusivity parameter for IST
-        diff_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        diff_sz.AddSpacer(28)
-        self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]  ')
-        diff_sz.Add(self.diffusivity_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        self.parameters.update(add_text_ctrls(self, diff_sz, [ ('diffusivity', 'diffusivity') ]))
-        ISTParams_sz.Add(diff_sz)
+        #diff_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        #diff_sz.AddSpacer(28)
+        #self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]  ')
+        #diff_sz.Add(self.diffusivity_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        #self.parameters.update(add_text_ctrls(self, diff_sz, [ ('diffusivity', 'diffusivity') ]))
+        #ISTParams_sz.Add(diff_sz)
         sz.Add(ISTParams_sz)
-        
-        
+
+        # Removed the diffusivity option from the GUI because it is not implemented. -PS 2016
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
-        
 
-        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5)
+        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
@@ -1349,6 +1353,7 @@ class StressListPanel(SatPanel):
         self.TidalLock = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Assume tidally locked satellite')
         self.TidalLock.SetValue(True)
         self.Bind(wx.EVT_CHECKBOX, self.Lock_Body, self.TidalLock)
+        # Despinning could be implemented as a separate stress, but I did not have time to do this. -PS 2016
         self.DespinningBox = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Despinning [hours]')
         self.Bind(wx.EVT_CHECKBOX, self.Despinning, self.DespinningBox)
         self.InitialSpinPeriod = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
@@ -1425,6 +1430,7 @@ class StressListPanel(SatPanel):
     
         self.parameters['Polar Wander'].Bind(wx.EVT_CHECKBOX,self.on_set_polar)
 
+        # Causes the inputs for individual stresses to be disabled until the stresses are selected.  -PS 2016
         self.disable_display_diurnlove()
         self.disable_display_nsrlove()
         self.disable_istparams()
@@ -1432,6 +1438,7 @@ class StressListPanel(SatPanel):
         self.disable_polar()
 
 
+    # These functions disable and enable various stress parameters on the GUI.
     def disable_display_diurnlove(self):
         for widg in [self.h2, self.k2, self.l2,
                      self.h2Diurn, self.k2Diurn, self.l2Diurn,
@@ -1457,14 +1464,16 @@ class StressListPanel(SatPanel):
             widg.Enable()
 
     def disable_istparams(self):
+        for e in [self.delta_label, self.parameters['delta_tc']]:
+            e.Disable()
+        """
         for e in [self.delta_label, self.parameters['delta_tc'],
                   self.diffusivity_label, self.parameters['diffusivity'] ]:
             e.Disable()
-
-
+        """
 
     def enable_istparams(self):
-        """Don't yet enable diffusivity as it is only rleevant for the viscoelastic case."""
+        """Don't yet enable diffusivity as it is only relevant for the viscoelastic case."""
         for e in [self.delta_label, self.parameters['delta_tc'] ]:
             e.Enable()
 
@@ -1477,7 +1486,6 @@ class StressListPanel(SatPanel):
         for e in [self.obliq_label, self.parameters['obliquity'],
                self.periapsis_label, self.parameters['periapsis_arg'] ]:
             e.Enable()
-
 
     def enable_polar(self):
         for e in [
@@ -1573,6 +1581,8 @@ class StressListPanel(SatPanel):
         else:
             self.sc.stress_d['Nonsynchronous Rotation'].useUser = False
 
+    # These functions are used to pass values from the GUI to satstress.py without using the file-saving method.  -PS 2016
+
     def set_h2Diurn(self, evt):
         self.sc.stresses_changed = True
         self.sc.stress_d['Diurnal'].loveUser.update_h2(self.parse_complex(evt.GetString()))
@@ -1652,6 +1662,11 @@ class StressListPanel(SatPanel):
         self.sc.polarwander_coordinates['phiTFinal'] = float(evt.GetString())
 
     def Lock_Body(self, evt):
+        """
+        If the "Assume tidally locked" option is selected, the program will calculate the tidal axis automatically.
+        It will assume that the tidal axis should be 90 degrees apart from the rotational axis.
+        -PS 2016
+        """
         self.sc.stresses_changed = True
         if self.TidalLock.GetValue():
             for e in [
@@ -1690,6 +1705,7 @@ class StressListPanel(SatPanel):
             self.sc.polarwander_coordinates['Locked'] = False
 
     def Despinning(self, evt):
+        # Despinning is calculated by changing the rotation rate in the flattening coefficient for polar wander. -PS 2016
         self.sc.stresses_changed = True
         if self.DespinningBox.GetValue():
             self.sc.polarwander_coordinates['Despinning'] = True
@@ -1715,6 +1731,7 @@ class StressListPanel(SatPanel):
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_FinalSpin(float(evt.GetString()))
 
     def on_save_love(self, evt):
+        # Saves the love numbers generated by the program.
         try:
             file_dialog(self,
                 message=u"Save Love Numbers",
@@ -1746,8 +1763,6 @@ class PointPanel(SatPanel):
     
     def __init__(self, *args, **kw):
         super(PointPanel, self).__init__(*args, **kw)
-        
-        
         #change self.rows to change how many rows are displayed in the GUI
         self.rows = 20
         self.sc.set_parameter('point_rows',self.rows)
@@ -1901,7 +1916,6 @@ class PointPanel(SatPanel):
             self.parameters[p].append(text)
             self.sc.parameters[p].append(defaultval)
 
-
     def spin_down(self, spin_value):
     	self.pp.SetRows(spin_value)
         self.tp.SetRows(spin_value)
@@ -1914,7 +1928,6 @@ class PointPanel(SatPanel):
         self.rows = spin_value
         self.sc.set_parameter('point_rows',self.rows)
         self.fieldPanel.Layout()
-
 
     def load(self, evt):
         try:
@@ -2090,7 +2103,7 @@ class GridCalcPanel(SatPanel):
             self.parameters[p].Enable()
         for sts in self.nsr_labels:
             sts.Enable()
-        if not self.nsr_set:
+        if not self.nsr_set: #sets default NSR values -PS 2016
             self.parameters['TIME_MIN'].SetValue('0')
             self.parameters['nsr_time'].SetValue('1000000')
             self.parameters['TIME_NUM'].SetValue('10')
@@ -2107,7 +2120,7 @@ class GridCalcPanel(SatPanel):
             self.parameters[p].Enable()
         for sts in self.orbit_labels:
             sts.Enable()
-        if not self.orbital_set:
+        if not self.orbital_set: #sets default Diurnal values -PS 2016
             self.parameters['ORBIT_MIN'].SetValue('0')
             self.parameters['ORBIT_MAX'].SetValue('360')
             self.parameters['ORBIT_NUM'].SetValue('10')
@@ -2138,6 +2151,7 @@ class GridCalcPanel(SatPanel):
             if self.sc.parameters.get(p) is None:
                 if p in self.parameters:
                     self.parameters[p].SetValue('')
+
     def load_grid(self, filename):
         self.sc.load_grid(filename)
         self.update_parameters()
@@ -2218,9 +2232,6 @@ class CycloidsPanel(SatPanel):
         self.constant.Disable()
         self.parameters['k'] = self.constant
 
-
-        
-
         self.use_multiple = wx.CheckBox(self, wx.ID_ANY, 'Use loaded CSV file')
         self.Bind(wx.EVT_CHECKBOX, self.EvtSetUseMultiple, self.use_multiple)
         self.use_multiple.Disable()
@@ -2231,7 +2242,6 @@ class CycloidsPanel(SatPanel):
         
         # add widgets into grid
         # Set the TextCtrl to expand on resize
-        
         
         fieldsToAdd = [ ('cycloid_name', 'Cycloid Name'), ('YIELD', 'Yield (Threshold) [kPa]: '),('PROPAGATION_STRENGTH','Propagation Strength [kPa]: '),('PROPAGATION_SPEED','Propagation Speed [m/s]: '), ('STARTING_LONGITUDE', 'Starting Longitude: '), ('STARTING_LATITUDE', 'Starting Latitude: ')]
 
@@ -2278,6 +2288,8 @@ class CycloidsPanel(SatPanel):
         return txtCtrls
 
     def OnChar(self,event):
+        # Checks to make sure only numbers are entered into a box.
+        # Some characters are allowed, for imaginary numbers and scientific notation. -PS 2016
         charEntered= event.GetKeyCode()
         if (charEntered >= 48 and charEntered <= 57) or charEntered == 8 or charEntered == 9 or charEntered == 13 or charEntered == 45 or charEntered ==46:
             event.Skip()
@@ -2291,6 +2303,7 @@ class CycloidsPanel(SatPanel):
                 self.sc.parameters[event.GetEventObject().GetName()] = event.GetEventObject().GetValue()
         else:
             self.sc.parameters[event.GetEventObject().GetName()] = None
+
     def load_many(self, evt):
         try:
             file_dialog(self,
@@ -2300,6 +2313,7 @@ class CycloidsPanel(SatPanel):
                 action=self.load_many_params)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
+
     def on_save_cyclparams(self, evt):
         try:
             file_dialog(self,
@@ -2325,9 +2339,7 @@ class CycloidsPanel(SatPanel):
                     f.write(k + " = " + str(self.sc.parameters[k]) + "\n")
                 else:
                     f.write(k + " = None" + "\n")
-
         f.close()
-        
         if not tmp:
             self.grid_save_changed = False
         return filename, tmp
@@ -2418,14 +2430,13 @@ class CycloidsPanel(SatPanel):
         if self.sc.parameters.has_key('STARTING_DIRECTION'):
             self.start_dir.SetValue(self.sc.parameters['STARTING_DIRECTION'])
         
-        
         for p, textctrl in self.textCtrls.items():
             if self.sc.parameters.has_key(p):
                     textctrl.SetValue(str(self.sc.parameters[p]))
 
 
-
     def load_shape(self, filename):
+        # Loading shapefiles is currently not supported.  -PS 2016
         # walk around char const * restriction
         sf = os.path.splitext(str(filename))[0] + '.shp'
         self.loaded['data'] = shp2lins(sf, stresscalc=self.calc)
@@ -2466,7 +2477,6 @@ class CycloidsPanel(SatPanel):
             self.sc.parameters['to_plot_many_cycloids'] = True
             for ctrl in [self.parameters[p] for p in self.sc.cycloid_parameters_d]:
                 ctrl.Disable()
-
         else:
             self.sc.parameters['to_plot_many_cycloids'] = False
             self.use_multiple.SetValue(False)
@@ -2658,10 +2668,8 @@ class StressPlotPanel(MatPlotPanel):
     def get_ax_nsr(self):
         return self.figure.add_axes([scale_left, self.nsr_y, scale_bar_length, self.slider_h])
 
-    """
     def get_ax_polar(self):
         return self.figure.add_axes([scale_left, self.polar_y, scale_bar_length, self.slider_h])
-    """
 
     def del_orbit(self):
         self.figure.delaxes(self.ax_orbit)
@@ -2671,11 +2679,9 @@ class StressPlotPanel(MatPlotPanel):
         self.figure.delaxes(self.ax_nsr)
         self.del_nsr_controls()
     
-    """
     def del_polar(self):
         self.figure.delaxes(self.ax_polar)
         self.del_polar_controls()
-    """
 
     def del_orbit_controls(self):
         for a in [self.ax_orbit_first, self.ax_orbit_prev, \
@@ -2687,12 +2693,10 @@ class StressPlotPanel(MatPlotPanel):
             self.ax_nsr_next, self.ax_nsr_last, self.ax_nsr_save]:
             self.figure.delaxes(a)
 
-    """
     def del_polar_controls(self):
         for a in [self.ax_polar_first, self.ax_polar_prev, \
             self.ax_polar_next, self.ax_polar_last, self.ax_polar_save]:
             self.figure.delaxes(a)
-    """
 
     def add_orbit(self):
         self.ax_orbit = self.get_ax_orbit()
@@ -2727,7 +2731,6 @@ class StressPlotPanel(MatPlotPanel):
         self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_orbit_series, e))
 
 
-    """
     def add_polar(self):
         self.ax_polar = self.get_ax_polar()
         self.add_polar_controls()
@@ -2759,7 +2762,6 @@ class StressPlotPanel(MatPlotPanel):
         self.polar_last_button.on_clicked(lambda e: self.polar_slider.last())
         # hack
         self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_polar_series, e))
-    """
     
     def add_nsr(self):
         self.ax_nsr = self.get_ax_nsr()
@@ -2823,7 +2825,6 @@ class StressPlotPanel(MatPlotPanel):
         self.nsr_slider = self.change_slider(
             self.ax_nsr, self.nsr_slider, valmin=valmin, valmax=valmax, numsteps=numsteps, valinit=valmin, valfmt="%.1g")
 
-    """
     def change_polar_slider(self, valmin, valmax, numsteps, valinit=None):
         if valinit is None:
             valinit = valmin
@@ -2831,7 +2832,6 @@ class StressPlotPanel(MatPlotPanel):
         self.ax_polar = self.get_ax_polar()
         self.polar_slider = self.change_slider(
                                              self.ax_polar, self.polar_slider, valmin=valmin, valmax=valmax, numsteps=numsteps, valinit=valmin, valfmt="%.1g")
-    """
 
     def plot_scale(self, scale, valfmt):
         self.scale_ax.clear()
@@ -2862,7 +2862,6 @@ class StressPlotPanel(MatPlotPanel):
         except LocalError, e:
             error_dialog(self, str(e), e.title)
 
-    """
     def on_save_polar_series(self, evt):
         try:
             dir_dialog(self,
@@ -2871,7 +2870,6 @@ class StressPlotPanel(MatPlotPanel):
                        action=self.save_polar_series)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-    """
 
 class PlotPanel(SatPanel):
     """
@@ -3832,7 +3830,7 @@ class ScalarPlotPanel(PlotPanel):
         self.vector_mesh_lons, self.vector_mesh_lats = self.vector_meshes()
 
         # monkey patching not to touch library code
-        # ^ what does that even mean?  -PS
+        # ^ what does that even mean?  -PS 2016
         def imshow(plot_field, cmap=None, **kw):
             plot_field1 = scipy.ndimage.map_coordinates(plot_field, [i,j])
             self.plot_fields[self.plot_time][self.plot_field] = (x, y, plot_field1)
@@ -4012,8 +4010,8 @@ class ScalarPlotPanel(PlotPanel):
             self.reveal_orbit_slider()
         else:
             self.hide_orbit_slider()
-
         """
+        # Polar slider is not shown because it is not currently needed.  -PS 2016
         if self.sc.parameters.get('Polar Wander', False):
             self.reveal_polar_slider()
         else:
@@ -4035,7 +4033,6 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.get_parameter(int, 'TIME_NUM', 1),
             self.nsr_pos)
 
-    """
     def init_polar_slider(self):
         nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
         self.scp.change_polar_slider(
@@ -4043,7 +4040,6 @@ class ScalarPlotPanel(PlotPanel):
            nm + self.sc.get_parameter(float, 'nsr_time', 0)*self.sc.get_parameter(float, 'TIME_NUM', 0),
            self.sc.get_parameter(int, 'TIME_NUM', 1),
            self.polar_pos)
-    """
 
     def hide_orbit_slider(self):
         if not self.orbit_hidden:
@@ -4055,12 +4051,10 @@ class ScalarPlotPanel(PlotPanel):
             self.nsr_hidden = True
             self.scp.del_nsr()
 
-    """
     def hide_polar_slider(self):
         if not self.polar_hidden:
             self.polar_hidden = True
             self.scp.del_polar()
-    """
 
     def hide_sliders(self):
         self.hide_nsr_slider()
@@ -4083,7 +4077,6 @@ class ScalarPlotPanel(PlotPanel):
             self.init_nsr_slider()
             self.scp.save_nsr_series = self.save_nsr_series
 
-    """
     def reveal_polar_slider(self):
         if self.polar_hidden:
             self.polar_hidden = False
@@ -4091,8 +4084,6 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.polar_slider.on_changed(self.on_polar_updated)
             self.init_polar_slider()
             self.scp.save_polar_series = self.save_polar_series
-    """
-
 
     def hide_orbit_controls(self):
         self.scp.del_orbit_controls()
@@ -4178,8 +4169,6 @@ class ScalarPlotPanel(PlotPanel):
         self.plot()
         del b
 
-
-    """
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving images. Please wait.", self)
         wx.SafeYield()
@@ -4199,7 +4188,6 @@ class ScalarPlotPanel(PlotPanel):
         self.scp.polar_slider.set_val(self.polar_pos)
         self.plot()
         del b
-    """
 
 
 # ===============================================================================
@@ -4293,8 +4281,6 @@ class SatStressFrame(wx.Frame):
         Information.AppendSeparator()
 
         References = wx.Menu()
-        #ref = References.Append(wx.ID_ANY, '&General')
-        #self.Bind(wx.EVT_MENU, self.onRef, ref)
         Diurnalref = References.Append(wx.ID_ANY, '&Diurnal')
         self.Bind(wx.EVT_MENU, self.onDiurnalref, Diurnalref)
         NSRref = References.Append(wx.ID_ANY, '&Nonsynchronous Rotation')
@@ -4439,17 +4425,6 @@ In this version, several bugs were fixed, and a new stressing mechanism (Polar W
 To find detailed notes of all the changes, please visit the GitHub page."""
         
         self.makeMsgDialog(updates, u'Version 4.0')
-
-    def onRef(self, evt):
-        references = u""" For more information, please see:\n\n \
-1) Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
-M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
-and orbital eccentricity using gravitational potential theory, \
-Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.\n\n \
-2) See chapter on Geodynamics of Europa's Ice Shell by Francis Nimmo and Michael Manga in \
-Europa for more information about the ice shell thickening model.\n\n\
-For references for individual stresses, please look in the Information/References menu."""
-        self.makeMsgDialog(references, u'Science References')
 
     def onContacts(self, evt):
         # Create a message dialog box
@@ -4638,6 +4613,7 @@ button to the lower right.\n\
   - The final North and South poles will be black circles.\n\
   - The initial sub- and anti-jove points will be white squares.\n\
   - The final sub- and anti-jove points will be black squares.\n\
+- The vectors created by Polar Wander do not currently appear to be generating correctly.\n\
 - When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.\n\
   - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.\n\
 - Cycloids can be saved as Shape files via the appropriate button.  Loading of shape files is currently not supported.\n\
