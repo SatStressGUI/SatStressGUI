@@ -1,3 +1,3 @@
 from subprocess import call
 
-call('python.exe python27/satstressgui.py')
+call('python27/python.exe satstressgui.py')
