@@ -52,7 +52,7 @@ import numpy
 from satstress.satstress import *
 from satstress.gridcalc import *
 from satstress.lineament import plotlinmap, Lineament, lingen_nsr, shp2lins, lins2shp  
-from satstress.cycloid import Cycloid, plotcoordsonbasemap, SaveCycloidAsShape
+from satstress.cycloid import Cycloid, SaveCycloidAsShape
 from satstress.stressplot import scalar_grid
 import satstress.physcon
 
@@ -3189,14 +3189,22 @@ class ScalarPlotPanel(PlotPanel):
         
         
         
-        self.plot_cycl_names = wx.CheckBox(self, label='Show cycloid names')
-        lp.Add(self.plot_cycl_names, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        #self.plot_cycl_names.Bind(wx.EVT_CHECKBOX, self.show_cycl_names)
-        self.plot_cycl_names.SetValue(False)
+        self.cycl_names_cb = wx.CheckBox(self, label='Show cycloid names')
+        lp.Add(self.cycl_names_cb , 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        self.cycl_names_cb.Bind(wx.EVT_CHECKBOX, self.plot_cycl_names)
+        self.cycl_names_cb.SetValue(False)
         
         lp.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
         return lp
+
+    def plot_cycl_names(self, evt):
+        s = self.cycl_names_cb.GetValue()
+        if s:
+            self.sc.parameters['show_cycl_names'] = True
+        else:
+            self.sc.parameters['show_cycl_names'] = False
+
 
     def show_pw_markers(self, evt):
         if self.pw_marker_box.GetValue():
@@ -3589,7 +3597,7 @@ class ScalarPlotPanel(PlotPanel):
         
                 if not self.sc.cycloids.has_key(i) or self.sc.many_changed or self.sc.cycloid_changed:
                     self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
-                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'],self.orbit_pos, self.sc.parameters['to_plot_triangles'])
+                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'],self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'])
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.sc.cycloid_changed):
@@ -3597,7 +3605,7 @@ class ScalarPlotPanel(PlotPanel):
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.sc.cycloid_changed = False
-            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'])
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'] )
             
             
     def save_many_cycloids(self, evt):
@@ -4231,7 +4239,7 @@ class SatStressPanel(wx.Panel):
 
         self.SetSizer(sz)
         self.Fit()
-
+        self.sc.parameters['show_cycl_names'] = False
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
     
     def page_change(self, evt):
@@ -4653,7 +4661,7 @@ button to the lower right.\n\
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0')
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0', size=(800,800))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True

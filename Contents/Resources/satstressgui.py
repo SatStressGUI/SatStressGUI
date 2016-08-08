@@ -52,7 +52,7 @@ import numpy
 from satstress.satstress import *
 from satstress.gridcalc import *
 from satstress.lineament import plotlinmap, Lineament, lingen_nsr, shp2lins, lins2shp  
-from satstress.cycloid import Cycloid, plotcoordsonbasemap, SaveCycloidAsShape
+from satstress.cycloid import Cycloid, SaveCycloidAsShape
 from satstress.stressplot import scalar_grid
 import satstress.physcon
 
@@ -1320,11 +1320,6 @@ class StressListPanel(SatPanel):
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
-        sz.Add(wx.StaticText(self, label=u"Polar wander is not completely tested, so it may not be accurate"))
-        sz.Add(wx.StaticText(self, label=u"to combine it with other stresses."))
-        sz.Add(wx.StaticText(self, label=u"The stress map from Polar Wander appears to be correct,"))
-        sz.Add(wx.StaticText(self, label=u"but the principal stress vectors are rotated 180° for some reason."))
-
         Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
@@ -1922,7 +1917,7 @@ class PointPanel(SatPanel):
             self.sc.parameters[p].append(defaultval)
 
     def spin_down(self, spin_value):
-    	self.pp.SetRows(spin_value)
+        self.pp.SetRows(spin_value)
         self.tp.SetRows(spin_value)
         self.sp.SetRows(spin_value)
         for i in range(self.rows - spin_value):
@@ -1957,11 +1952,11 @@ class PointPanel(SatPanel):
         else:
             for j in range(self.rows-num_rows):
                 for p,d in self.header1+self.header2+self.header3:
-                    self.parameters[p][-1].Destroy()		
-                    del self.parameters[p][-1]		
+                    self.parameters[p][-1].Destroy()        
+                    del self.parameters[p][-1]      
                     del self.sc.parameters[p][-1]
         self.rows = num_rows
-        self.row_ctrl.SetValue(num_rows)		
+        self.row_ctrl.SetValue(num_rows)        
         self.spin_value = num_rows
         self.sc.set_parameter('point_rows',self.rows)
         self.fieldPanel.Layout()
@@ -3194,14 +3189,22 @@ class ScalarPlotPanel(PlotPanel):
         
         
         
-        self.plot_cycl_names = wx.CheckBox(self, label='Show cycloid names')
-        lp.Add(self.plot_cycl_names, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        #self.plot_cycl_names.Bind(wx.EVT_CHECKBOX, self.show_cycl_names)
-        self.plot_cycl_names.SetValue(False)
+        self.cycl_names_cb = wx.CheckBox(self, label='Show cycloid names')
+        lp.Add(self.cycl_names_cb , 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        self.cycl_names_cb.Bind(wx.EVT_CHECKBOX, self.plot_cycl_names)
+        self.cycl_names_cb.SetValue(False)
         
         lp.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
         return lp
+
+    def plot_cycl_names(self, evt):
+        s = self.cycl_names_cb.GetValue()
+        if s:
+            self.sc.parameters['show_cycl_names'] = True
+        else:
+            self.sc.parameters['show_cycl_names'] = False
+
 
     def show_pw_markers(self, evt):
         if self.pw_marker_box.GetValue():
@@ -3594,7 +3597,7 @@ class ScalarPlotPanel(PlotPanel):
         
                 if not self.sc.cycloids.has_key(i) or self.sc.many_changed or self.sc.cycloid_changed:
                     self.sc.cycloids[i] = Cycloid(self.calc, **cycloid_params[1])
-                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'],self.orbit_pos, self.sc.parameters['to_plot_triangles'])
+                self.sc.cycloids[i].plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'],self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'])
             self.sc.many_changed = False
         else:
             if (self.sc.cyc == None or self.sc.cycloid_changed):
@@ -3602,7 +3605,7 @@ class ScalarPlotPanel(PlotPanel):
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.sc.cycloid_changed = False
-            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'])
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'] )
             
             
     def save_many_cycloids(self, evt):
@@ -4236,7 +4239,7 @@ class SatStressPanel(wx.Panel):
 
         self.SetSizer(sz)
         self.Fit()
-
+        self.sc.parameters['show_cycl_names'] = False
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
     
     def page_change(self, evt):
@@ -4658,7 +4661,7 @@ button to the lower right.\n\
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0')
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0', size=(800,800))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
