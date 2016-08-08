@@ -2081,6 +2081,8 @@ class GridCalcPanel(SatPanel):
         sz.Add(gmcp)
         sz.AddSpacer(15)
         sz.Add(wx.StaticText(self, label = u'Note: Number of latitude and longitude grid points must be equal'))
+        sz.Add(wx.StaticText(self, label=u"Sometimes the map will not generate for certain diurnal orbit values."))
+        sz.Add(wx.StaticText(self, label=u"If this happens, just change your number of increments or end value."))
 
         self.SetSizer(sz)
 
@@ -3587,6 +3589,15 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.parameters['to_plot_triangles'] = False
             self.plot()
 
+    def plot_cycl_names(self, evt):
+        s = self.cycl_names_cb.GetValue()
+        if s:
+            self.sc.parameters['show_cycl_names'] = True
+            self.plot()
+        else:
+            self.sc.parameters['show_cycl_names'] = False
+            self.plot()
+
     def plot_cycloids(self):
         if self.sc.parameters['to_plot_many_cycloids']:
             for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
@@ -3601,15 +3612,7 @@ class ScalarPlotPanel(PlotPanel):
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.sc.cycloid_changed = False
-            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'] )
-
-    def plot_cycl_names(self, evt):
-        s = self.cycl_names_cb.GetValue()
-        if s:
-            self.sc.parameters['show_cycl_names'] = True
-        else:
-            self.sc.parameters['show_cycl_names'] = False
-            
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'] )            
             
     def save_many_cycloids(self, evt):
         # if a set of parameters from *.csv hasn't been uploaded, treat it like an error
@@ -4595,6 +4598,7 @@ The rotational period should be input in units of hours.\n\
 - Each row will only activate when the appropriate stress is enabled.\n\
 - The "Orbital Position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. \
 Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be added by increasing the maximum beyond 360 degrees.\n\
+- The map will occasionally not work for certain positions.  If this happens, simply change the number of increments or the end position.\n\
 - The "Amount of NSR Buildup" row is used to determine how long the ice shell has been rotating. \
 The Start Time is when the plotting starts, and the End Time is when the plotting ends.\n\
 """
