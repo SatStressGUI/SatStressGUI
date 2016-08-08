@@ -1320,6 +1320,11 @@ class StressListPanel(SatPanel):
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
+        sz.Add(wx.StaticText(self, label=u"Polar wander is not completely tested, so it may not be accurate"))
+        sz.Add(wx.StaticText(self, label=u"to combine it with other stresses."))
+        sz.Add(wx.StaticText(self, label=u"The stress map from Polar Wander appears to be correct,"))
+        sz.Add(wx.StaticText(self, label=u"but the principal stress vectors are rotated 180° for some reason."))
+
         Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
