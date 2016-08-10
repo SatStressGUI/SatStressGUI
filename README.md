@@ -8,6 +8,8 @@ Instructions for using the program can be found in the Help menu or by pressing 
 
 Future updates to this program should either be tested in a branch before being merged into Master upon final release, or be hosted in separate repositories.
 
+Please go to https://github.com/SatStressGUI/SatStressGUI/issues to suggest improvements or report bugs.
+
 For more information, please contact Alex Patthoff at donald.a.patthoff@jpl.nasa.gov.
 
 SatStressGUI 4.0 has been created upon efforts by
@@ -127,16 +129,17 @@ Information on the tabs and their parameters are given below:
 ###Stresses 
 #####The Stresses Tab is used to select which stresses to use.
 
-- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. 
-Checking the "Input Love Numbers" box will allow you to use custom Love numbers. 
-When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do not use scientific notation. 
+
+- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values.
+Checking the "Input Love Numbers" box will allow you to use custom Love numbers.
+When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do not use scientific notation.
 1.2 + 3e-05j would look like 1.2+0.00003j.
 - The Obliquity stress must be used with Diurnal or NSR.
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.
 - If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.
-- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite.  
+- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite.
 The rotational period should be input in units of hours.
 - All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 
@@ -180,5 +183,3 @@ button to the lower right.
   - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.
 - NOTE: The cycloids cannot be saved as shape or netcdf files currently.
 - NOTE: The Lineaments features does not function currently.
-
-
