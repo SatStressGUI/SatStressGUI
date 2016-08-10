@@ -43,7 +43,8 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 
 # for manipulating netCDF files
-import netCDF3
+#import netCDF3
+#Does not run in Windows, so we've commented it out here to make for easy copying. -PS 2016
 
 # for math functions
 import numpy

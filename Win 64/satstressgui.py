@@ -44,6 +44,7 @@ from matplotlib.colors import Normalize
 
 # for manipulating netCDF files
 #import netCDF3
+#Does not run in Windows, so we've commented it out here to make for easy copying. -PS 2016
 
 # for math functions
 import numpy
@@ -1320,6 +1321,11 @@ class StressListPanel(SatPanel):
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
+        sz.Add(wx.StaticText(self, label=u"Polar wander is not completely tested, so it may not be accurate"))
+        sz.Add(wx.StaticText(self, label=u"to combine it with other stresses."))
+        sz.Add(wx.StaticText(self, label=u"The stress map from Polar Wander appears to be correct,"))
+        sz.Add(wx.StaticText(self, label=u"but the principal stress vectors are rotated 180° for some reason."))
+
         Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
@@ -1917,7 +1923,7 @@ class PointPanel(SatPanel):
             self.sc.parameters[p].append(defaultval)
 
     def spin_down(self, spin_value):
-    	self.pp.SetRows(spin_value)
+        self.pp.SetRows(spin_value)
         self.tp.SetRows(spin_value)
         self.sp.SetRows(spin_value)
         for i in range(self.rows - spin_value):
@@ -1952,11 +1958,11 @@ class PointPanel(SatPanel):
         else:
             for j in range(self.rows-num_rows):
                 for p,d in self.header1+self.header2+self.header3:
-                    self.parameters[p][-1].Destroy()		
-                    del self.parameters[p][-1]		
+                    self.parameters[p][-1].Destroy()        
+                    del self.parameters[p][-1]      
                     del self.sc.parameters[p][-1]
         self.rows = num_rows
-        self.row_ctrl.SetValue(num_rows)		
+        self.row_ctrl.SetValue(num_rows)        
         self.spin_value = num_rows
         self.sc.set_parameter('point_rows',self.rows)
         self.fieldPanel.Layout()
@@ -2076,6 +2082,8 @@ class GridCalcPanel(SatPanel):
         sz.Add(gmcp)
         sz.AddSpacer(15)
         sz.Add(wx.StaticText(self, label = u'Note: Number of latitude and longitude grid points must be equal'))
+        sz.Add(wx.StaticText(self, label=u"Sometimes the map will not generate for certain diurnal orbit values."))
+        sz.Add(wx.StaticText(self, label=u"If this happens, just change your number of increments or end value."))
 
         self.SetSizer(sz)
 
@@ -3187,23 +3195,9 @@ class ScalarPlotPanel(PlotPanel):
         lp.Add(self.pw_marker_box, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.pw_marker_box.Bind(wx.EVT_CHECKBOX, self.show_pw_markers)
         
-        
-        
-        self.cycl_names_cb = wx.CheckBox(self, label='Show cycloid names')
-        lp.Add(self.cycl_names_cb , 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        self.cycl_names_cb.Bind(wx.EVT_CHECKBOX, self.plot_cycl_names)
-        self.cycl_names_cb.SetValue(False)
-        
         lp.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
         return lp
-
-    def plot_cycl_names(self, evt):
-        s = self.cycl_names_cb.GetValue()
-        if s:
-            self.sc.parameters['show_cycl_names'] = True
-        else:
-            self.sc.parameters['show_cycl_names'] = False
 
 
     def show_pw_markers(self, evt):
@@ -3561,6 +3555,11 @@ class ScalarPlotPanel(PlotPanel):
         ckSizer.Add(self.plot_triangles, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.plot_triangles.Bind(wx.EVT_CHECKBOX, self.generate_cycloid_markers)
         self.plot_triangles.SetValue(True)
+
+        self.cycl_names_cb = wx.CheckBox(self, label='Show cycloid names')
+        ckSizer.Add(self.cycl_names_cb , 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        self.cycl_names_cb.Bind(wx.EVT_CHECKBOX, self.plot_cycl_names)
+        self.cycl_names_cb.SetValue(False)
         
         saveMany = wx.Button(self, label="Save Multiple Cycloids")
         saveMany.Bind(wx.EVT_BUTTON, self.save_many_cycloids)
@@ -3591,6 +3590,15 @@ class ScalarPlotPanel(PlotPanel):
             self.sc.parameters['to_plot_triangles'] = False
             self.plot()
 
+    def plot_cycl_names(self, evt):
+        s = self.cycl_names_cb.GetValue()
+        if s:
+            self.sc.parameters['show_cycl_names'] = True
+            self.plot()
+        else:
+            self.sc.parameters['show_cycl_names'] = False
+            self.plot()
+
     def plot_cycloids(self):
         if self.sc.parameters['to_plot_many_cycloids']:
             for i, cycloid_params in enumerate(self.sc.params_for_cycloids.items()):
@@ -3605,8 +3613,7 @@ class ScalarPlotPanel(PlotPanel):
                                       self.sc.parameters['STARTING_LATITUDE'], self.sc.parameters['STARTING_LONGITUDE'], self.sc.parameters['STARTING_DIRECTION'], \
                                       self.sc.parameters['VARY_VELOCITY'],self.sc.parameters['k'],self.sc.get_parameter(float, 'ORBIT_MAX', 360), 0.1)
                 self.sc.cycloid_changed = False
-            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'] )
-            
+            self.sc.cyc.plotcoordsonbasemap(self.basemap_ax, self.sc.parameters['ax'], self.orbit_pos, self.sc.parameters['to_plot_triangles'], self.sc.parameters['show_cycl_names'] )            
             
     def save_many_cycloids(self, evt):
         # if a set of parameters from *.csv hasn't been uploaded, treat it like an error
@@ -4338,7 +4345,7 @@ class SatStressFrame(wx.Frame):
         # SetSizeHints(minW, minH, maxW, maxH)
         # This function effectively enforces a lower bound to SatStressGUI window resizing.
         # To allow for unrestricted window resizing, simply remove this line.
-        self.SetSizeHints(1045,690,2000, 2000)
+        self.SetSizeHints(1045,710,2000, 2000)
 
         self.Fit()
         self.Show(True)
@@ -4592,6 +4599,7 @@ The rotational period should be input in units of hours.\n\
 - Each row will only activate when the appropriate stress is enabled.\n\
 - The "Orbital Position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. \
 Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be added by increasing the maximum beyond 360 degrees.\n\
+- The map will occasionally not work for certain positions.  If this happens, simply change the number of increments or the end position.\n\
 - The "Amount of NSR Buildup" row is used to determine how long the ice shell has been rotating. \
 The Start Time is when the plotting starts, and the End Time is when the plotting ends.\n\
 """
