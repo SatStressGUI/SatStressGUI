@@ -105,7 +105,7 @@ class SatelliteCalculation(object):
         ("DENSITY", u"Density [kg/m3]"),
         ("YOUNGS_MODULUS", u"Young's Modulus [Pa]"),
         ("POISSONS_RATIO", u"Poisson's Ratio"),
-        ("THICKNESS", u"Thickness [m]"),
+        ("THICKNESS", u"Thickness_in [m]"),
         ("VISCOSITY", u"Viscosity [Pa s]")]
 
     satlayers_d = [
