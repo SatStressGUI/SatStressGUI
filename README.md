@@ -10,7 +10,7 @@ Future updates to this program should either be tested in a branch before being 
 
 Please go to https://github.com/SatStressGUI/SatStressGUI/issues to suggest improvements or report bugs.
 
-For more information, please contact Alex Patthoff at donald.a.patthoff@jpl.nasa.gov.
+For more information, please contact Alex Patthoff at patthoff@jpl.nasa.gov.
 
 SatStressGUI 4.0 has been created upon efforts by
 Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang,
