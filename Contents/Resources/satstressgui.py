@@ -4611,7 +4611,7 @@ button to the lower right.\n\
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0', size=(800,800))
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(800,800))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
