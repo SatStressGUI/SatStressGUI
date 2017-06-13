@@ -1201,6 +1201,13 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u'-Polar Wander stress is calculated using an elastic model.'))
         sz.Add(wx.StaticText(self, label=u'-The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
         
+        #Add the ability to toggle between normal mode and night mode. -ND 2017
+        sz.AddSpacer(175)
+        toggleButton = wx.Button(self, label = u'Night Mode')
+        sz.Add(toggleButton, 1, wx.ALIGN_RIGHT, 10)
+
+        
+        
         self.SetSizer(sz)
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
         wx.EVT_BUTTON(self, save_b.GetId(), self.save)
@@ -4362,7 +4369,7 @@ information to foreign countries or providing access to foreign persons. """
         self.makeMsgDialog(spiel, copyright)
 
     def onDevelopment(self, evt):
-        spiel = u"""SatStressGUI v4.0 was developed at the Jet Propulsion Laboratory, \
+        spiel = u"""SatStressGUI V5.0 was developed at the Jet Propulsion Laboratory, \
 California Institute of Technology and is based on SatStressGUI. \
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho \
 SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at \
