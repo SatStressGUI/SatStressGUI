@@ -1152,6 +1152,7 @@ class SatelliteLayersPanel(SatPanel):
         save_b = wx.Button(self, label=u'Save to file')
         bp.Add(load_b, 1, wx.ALL|wx.EXPAND, 3)
         bp.Add(save_b, 1, wx.ALL|wx.EXPAND, 3)
+        
 
         # satellite parameters
         # FlexGridSizer organizes visual elements into grid layout
@@ -1201,10 +1202,59 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u'-Polar Wander stress is calculated using an elastic model.'))
         sz.Add(wx.StaticText(self, label=u'-The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10 times the satellite\'s mass.'))
         
+        #Add the ability to toggle between normal mode and night mode. -ND 2017
+        sz.AddSpacer(10)
+        self.toggleButton = wx.ToggleButton(self, label = u'Enable Night Mode')
+        self.toggleButton.Bind(wx.EVT_TOGGLEBUTTON, self.onNightMode)
+        sz.Add(self.toggleButton)
+
+        
         self.SetSizer(sz)
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
         wx.EVT_BUTTON(self, save_b.GetId(), self.save)
-    
+
+
+    def onNightMode(self, event):
+        topFrame = self.GetTopLevelParent()
+        items = []
+        #Widgets have children and their children have chidlren and so on. 
+        for item in topFrame.GetChildren():
+            items.append(item)
+            #print(item)
+            if hasattr(item, "GetChildren"):
+                for child in item.GetChildren():
+                    items.append(child)
+                    #print(child)
+                    if hasattr(child, "GetChildren"): 
+                        for moreChild in child.GetChildren():
+                            items.append(moreChild)
+                            #print(moreChild)
+                            if hasattr(moreChild, "GetChildren"):
+                                for evenMoreChild in moreChild.GetChildren():
+                                    items.append(evenMoreChild)
+                                    #print(evenMoreChild)
+                                    if hasattr(evenMoreChild, "GetChildren"):
+                                        for soManyChild in evenMoreChild.GetChildren():
+                                            items.append(soManyChild)
+                                            #print(soManyChild)
+                    
+        defaultColor = self.GetBackgroundColour()        
+        if self.toggleButton.GetValue()==True: 
+            self.toggleButton.SetLabel("Disable Night Mode")
+            for i in items: 
+                if isinstance(i, wx.StaticText):
+                    i.SetForegroundColour("white")
+                if isinstance(i, wx.Notebook):
+                    i.SetBackgroundColour("#696969")            
+            self.Refresh() 
+        else: 
+            self.toggleButton.SetLabel("Enable Night Mode")
+            for i in items: 
+                 if isinstance(i, wx.StaticText): 
+                     i.SetForegroundColour("black")
+                 if isinstance(i, wx.Notebook):
+                     i.SetBackgroundColour(defaultColor)
+   
     def load(self, evt):
         try:
             file_dialog(self,
@@ -1795,7 +1845,7 @@ class PointPanel(SatPanel):
         p2 = wx.BoxSizer(orient=wx.VERTICAL)
         cp = wx.BoxSizer(orient=wx.HORIZONTAL)
         p0 = wx.BoxSizer(orient=wx.VERTICAL)
-        p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/Space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.pp = self.params_grid(self.fieldPanel, self.header1, '0', width=4, row=self.rows)
         p0.Add(self.pp)
         cp.Add(p0)
@@ -1806,7 +1856,7 @@ class PointPanel(SatPanel):
         cp.AddSpacer(15)
         cp.Add(p1)
         p3 = wx.BoxSizer(orient=wx.VERTICAL)
-        p3.Add(wx.StaticText(self.fieldPanel, label=u'principal Components'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        p3.Add(wx.StaticText(self.fieldPanel, label=u'Principal Components'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.sp = self.params_grid(self.fieldPanel,self.header3, '', row = self.rows)
         p3.Add(self.sp, 1, wx.ALL|wx.EXPAND)
         cp.Add(p3)
@@ -1823,9 +1873,12 @@ class PointPanel(SatPanel):
         self.save_b = wx.Button(self, label=u'Save to File')
         self.b = wx.Button(self, label=u'Calculate Stress')
         self.load_b = wx.Button(self, label=u'Load from file')
+        self.clear_b = wx.Button(self, label=u'Clear all points')
+        self.clear_b.Bind(wx.EVT_BUTTON, self.onClear)
         bp.Add(self.b, 1, wx.ALL|wx.EXPAND, 3)
         bp.Add(self.load_b, 1, wx.ALL|wx.EXPAND, 3)
         bp.Add(self.save_b, 1, wx.ALL|wx.EXPAND, 3)
+        bp.Add(self.clear_b, 1, wx.ALL | wx.EXPAND, 3)
 
         bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.ALIGN_CENTER_VERTICAL)
         bp.Add(self.row_ctrl)
@@ -1851,7 +1904,6 @@ class PointPanel(SatPanel):
             self.parameters['t'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_t_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_t_update(evt, row))
 
-
     #updates the orbit text ctrls when t is changed
     def on_t_update(self, evt, row = 1):
         self.updating = True
@@ -1865,6 +1917,20 @@ class PointPanel(SatPanel):
             traceback.print_exc()
         self.updating = False
     
+    #Add the ability to clear all points on the point panel. -ND 2017
+    def onClear(self, event): 
+        textctrls = []
+        for children in self.GetChildren():
+            if isinstance(children, wx.TextCtrl):
+                textctrls.append(children)
+            elif hasattr(children, "GetChildren"):
+                for child in children.GetChildren():
+                    if isinstance(child, wx.TextCtrl): 
+                        textctrls.append(child)
+        
+        for element in textctrls: 
+            element.Clear()
+                        
     #updates the t text ctrls when orbital position is changed
     def on_orbit_update(self, evt, row = 1):
         self.updating = True
@@ -2267,7 +2333,6 @@ class CycloidsPanel(SatPanel):
             #sz.Add(filler)
         
         sz.Add(buttonSizer, 0, wx.ALL, 5)
-        #sz.Add(filler2)
         sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
         sz.Add(self.use_multiple,0, wx.ALL|wx.EXPAND, 5)
         sz.Add(many_params)
@@ -2618,7 +2683,7 @@ class MatPlotPanel(wx.Panel):
 class StressPlotPanel(MatPlotPanel):
     """
     Contains controls for going through the time frame dictated in "Grid" Tab.
-    Specifically, the [< | < | > | >] controls
+    Specifically, the [< | < | > | >] controls.
     """
     scale_y    = 0.15
     orbit_y    = 0.11
@@ -4293,7 +4358,8 @@ class SatStressFrame(wx.Frame):
         self.Show(True)
         self.CenterOnScreen()
         self.p.SetFocus()
-    
+     
+                
     def onExport(self,evt):
         try:
             file_dialog(self,
@@ -4362,7 +4428,7 @@ information to foreign countries or providing access to foreign persons. """
         self.makeMsgDialog(spiel, copyright)
 
     def onDevelopment(self, evt):
-        spiel = u"""SatStressGUI v4.0 was developed at the Jet Propulsion Laboratory, \
+        spiel = u"""SatStressGUI V5.0 was developed at the Jet Propulsion Laboratory, \
 California Institute of Technology and is based on SatStressGUI. \
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho \
 SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at \
@@ -4611,7 +4677,7 @@ button to the lower right.\n\
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V4.0', size=(800,800))
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(800,800))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
