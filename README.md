@@ -12,8 +12,7 @@ Please go to https://github.com/SatStressGUI/SatStressGUI/issues to suggest impr
 
 For more information, please contact Alex Patthoff at patthoff@jpl.nasa.gov.
 
-SatStressGUI V.5.0 has been created upon efforts by
-Zane Selvans, Mikael Beuthe, Jonathan Kay, Lee Tang,
+SatStressGUI V5.0 has been created upon efforts by Zane Selvans, Mikael Beuthe, Jonathan Kay, Lee Tang,
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin,
 David Dubois, Ben J. Ayton, Jessica B. Li, 
 Andre Ismailyan, Peter Sinclair, Nhu Doan, and Chad Harper.
