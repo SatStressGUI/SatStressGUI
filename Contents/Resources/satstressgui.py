@@ -1220,23 +1220,18 @@ class SatelliteLayersPanel(SatPanel):
         #Widgets have children and their children have chidlren and so on. 
         for item in topFrame.GetChildren():
             items.append(item)
-            #print(item)
             if hasattr(item, "GetChildren"):
                 for child in item.GetChildren():
                     items.append(child)
-                    #print(child)
                     if hasattr(child, "GetChildren"): 
                         for moreChild in child.GetChildren():
                             items.append(moreChild)
-                            #print(moreChild)
                             if hasattr(moreChild, "GetChildren"):
                                 for evenMoreChild in moreChild.GetChildren():
                                     items.append(evenMoreChild)
-                                    #print(evenMoreChild)
                                     if hasattr(evenMoreChild, "GetChildren"):
                                         for soManyChild in evenMoreChild.GetChildren():
                                             items.append(soManyChild)
-                                            #print(soManyChild)
                     
         defaultColor = self.GetBackgroundColour()        
         if self.toggleButton.GetValue()==True: 
