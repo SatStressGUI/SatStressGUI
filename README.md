@@ -12,13 +12,13 @@ Please go to https://github.com/SatStressGUI/SatStressGUI/issues to suggest impr
 
 For more information, please contact Alex Patthoff at patthoff@jpl.nasa.gov.
 
-SatStressGUI 4.0 has been created upon efforts by
-Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang,
+SatStressGUI V5.0 has been created upon efforts by
+Alex Patthoff, Robert Pappalardo, Zane Selvans, Mikael Beuthe, Jonathan Kay, Lee Tang,
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin,
 David Dubois, Ben J. Ayton, Jessica B. Li, 
-Andre Ismailyan, Peter Sinclair.
+Andre Ismailyan, Peter Sinclair, Nhu Doan, and Chad Harper.
 
-SatStressGUI V4.0 was developed at the Jet Propulsion Laboratory, California Institute of Technology
+SatStressGUI V5.0 was developed at the Jet Propulsion Laboratory, California Institute of Technology
 and is based on SatStressGUI.
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho.
 SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at
