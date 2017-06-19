@@ -67,7 +67,7 @@ from osgeo import osr
 
 #Used in save_orbit_series when creating a gif/animation. -ND 2017
 import shutil 
-import imageio 
+#import imageio 
 import datetime 
 
 # constants set as global variables
