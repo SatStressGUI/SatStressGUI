@@ -65,6 +65,11 @@ import re
 from osgeo import ogr
 from osgeo import osr
 
+#Used in save_orbit_series when creating a gif/animation. -ND 2017
+import shutil 
+#import imageio 
+import datetime 
+
 # constants set as global variables
 seconds_in_year = 31556926.0  # 365.24 days
 vector_mult = 4000
@@ -2688,6 +2693,10 @@ class StressPlotPanel(MatPlotPanel):
     bbutton_l= 0.12
     slider_h = 0.04
     slider_x = scale_left + scale_bar_length + button_l*2
+    #Set photosOnly and gifOnly as class variables so that they can be \
+    #accessed by ScalarPlotPanel when save_orbit_series is called. -ND 2017
+    photoOnly = False   
+    gifOnly = False 
 
     def __init__(self, *args, **kw):
         super(StressPlotPanel, self).__init__(*args, **kw)
@@ -2764,15 +2773,49 @@ class StressPlotPanel(MatPlotPanel):
         self.orbit_next_button.on_clicked(lambda e: self.orbit_slider.next())
         self.orbit_last_button.on_clicked(lambda e: self.orbit_slider.last())
         # hack
-        self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_orbit_series, e))
-
+        self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125, self.photosAndOrGif, e))
+        
+    #Add the ability to save series as photos and/or gif. -ND 2017 
+    def photosAndOrGif(self, event):
+        try:
+            listOfOptions = ["Photos", "Gif/Animation"]
+            dialogueBox = wx.MultiChoiceDialog(self, "Would you like to save "+ 
+                                               "the series as photos, a "+
+                                               "gif/animation, or both?", 
+                                               "SatStressGUI V5.0",
+                                               listOfOptions)
+            self.choices = [] 
+            if(dialogueBox.ShowModal() == wx.ID_OK):
+                #self.choices contains the option(s) the user chose. 
+                selections = dialogueBox.GetSelections()
+                for selection in selections: 
+                    self.choices.append(selection)
+                if(self.choices[0]==0): #Photo only.
+                    StressPlotPanel.photoOnly = True 
+                    dialogueBox.Destroy() 
+                    dir_dialog(None, 
+                    message=u"Choose destination folder.",
+                    style=wx.SAVE,
+                    action=self.save_orbit_series)
+                elif(self.choices[0]==1): #Gif/animation only. 
+                    StressPlotPanel.gifOnly = True 
+                    dialogueBox.Destroy() 
+                    dir_dialog(None, 
+                    message=u"Choose destination folder.",
+                    style=wx.SAVE,
+                    action=self.save_orbit_series)
+            else: 
+                dialogueBox.Destroy()
+        except LocalError, e:
+            error_dialog(self, str(e), e.title)   
+        
     def add_polar(self):
         self.ax_polar = self.get_ax_polar()
         self.add_polar_controls()
     
     def add_polar_controls(self):
         x = self.slider_x
-        self.ax_polar_first = self.figure.add_axes([x, self.polar_y, self.button_l, self.slider_h])
+        self.ax_polar_first = self.figurse.add_axes([x, self.polar_y, self.button_l, self.slider_h])
         x += self.button_l
         self.ax_polar_prev = self.figure.add_axes([x, self.polar_y, self.button_l, self.slider_h])
         x += self.button_l
@@ -2875,17 +2918,18 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax.text(0.23, 0.5, valfmt % scale, transform=self.scale_ax.transAxes, va='center', ha='left')
         self.scale_ax.plot([0.00, 0.20], [0.5, 0.5], linestyle='solid', marker='|', color='black', lw=1)
         self.scale_ax.set_xlim(0.0, 1.0)
-
+    
+    """ -ND 2017
     def on_save_orbit_series(self, evt):
         try:
             dir_dialog(None, 
-                message=u"Save calculation series on orbit period",
+                message=u"Choose destination folder.",
                 style=wx.SAVE,
                 action=self.save_orbit_series)
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-
-    def on_save_nsr_series(self, evt):
+    """
+    def on_save_nsr_series(self, evt):                                         
         try:
             dir_dialog(self,
                 message=u"Save calculation series on nsr period",
@@ -4123,9 +4167,9 @@ class ScalarPlotPanel(PlotPanel):
         self.scp.add_nsr_controls()
         self.scp.save_nsr_series = self.save_nsr_series
         self.scp.nsr_slider.on_changed(self.on_nsr_updated)
-
+    
     def save_orbit_series(self, dir='.'):
-        b = wx.BusyInfo(u"Saving images. Please wait.", self)
+        b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
         old_orbit_pos = self.orbit_pos
         sat = self.sc.get_satellite()
@@ -4136,30 +4180,41 @@ class ScalarPlotPanel(PlotPanel):
         s = (om - o)/n
         self.hide_orbit_controls()
 
-        localtime = time.asctime(time.localtime(time.time()))
-        location = dir + "/" + self.sc.parameters['SYSTEM_ID']
-        directory = location + " " + localtime
-        if os.path.isdir(location):
-            os.mkdir(directory)
+        self.localtime = time.asctime(time.localtime(time.time()))
+        self.location = dir + "/" + self.sc.parameters['SYSTEM_ID']
+        self.directory = self.location + " " + self.localtime
+        
+        if os.path.isdir(self.location):
+            os.mkdir(self.directory)
         else:
-            os.mkdir(location)
-            os.mkdir(directory)
-
-        while o <= om:
-            self.orbit_pos = o
-            self.plot_no_draw()
-            self.scp.orbit_slider.set_val(self.orbit_pos)
-            self.scp.figure.savefig("%s/orbit_%03d.%02d.png" %
-                (directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
-                bbox_inches='tight', pad_inches=1.5)
-            o += s
+            os.mkdir(self.location)
+            os.mkdir(self.directory)
+        if(StressPlotPanel.photoOnly == True or StressPlotPanel.gifOnly == True):
+            while o <= om: 
+                #The gif/animation relies on the photos created here, so this \ 
+                #happens no matter what. 
+                self.orbit_pos = o
+                self.plot_no_draw()
+                self.scp.orbit_slider.set_val(self.orbit_pos)
+                self.scp.figure.savefig("%s/orbit_%03d.%02d.png" %
+                    (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
+                    bbox_inches='tight', pad_inches=1.5)
+                o += s
+            if(StressPlotPanel.gifOnly == True):
+                #Delete the folder of photos created.
+                images = os.listdir(self.directory)
+                images = sorted(images)
+                print(images) 
+                shutil.rmtree(self.directory)
+                print("gifonly block entered!")
+            
         self.orbit_pos = old_orbit_pos
         self.reveal_orbit_controls()
         self.init_orbit_slider()
         self.scp.orbit_slider.set_val(self.orbit_pos)
         self.plot()
         del b
-    
+        
     def save_nsr_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving images. Please wait.", self)
         wx.SafeYield()
