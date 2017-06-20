@@ -67,6 +67,7 @@ from osgeo import osr
 
 #Used in save_orbit_series when creating a gif/animation. -ND 2017
 import shutil 
+#import imageio 
 
 # constants set as global variables
 seconds_in_year = 31556926.0  # 365.24 days
@@ -1181,7 +1182,17 @@ class SatelliteLayersPanel(SatPanel):
             #self.parameters["TENSILE_STR_%d" % l].SetValue('0')
             #self.parameters["TENSILE_STR_%d" % l].Disable()
         # end
-
+        
+        #Used in grayOut method. -ND 2017
+        textCtrls = [] 
+        for item in self.GetChildren(): 
+            if isinstance(item, wx.TextCtrl):
+                textCtrls.append(item) 
+        self.totalNumberTextCtrls = len(textCtrls)
+        self.textCtrlsModified = 0 
+        for textCtrl in textCtrls: 
+            textCtrl.Bind(wx.EVT_TEXT, self.grayOut)
+            
         top.Add(bp, 0, wx.ALL|wx.EXPAND)
         top.Add(filler)
         top.Add(sp)
@@ -1215,12 +1226,20 @@ class SatelliteLayersPanel(SatPanel):
         self.SetSizer(sz)
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
         wx.EVT_BUTTON(self, save_b.GetId(), self.save)
-
-
+    
+    #Once the user inputs parameters in the textctrls on this panel, \
+    #the stress panel is enabled. -ND 2017 
+    def grayOut(self, event): 
+        self.textCtrlsModified += 1
+        if(self.textCtrlsModified >= self.totalNumberTextCtrls - 1):
+            #Makes sure all text ctrls are modified but allows for the NSR \
+            #period textctrl to remain unchanged. 
+            SatStressPanel.stp.Enable() 
+            
     def onNightMode(self, event):
         topFrame = self.GetTopLevelParent()
         items = []
-        #Widgets have children and their children have chidlren and so on. 
+        #Widgets have children and their children have children and so on. 
         for item in topFrame.GetChildren():
             items.append(item)
             if hasattr(item, "GetChildren"):
@@ -1492,8 +1511,24 @@ class StressListPanel(SatPanel):
         self.disable_istparams()
         self.disable_obliq()
         self.disable_polar()
+        
+        #Used in grayOut method. -ND 2017
+        checkBoxes = [] 
+        for item in self.GetChildren(): 
+            if isinstance(item, wx.CheckBox):
+                checkBoxes.append(item) 
+        self.totalNumberCheckBoxes = len(checkBoxes)
+        self.checkBoxesModified = 0 
+        self.allCheckBoxesModified = False 
+        for checkBox in checkBoxes: 
+            checkBox.Bind(wx.EVT_CHECKBOX, self.grayOut)
 
-
+    def grayOut(self, event):
+        #Only one stress checkbox needs to be clicked. 
+        SatStressPanel.tp.Enable() 
+        SatStressPanel.gp.Enable()
+        StressListPanel.gpCanBeClicked = True 
+        
     # These functions disable and enable various stress parameters on the GUI. -PS 2016
     def disable_display_diurnlove(self):
         for widg in [self.h2, self.k2, self.l2,
@@ -2789,7 +2824,7 @@ class StressPlotPanel(MatPlotPanel):
                 for selection in selections: 
                     self.choices.append(selection)
                 if(self.choices[0]==0): #Photo only.
-                    StressPlotPanel.photoOnly = True 
+                    StressPlotPanel.photoOnly = True
                     dialogueBox.Destroy() 
                     dir_dialog(None, 
                     message=u"Choose destination folder.",
@@ -2917,7 +2952,8 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax.plot([0.00, 0.20], [0.5, 0.5], linestyle='solid', marker='|', color='black', lw=1)
         self.scale_ax.set_xlim(0.0, 1.0)
     
-    """ -ND 2017
+    #Temporarily comment this out while working on other things. -ND 2017 
+    """ 
     def on_save_orbit_series(self, evt):
         try:
             dir_dialog(None, 
@@ -4280,20 +4316,30 @@ class SatStressPanel(wx.Panel):
         self.nb = wx.Notebook(self)
 
         self.sc = SatelliteCalculation()
-        slp = SatelliteLayersPanel(self.nb, satellite_calculation=self.sc)
-        stp = StressListPanel(self.nb, satellite_calculation=self.sc)
-        self.tp = PointPanel(self.nb, satellite_calculation=self.sc)
-        gp = GridCalcPanel(self.nb, satellite_calculation=self.sc)
-        self.spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
-        self.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
+        SatStressPanel.slp = SatelliteLayersPanel(self.nb, satellite_calculation=self.sc)
+        SatStressPanel.stp = StressListPanel(self.nb, satellite_calculation=self.sc)
+        SatStressPanel.tp = PointPanel(self.nb, satellite_calculation=self.sc)
+        SatStressPanel.gp = GridCalcPanel(self.nb, satellite_calculation=self.sc)
+        SatStressPanel.spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
+        SatStressPanel.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
+        
+        #Gray out tabs that the user should not be on yet. Enable tabs \ 
+        #once adequate information or parameters have been inputted. 
+        #See the grayOut method of each panel class for more info. -ND 2017 
+        SatStressPanel.stp.Disable()
+        SatStressPanel.tp.Disable() 
+        SatStressPanel.gp.Disable()
+        SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
+        SatStressPanel.spp.Disable() 
+        SatStressPanel.cy.Disable()
         
         # Assign each panel to a page and give it a name
-        self.nb.AddPage(slp, u"Satellite")
-        self.nb.AddPage(stp, u"Stresses")
-        self.nb.AddPage(self.tp, u"Point")
-        self.nb.AddPage(gp, u"Grid")
-        self.nb.AddPage(self.cy, u"Cycloids")
-        self.nb.AddPage(self.spp, u"Plot")
+        self.nb.AddPage(SatStressPanel.slp, u"Satellite")
+        self.nb.AddPage(SatStressPanel.stp, u"Stresses")
+        self.nb.AddPage(SatStressPanel.tp, u"Point")
+        self.nb.AddPage(SatStressPanel.gp, u"Grid")
+        self.nb.AddPage(SatStressPanel.cy, u"Cycloids")
+        self.nb.AddPage(SatStressPanel.spp, u"Plot")
         # self.nb.AddPage(dummy, u'Test')
         
         sz.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -4303,7 +4349,14 @@ class SatStressPanel(wx.Panel):
         self.Fit()
         self.sc.parameters['show_cycl_names'] = False
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
-    
+   
+    def onClickGrid(self, event):
+        #StressListPanel.gpCanBeClicked was modified in the grayOut method \
+        #of StressListPanel. 
+        if(StressListPanel.gpCanBeClicked == True):
+            SatStressPanel.spp.Enable() 
+            SatStressPanel.cy.Enable() 
+        
     def page_change(self, evt):
         p = self.nb.GetCurrentPage()
         if isinstance(p, SatPanel):
