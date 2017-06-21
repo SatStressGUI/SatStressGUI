@@ -4335,10 +4335,10 @@ class SatStressPanel(wx.Panel):
         SatStressPanel.stp.Disable()
         SatStressPanel.tp.Disable()
         SatStressPanel.gp.Disable()
-        SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
         SatStressPanel.spp.Disable() 
         SatStressPanel.cy.Disable()
-        
+        SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
+
         # Assign each panel to a page and give it a name
         self.nb.AddPage(SatStressPanel.slp, u"Satellite")
         self.nb.AddPage(SatStressPanel.stp, u"Stresses")
@@ -4346,10 +4346,8 @@ class SatStressPanel(wx.Panel):
         self.nb.AddPage(SatStressPanel.gp, u"Grid")
         self.nb.AddPage(SatStressPanel.cy, u"Cycloids")
         self.nb.AddPage(SatStressPanel.spp, u"Plot")
-        # self.nb.AddPage(dummy, u'Test')
         
         sz.Add(self.nb, 1, wx.ALL|wx.EXPAND)
-        #sz.Add(bp, 0, wx.ALIGN_BOTTOM | wx.EXPAND)
 
         self.SetSizer(sz)
         self.Fit()
@@ -4357,7 +4355,7 @@ class SatStressPanel(wx.Panel):
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
         
     def onClickGrid(self, event):
-        #StressListPanel.gpCanBeClicked modified whenever the user selects \
+        #gpCanBeClicked is set to True when the user selects \
         #their desired stress(es).
         if(StressListPanel.gpCanBeClicked == True):
             SatStressPanel.spp.Enable() 
@@ -4443,6 +4441,8 @@ class SatStressFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onHelpCycloids, HelpCycloids)
         HelpPlot = Help.Append(wx.ID_ANY, '&Plot Tab')
         self.Bind(wx.EVT_MENU, self.onHelpPlot, HelpPlot)
+        HelpGray = Help.Append(wx.ID_ANY, '&Grayed Out/Disabled Panels')
+        self.Bind(wx.EVT_MENU, self.onHelpGrayedOutInstructions, HelpGray)
         menubar.Append(Help, "&Help")
 
         self.SetMenuBar(menubar)
@@ -4752,7 +4752,20 @@ button to the lower right.\n\
 - NOTE: The Lineaments features does not function currently.
 """
         self.makeMsgDialog(Help, u'The Plot Tab')
-       
+
+    def onHelpGrayedOutInstructions(self, evt):
+        Help = u"""Panels in this application rely on parameters or information given in previous panels, \
+as such, panels in which the user has not supplied enough parameters or information for are grayed out/disabled until \
+the user supplies what is necessary. \n\n\
+NOTE: if the Cycloids and Plot panels are grayed out/disabled after the Grid panel has \
+been enabled, the user can enable them by clicking anywhere on the Grid panel. \
+(This application reads an "interaction" that the user has with the Grid panel, such as clicking \
+anywhere on the panel or inputting their own parameters in the panel, as a que to enable the Cycloids and Plot \
+panels. In most cases, the user will have "interacted" with the Grid panel anyways so this information \
+is not completely necessary.) 
+        """
+         
+        self.makeMsgDialog(Help, u'Grayed Out/Disabled Panels')
     def makeMsgDialog(self, msg, title):
         msg = wx.MessageDialog(self, msg, title, wx.OK | wx.ICON_INFORMATION)
         msg.ShowModal()
