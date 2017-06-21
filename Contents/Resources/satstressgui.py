@@ -1228,8 +1228,7 @@ class SatelliteLayersPanel(SatPanel):
         wx.EVT_BUTTON(self, save_b.GetId(), self.save)
     
     #Once the user inputs parameters in the textctrls on this panel, \
-    #the stress panel is enabled. -ND 2017
-    
+    #the stress panel is enabled. 
     def grayOut(self, event): 
         self.textCtrlsModified += 1
         if(self.textCtrlsModified >= self.totalNumberTextCtrls - 1):
@@ -1253,7 +1252,8 @@ class SatelliteLayersPanel(SatPanel):
                                 for evenMoreChild in moreChild.GetChildren():
                                     items.append(evenMoreChild)
                                     if hasattr(evenMoreChild, "GetChildren"):
-                                        for soManyChild in evenMoreChild.GetChildren():
+                                        for soManyChild in \
+                                        evenMoreChild.GetChildren():
                                             items.append(soManyChild)
                     
         defaultColor = self.GetBackgroundColour()        
@@ -1272,7 +1272,8 @@ class SatelliteLayersPanel(SatPanel):
                      i.SetForegroundColour("black")
                  if isinstance(i, wx.Notebook):
                      i.SetBackgroundColour(defaultColor)
-   
+            self.Refresh() 
+            
     def load(self, evt):
         try:
             file_dialog(self,
@@ -1305,6 +1306,11 @@ class StressListPanel(SatPanel):
     Defines the stresses panel of the GUI. Contains stress type selections and allows
     user to input their own love numbers for further calculations
     """
+    
+    #Used in grayOut ability. Clicking the grid should enable the Plot and \
+    #Cycloid panels only after a stress has been selected. -ND 2017
+    gpCanBeClicked = False 
+    
     def __init__(self, *args, **kw):
         super(StressListPanel, self).__init__(*args, **kw)
 
@@ -1512,23 +1518,7 @@ class StressListPanel(SatPanel):
         self.disable_istparams()
         self.disable_obliq()
         self.disable_polar()
-         
-    """
-        #Used in grayOut method. -ND 2017
-        checkBoxes = [] 
-        for item in self.GetChildren(): 
-            if isinstance(item, wx.CheckBox):
-                checkBoxes.append(item) 
-        for checkBox in checkBoxes: 
-            checkBox.Bind(wx.EVT_CHECKBOX, self.grayOut)
-    
-    
-    def grayOut(self, event):
-        #Only one stress checkbox needs to be clicked. 
-        #SatStressPanel.tp.Enable() 
-        SatStressPanel.gp.Enable()
-        #StressListPanel.gpCanBeClicked = True 
-    """
+
     # These functions disable and enable various stress parameters on the GUI. -PS 2016
     def disable_display_diurnlove(self):
         for widg in [self.h2, self.k2, self.l2,
@@ -1619,6 +1609,9 @@ class StressListPanel(SatPanel):
             self.enable_display_diurnlove()
         else:
             self.disable_display_diurnlove()
+        SatStressPanel.gp.Enable() #Part of the grayOut instructions ability.
+        SatStressPanel.tp.Enable()
+        StressListPanel.gpCanBeClicked = True         
 
     def on_set_nsr(self, evt):
         state = self.parameters['Nonsynchronous Rotation'].GetValue()
@@ -1627,6 +1620,9 @@ class StressListPanel(SatPanel):
             self.enable_display_nsrlove()
         else:
             self.disable_display_nsrlove()
+        SatStressPanel.gp.Enable() 
+        SatStressPanel.tp.Enable()
+        StressListPanel.gpCanBeClicked = True 
 
     def on_set_ist(self, evt):
         s = self.parameters['Ice Shell Thickening'].GetValue()
@@ -1635,6 +1631,9 @@ class StressListPanel(SatPanel):
             self.enable_istparams()
         else:
             self.disable_istparams()
+        SatStressPanel.gp.Enable() 
+        SatStressPanel.tp.Enable()
+        StressListPanel.gpCanBeClicked = True 
 
     def on_set_obliq(self, evt):
         name = 'Obliquity'
@@ -1644,7 +1643,10 @@ class StressListPanel(SatPanel):
             self.enable_obliq()
         else:
             self.disable_obliq()
-
+        SatStressPanel.gp.Enable() 
+        SatStressPanel.tp.Enable() 
+        StressListPanel.gpCanBeClicked = True 
+        
     def on_set_polar(self,evt):
         s = self.parameters['Polar Wander'].GetValue()
         self.sc.set_parameter('Polar Wander', s)
@@ -1652,7 +1654,10 @@ class StressListPanel(SatPanel):
             self.enable_polar()
         else:
             self.disable_polar()
-
+        SatStressPanel.gp.Enable() 
+        SatStressPanel.tp.Enable() 
+        StressListPanel.gpCanBeClicked = True 
+        
     def parse_complex(self, string):
         real, imag = re.split(r'[+-]', string)
         if imag.startswith('i') or imag.startswith('j'):
@@ -2229,7 +2234,7 @@ class GridCalcPanel(SatPanel):
             self.parameters['ORBIT_MAX'].SetValue('360')
             self.parameters['ORBIT_NUM'].SetValue('10')
             self.orbital_set = 1
-
+            
     def disable_orbit(self):
         for p in ['ORBIT_MIN', 'ORBIT_MAX', 'ORBIT_NUM']:
             self.parameters[p].Disable()
@@ -2245,7 +2250,7 @@ class GridCalcPanel(SatPanel):
         if self.sc.parameters.get('Diurnal', False) or \
                 self.sc.parameters.get('Obliquity', False):
             self.enable_orbit()
-        else:
+        else: 
             self.disable_orbit()
         for p in [ "%s_%s" % (p, v)
                   for p,pd in self.sc.grid_parameters_d
@@ -2817,6 +2822,7 @@ class StressPlotPanel(MatPlotPanel):
                                                "gif/animation, or both?", 
                                                "SatStressGUI V5.0",
                                                listOfOptions)
+            dialogueBox.CenterOnParent(-1)
             self.choices = [] 
             if(dialogueBox.ShowModal() == wx.ID_OK):
                 #self.choices contains the option(s) the user chose. 
@@ -4306,7 +4312,7 @@ class ScalarPlotPanel(PlotPanel):
 class SatStressPanel(wx.Panel):
     """
     Defines the panel that contains all GUI pages
-    """
+    """    
     def __init__(self, *args, **kw):
         wx.Panel.__init__(self, *args, **kw)
 
@@ -4325,11 +4331,11 @@ class SatStressPanel(wx.Panel):
         
         #Gray out tabs that the user should not be on yet. Enable tabs \ 
         #once adequate information or parameters have been inputted. 
-        #See the grayOut method of each panel class for more info. -ND 2017 
+        #See "grayOut" of panel classes for more details. -ND 2017 
         SatStressPanel.stp.Disable()
-        SatStressPanel.tp.Disable() 
+        SatStressPanel.tp.Disable()
         SatStressPanel.gp.Disable()
-        #SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
+        SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
         SatStressPanel.spp.Disable() 
         SatStressPanel.cy.Disable()
         
@@ -4349,14 +4355,14 @@ class SatStressPanel(wx.Panel):
         self.Fit()
         self.sc.parameters['show_cycl_names'] = False
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
-        """
+        
     def onClickGrid(self, event):
-        #StressListPanel.gpCanBeClicked was modified in the grayOut method \
-        #of StressListPanel. 
+        #StressListPanel.gpCanBeClicked modified whenever the user selects \
+        #their desired stress(es).
         if(StressListPanel.gpCanBeClicked == True):
             SatStressPanel.spp.Enable() 
             SatStressPanel.cy.Enable() 
-        """    
+
     def page_change(self, evt):
         p = self.nb.GetCurrentPage()
         if isinstance(p, SatPanel):
