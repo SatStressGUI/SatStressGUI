@@ -1192,7 +1192,7 @@ class SatelliteLayersPanel(SatPanel):
         self.textCtrlsModified = 0 
         for textCtrl in textCtrls: 
             textCtrl.Bind(wx.EVT_TEXT, self.grayOut)
-            
+      
         top.Add(bp, 0, wx.ALL|wx.EXPAND)
         top.Add(filler)
         top.Add(sp)
@@ -1228,14 +1228,15 @@ class SatelliteLayersPanel(SatPanel):
         wx.EVT_BUTTON(self, save_b.GetId(), self.save)
     
     #Once the user inputs parameters in the textctrls on this panel, \
-    #the stress panel is enabled. -ND 2017 
+    #the stress panel is enabled. -ND 2017
+    
     def grayOut(self, event): 
         self.textCtrlsModified += 1
         if(self.textCtrlsModified >= self.totalNumberTextCtrls - 1):
             #Makes sure all text ctrls are modified but allows for the NSR \
             #period textctrl to remain unchanged. 
             SatStressPanel.stp.Enable() 
-            
+          
     def onNightMode(self, event):
         topFrame = self.GetTopLevelParent()
         items = []
@@ -1511,24 +1512,23 @@ class StressListPanel(SatPanel):
         self.disable_istparams()
         self.disable_obliq()
         self.disable_polar()
-        
+         
+    """
         #Used in grayOut method. -ND 2017
         checkBoxes = [] 
         for item in self.GetChildren(): 
             if isinstance(item, wx.CheckBox):
                 checkBoxes.append(item) 
-        self.totalNumberCheckBoxes = len(checkBoxes)
-        self.checkBoxesModified = 0 
-        self.allCheckBoxesModified = False 
         for checkBox in checkBoxes: 
             checkBox.Bind(wx.EVT_CHECKBOX, self.grayOut)
-
+    
+    
     def grayOut(self, event):
         #Only one stress checkbox needs to be clicked. 
-        SatStressPanel.tp.Enable() 
+        #SatStressPanel.tp.Enable() 
         SatStressPanel.gp.Enable()
-        StressListPanel.gpCanBeClicked = True 
-        
+        #StressListPanel.gpCanBeClicked = True 
+    """
     # These functions disable and enable various stress parameters on the GUI. -PS 2016
     def disable_display_diurnlove(self):
         for widg in [self.h2, self.k2, self.l2,
@@ -4329,7 +4329,7 @@ class SatStressPanel(wx.Panel):
         SatStressPanel.stp.Disable()
         SatStressPanel.tp.Disable() 
         SatStressPanel.gp.Disable()
-        SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
+        #SatStressPanel.gp.Bind(wx.EVT_MOUSE_EVENTS, self.onClickGrid)
         SatStressPanel.spp.Disable() 
         SatStressPanel.cy.Disable()
         
@@ -4349,14 +4349,14 @@ class SatStressPanel(wx.Panel):
         self.Fit()
         self.sc.parameters['show_cycl_names'] = False
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
-   
+        """
     def onClickGrid(self, event):
         #StressListPanel.gpCanBeClicked was modified in the grayOut method \
         #of StressListPanel. 
         if(StressListPanel.gpCanBeClicked == True):
             SatStressPanel.spp.Enable() 
             SatStressPanel.cy.Enable() 
-        
+        """    
     def page_change(self, evt):
         p = self.nb.GetCurrentPage()
         if isinstance(p, SatPanel):
