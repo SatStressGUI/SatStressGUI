@@ -4537,24 +4537,24 @@ information to foreign countries or providing access to foreign persons. """
     def onDevelopment(self, evt):
         spiel = u"""SatStressGUI V5.0 was developed at the Jet Propulsion Laboratory, \
 California Institute of Technology and is based on SatStressGUI. \
-SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho \
+SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho. \
 SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at \
 http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress \
-\n\n SatStressGUI 4.0 has been created upon efforts by \
-Alex Patthoff, Robert Pappalardo, Jonathan Kay, Lee Tang, \
+\n\nSatStressGUI V5.0 has been created upon efforts by \
+Zane Selvans, Mikael Beuthe, Jonathan Kay, Lee Tang, \
 Simon Kattenhorn, C.M. Cooper, Emily S. Martin, \
 David Dubois, Ben J. Ayton, Jessica B. Li, \
-Andre Ismailyan, Peter Sinclair."""
+Andre Ismailyan, Peter Sinclair, Nhu Doan, and Chad Harper."""
         
         self.makeMsgDialog(spiel, u'Developers')
 
     def onUpdates(self, evt):
-        updates = u"""This is Version 4.0 of SatStressGUI.  For more information, please visit: \n\n\
+        updates = u"""This is version 5.0 of SatStressGUI.  For more information, please visit: \n\n\
 https://github.com/SatStressGUI/SatStressGUI\n\n\
-In this version, several bugs were fixed, and a new stressing mechanism (Polar Wander) was added.\
+In this version several bugs were fixed and a new stressing mechanism (Polar Wander) was added. \
 To find detailed notes of all the changes, suggest improvements, or report bugs, please visit the GitHub page."""
         
-        self.makeMsgDialog(updates, u'Version 4.0')
+        self.makeMsgDialog(updates, u'Version 5.0')
 
     def onContacts(self, evt):
         # Create a message dialog box
@@ -4613,8 +4613,7 @@ to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
 
 
     def onPWref(self, evt):
-        Resources = u"""
-Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. \
+        Resources = u"""Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. \
 If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). \
 Sometimes, this also results in a reorientation of the poles. \
 The north pole appears to wander over the surface as the crust reorients itself. \
@@ -4628,7 +4627,7 @@ For more information on Polar Wander as a stressing mechanism, please see:\n\
         self.makeMsgDialog(Resources, u'About Polar Wander')
 
     def onCycloidsref(self, evt):
-        Resources = u""" Cycloids are arcuate lineaments found on the surface of Europa.  \
+        Resources = u"""Cycloids are arcuate lineaments found on the surface of Europa.  \
 They are thought to be created when a fracture in the ice is propagated because of the stresses. \
 In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.\
 Once the fracture has started, it will propagate through the ice at a certain velocity.\
