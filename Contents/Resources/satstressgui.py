@@ -66,8 +66,7 @@ from osgeo import ogr
 from osgeo import osr
 
 #Used in save_orbit_series when creating a gif/animation. -ND 2017
-import shutil 
-#import imageio 
+import imageio 
 
 # constants set as global variables
 seconds_in_year = 31556926.0  # 365.24 days
