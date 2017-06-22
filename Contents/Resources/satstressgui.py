@@ -1154,8 +1154,9 @@ class SatelliteLayersPanel(SatPanel):
         bp = wx.BoxSizer(orient=wx.HORIZONTAL)
         load_b = wx.Button(self, label=u'Load from file')
         save_b = wx.Button(self, label=u'Save to file')
-        bp.Add(load_b, 1, wx.ALL|wx.EXPAND, 3)
-        bp.Add(save_b, 1, wx.ALL|wx.EXPAND, 3)
+        bp.Add(load_b, 1, wx.EXPAND)
+        bp.AddSpacer(3) 
+        bp.Add(save_b, 1, wx.EXPAND)
         
 
         # satellite parameters
@@ -1202,7 +1203,7 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(lp)
 
         sz.AddSpacer(10)
-        HelpText = wx.StaticText(self, label=u'For help in using this program, select "Getting Started", in the Help menu.')
+        HelpText = wx.StaticText(self, label=u'For help in using this program, select "Getting Started" in the Help menu.')
         HelpFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD) # Sets the font and size of the text. -PS 2016
         HelpText.SetFont(HelpFont)
         sz.Add(HelpText)
@@ -1907,17 +1908,16 @@ class PointPanel(SatPanel):
         bp = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.spin_value = self.rows
         self.row_ctrl = wx.SpinCtrl(self, min = 1, value = str(self.rows), style=wx.TE_PROCESS_ENTER)
-
+        
         self.save_b = wx.Button(self, label=u'Save to File')
         self.b = wx.Button(self, label=u'Calculate Stress')
         self.load_b = wx.Button(self, label=u'Load from file')
         self.clear_b = wx.Button(self, label=u'Clear all points')
         self.clear_b.Bind(wx.EVT_BUTTON, self.onClear)
-        bp.Add(self.b, 1, wx.ALL|wx.EXPAND, 3)
+        bp.Add(self.b, 1, wx.RIGHT| wx.TOP | wx.BOTTOM | wx.EXPAND, 3)
         bp.Add(self.load_b, 1, wx.ALL|wx.EXPAND, 3)
         bp.Add(self.save_b, 1, wx.ALL|wx.EXPAND, 3)
         bp.Add(self.clear_b, 1, wx.ALL | wx.EXPAND, 3)
-
         bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.ALIGN_CENTER_VERTICAL)
         bp.Add(self.row_ctrl)
         sz.Add(bp)
@@ -1925,6 +1925,7 @@ class PointPanel(SatPanel):
         sz.AddSpacer(15)
 
         self.SetSizer(sz)
+
 
         self.row_ctrl.Bind(wx.EVT_SPINCTRL, self.spinCtrl)
         self.row_ctrl.Bind(wx.EVT_TEXT, self.spinCtrl)
@@ -1966,8 +1967,8 @@ class PointPanel(SatPanel):
                     if isinstance(child, wx.TextCtrl): 
                         textctrls.append(child)
         
-        for element in textctrls: 
-            element.Clear()
+        for i in range(0, len(textctrls) - 2): 
+            textctrls[i].Clear()
                         
     #updates the t text ctrls when orbital position is changed
     def on_orbit_update(self, evt, row = 1):
@@ -2322,9 +2323,9 @@ class CycloidsPanel(SatPanel):
         save_bt.Bind(wx.EVT_BUTTON, self.on_save_cyclparams)
         load_bt = wx.Button(self, label='Load from file')
         load_bt.Bind(wx.EVT_BUTTON, self.on_load_cyclparams)
-        buttonSizer.Add(load_bt, wx.ALIGN_CENTER, 10)
+        buttonSizer.Add(load_bt)
         buttonSizer.AddSpacer(5)
-        buttonSizer.Add(save_bt, wx.ALIGN_CENTER)
+        buttonSizer.Add(save_bt)
 
         self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
         self.Bind(wx.EVT_CHECKBOX, self.EvtSetVary, self.vary)
@@ -2370,7 +2371,8 @@ class CycloidsPanel(SatPanel):
             flag=wx.ALL|wx.EXPAND)
             #sz.Add(filler)
         
-        sz.Add(buttonSizer, 0, wx.ALL, 5)
+        sz.AddSpacer(5)
+        sz.Add(buttonSizer, 0, wx.ALL)
         sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
         sz.Add(self.use_multiple,0, wx.ALL|wx.EXPAND, 5)
         sz.Add(many_params)
@@ -2972,7 +2974,7 @@ class StressPlotPanel(MatPlotPanel):
     def on_save_nsr_series(self, evt):                                         
         try:
             dir_dialog(self,
-                message=u"Save calculation series on nsr period",
+                message=u"Choose destination folder.",
                 style=wx.SAVE,
                 action=self.save_nsr_series)
         except LocalError, e:
@@ -4227,8 +4229,10 @@ class ScalarPlotPanel(PlotPanel):
         if os.path.isdir(self.location):
             os.mkdir(self.directory)
         else:
-            os.mkdir(self.location)
+            #Commented this out because this creates an empty folder. -ND 2017
+            #os.mkdir(self.location) 
             os.mkdir(self.directory)
+
         if(StressPlotPanel.photoOnly == True or StressPlotPanel.gifOnly == True):
             while o <= om: 
                 #The gif/animation relies on the photos created here, so this \ 
@@ -4256,7 +4260,7 @@ class ScalarPlotPanel(PlotPanel):
         del b
         
     def save_nsr_series(self, dir='.'):
-        b = wx.BusyInfo(u"Saving images. Please wait.", self)
+        b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
         old_nsr_pos = self.nsr_pos
         nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
