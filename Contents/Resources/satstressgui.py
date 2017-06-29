@@ -65,8 +65,9 @@ import re
 from osgeo import ogr
 from osgeo import osr
 
-#Used in save_orbit_series when creating a gif/animation. -ND 2017
-import imageio 
+#Used in save_orbit_series when creating a video. -ND 2017
+import shutil 
+import subprocess
 
 # constants set as global variables
 seconds_in_year = 31556926.0  # 365.24 days
@@ -1255,7 +1256,7 @@ class SatelliteLayersPanel(SatPanel):
                                         for soManyChild in \
                                         evenMoreChild.GetChildren():
                                             items.append(soManyChild)
-                    
+                                            
         defaultColor = self.GetBackgroundColour()        
         if self.toggleButton.GetValue()==True: 
             self.toggleButton.SetLabel("Disable Night Mode")
@@ -1339,10 +1340,10 @@ class StressListPanel(SatPanel):
 
         sz.AddSpacer(8)
         # Added this text to provide users with important information. -PS 2016
-        sz.Add(wx.StaticText(self, label=u'To input custom Love numbers, use the format <Re> +/- <Im>j.'))
-        sz.Add(wx.StaticText(self, label=u'Do not use scientific notation when inputting custom Love numbers.'))
-        sz.Add(wx.StaticText(self, label=u'"3.0-1.0e-03j" should be written as "3.0-0.001j".'))
-        sz.Add(wx.StaticText(self, label=u"If no Love Numbers are input, the program will calculate them automatically."))
+        sz.Add(wx.StaticText(self, label=u' To input custom Love numbers, use the format <Re> +/- <Im>j.'))
+        sz.Add(wx.StaticText(self, label=u' Do not use scientific notation when inputting custom Love numbers.'))
+        sz.Add(wx.StaticText(self, label=u' "3.0-1.0e-03j" should be written as "3.0-0.001j".'))
+        sz.Add(wx.StaticText(self, label=u" If no Love Numbers are input, the program will calculate them automatically."))
 
         sz.AddSpacer(8)
         
@@ -1397,10 +1398,10 @@ class StressListPanel(SatPanel):
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
-        sz.Add(wx.StaticText(self, label=u"Polar wander is not completely tested, so it may not be accurate"))
-        sz.Add(wx.StaticText(self, label=u"to combine it with other stresses."))
-        sz.Add(wx.StaticText(self, label=u"The stress map from Polar Wander appears to be correct,"))
-        sz.Add(wx.StaticText(self, label=u"but the principal stress vectors are rotated 180° for some reason."))
+        sz.Add(wx.StaticText(self, label=u" Polar wander is not completely tested, so it may not be accurate"))
+        sz.Add(wx.StaticText(self, label=u" to combine it with other stresses."))
+        sz.Add(wx.StaticText(self, label=u" The stress map from Polar Wander appears to be correct,"))
+        sz.Add(wx.StaticText(self, label=u" but the principal stress vectors are rotated 180° for some reason."))
 
         Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
@@ -1409,12 +1410,12 @@ class StressListPanel(SatPanel):
         self.Blank_label2 = wx.StaticText(self, label=u' ')
         self.Blank_label3 = wx.StaticText(self, label=u' ')
         self.Blank_label4 = wx.StaticText(self, label=u' ')
-        self.PoleInitial = wx.StaticText(self, label=u'Initial Pole Location')
-        self.PoleFinal = wx.StaticText(self, label=u'Final Pole Location')
-        self.TidalInitial = wx.StaticText(self, label=u'Initial Tidal Bulge Location')
-        self.TidalFinal = wx.StaticText(self, label=u'Final Tidal Bulge Location')
-        self.InitialSpin_label = wx.StaticText(self, label=u'Initial Period')
-        self.FinalSpin_label = wx.StaticText(self, label=u'Final Period')
+        self.PoleInitial = wx.StaticText(self, label=u' Initial Pole Location')
+        self.PoleFinal = wx.StaticText(self, label=u' Final Pole Location')
+        self.TidalInitial = wx.StaticText(self, label=u' Initial Tidal Bulge Location')
+        self.TidalFinal = wx.StaticText(self, label=u' Final Tidal Bulge Location')
+        self.InitialSpin_label = wx.StaticText(self, label=u' Initial Period')
+        self.FinalSpin_label = wx.StaticText(self, label=u' Final Period')
 
         self.PWthetaRi = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_thetaRi, self.PWthetaRi)
@@ -2732,10 +2733,10 @@ class StressPlotPanel(MatPlotPanel):
     bbutton_l= 0.12
     slider_h = 0.04
     slider_x = scale_left + scale_bar_length + button_l*2
-    #Set photosOnly and gifOnly as class variables so that they can be \
-    #accessed by ScalarPlotPanel when save_orbit_series is called. -ND 2017
-    photoOnly = False   
-    gifOnly = False 
+    #Set photos and video as class variables so that they can be \
+    #accessed by ScalarPlotPanel when save_orbit_series is called. 
+    photo = False   
+    video = False
 
     def __init__(self, *args, **kw):
         super(StressPlotPanel, self).__init__(*args, **kw)
@@ -2745,6 +2746,9 @@ class StressPlotPanel(MatPlotPanel):
         self.add_orbit()
         #self.add_polar()
         self.add_nsr()
+        self.ORBIT = False  
+        self.NSR = False 
+        self.POLAR = False  
 
     def get_ax_orbit(self):
         return self.figure.add_axes([scale_left, self.orbit_y, scale_bar_length, self.slider_h])
@@ -2812,42 +2816,129 @@ class StressPlotPanel(MatPlotPanel):
         self.orbit_next_button.on_clicked(lambda e: self.orbit_slider.next())
         self.orbit_last_button.on_clicked(lambda e: self.orbit_slider.last())
         # hack
-        self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125, self.photosAndOrGif, e))
+        self.orbit_save_button.on_clicked(self.on_save_orbit_series)
+        self.orbit_save_button.on_clicked(lambda e: wx.CallLater(125,self.photosAndOrVideo, e))
         
-    #Add the ability to save series as photos and/or gif. -ND 2017 
-    def photosAndOrGif(self, event):
+    #Add the ability to save series as photos and/or a video. -ND 2017
+    def photosAndOrVideo(self, event):
         try:
-            listOfOptions = ["Photos", "Gif/Animation"]
+            listOfOptions = ["Photos", "Video"]
             dialogueBox = wx.MultiChoiceDialog(self, "Would you like to save "+ 
                                                "the series as photos, a "+
-                                               "gif/animation, or both?", 
+                                               "video, or both?", 
                                                "SatStressGUI V5.0",
                                                listOfOptions)
             dialogueBox.CenterOnParent(-1)
-            self.choices = [] 
+            self.choices = [] #Will contain the choices the user chose. 
             if(dialogueBox.ShowModal() == wx.ID_OK):
-                #self.choices contains the option(s) the user chose. 
                 selections = dialogueBox.GetSelections()
                 for selection in selections: 
                     self.choices.append(selection)
-                if(self.choices[0]==0): #Photo only.
-                    StressPlotPanel.photoOnly = True
-                    dialogueBox.Destroy() 
-                    dir_dialog(None, 
-                    message=u"Choose destination folder.",
-                    style=wx.SAVE,
-                    action=self.save_orbit_series)
-                elif(self.choices[0]==1): #Gif/animation only. 
-                    StressPlotPanel.gifOnly = True 
-                    dialogueBox.Destroy() 
-                    dir_dialog(None, 
-                    message=u"Choose destination folder.",
-                    style=wx.SAVE,
-                    action=self.save_orbit_series)
+                dialogueBox.Destroy()
+                if(self.choices[0]==0): 
+                    StressPlotPanel.photo = True
+                    if(len(self.choices)==1): #Photo only.
+                        self.onNoVideoSelect() 
+                if(len(self.choices)==2 or self.choices[0]==1):
+                    #Both video and photo or just video. 
+                    StressPlotPanel.video = True
+                    #UI allowing the user to select a frame rate. 
+                    self.frameRateBox = wx.Dialog(self, -1, 
+                                                  "SatStressGUI V5.0") 
+                    self.frameRateBox.SetSize((350,150))
+                    vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
+                    
+                    sizer = wx.BoxSizer(wx.HORIZONTAL)
+                    text = wx.StaticText(self.frameRateBox, -1, "Select a"
+                                         + " frame rate:")
+                    self.spin = wx.SpinCtrl(self.frameRateBox)
+                    self.spin.SetValue(5)
+                    self.spin.SetRange(1,10)
+                    sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL | \
+                            wx.LEFT | wx.BOTTOM | wx.TOP, 3)
+                    sizer.AddSpacer(2)
+                    sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | \
+                              wx.ALL, 3)
+                
+                    hsizer = wx.BoxSizer(wx.HORIZONTAL) #For buttons. 
+                    self.selectButton = wx.Button(self.frameRateBox, -1, 
+                                                  "Select")
+                    self.cancelButton = wx.Button(self.frameRateBox, -1, 
+                                                  "Cancel")
+                    self.selectButton.Bind(wx.EVT_BUTTON, self.onVideoSelect)
+                    self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
+                    hsizer.Add(self.selectButton, 1, wx.ALL, 3)
+                    hsizer.Add(self.cancelButton, 1, wx.BOTTOM | wx.TOP | \
+                               wx.RIGHT, 3)
+                    
+                    note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
+                                         + " (slowest) - 10 (fastest).")
+                    note2 = wx.StaticText(self.frameRateBox, -1, 
+                                          "*The video includes all but the"
+                                          + " last frame.")
+                    vsizer.Add(sizer) 
+                    vsizer.AddSpacer(3) 
+                    vsizer.Add(note, 1, wx.LEFT, 3)
+                    vsizer.Add(note2, 1, wx.LEFT, 3)
+                    vsizer.AddSpacer(10)
+                    vsizer.Add(hsizer, 1, wx.CENTER)
+                               
+                    self.frameRateBox.SetSizer(vsizer)
+                    self.frameRateBox.CenterOnParent(-1)
+                    self.frameRateBox.Show()
+            #End master if statement.  
             else: 
                 dialogueBox.Destroy()
         except LocalError, e:
-            error_dialog(self, str(e), e.title)   
+            error_dialog(self, str(e), e.title)
+    
+    #onNoVideoSelect, onVideoSelect, and onCancel are helper functions for \ 
+    #photosAndOrVideo. onVideoSelect needs to be it's own method because \ 
+    #it accepts an additional argument.        
+    def onNoVideoSelect(self):
+        if(self.NSR == True):
+            self.NSR = False #Reset. 
+            dir_dialog(self,
+            message=u"Choose destination folder.",
+            style=wx.SAVE,
+            action=self.save_nsr_series)
+        elif(self.POLAR == True):
+            self.POLAR = False 
+            dir_dialog(self,
+            message=u"Save calculation series on nsr period",
+            style=wx.SAVE,
+            action=self.save_polar_series)
+        elif(self.ORBIT == True):     
+            self.ORBIT = False 
+            dir_dialog(None, 
+            message=u"Choose destination folder.",
+            style=wx.SAVE,
+            action=self.save_orbit_series)
+        
+    def onVideoSelect(self, event):
+        ScalarPlotPanel.frameRate = self.spin.GetValue()
+        self.frameRateBox.Destroy()
+        if(self.NSR == True):
+            self.NSR = False 
+            dir_dialog(self,
+            message=u"Choose destination folder.",
+            style=wx.SAVE,
+            action=self.save_nsr_series)
+        elif(self.POLAR == True):
+            self.POLAR = False 
+            dir_dialog(self,
+            message=u"Save calculation series on nsr period",
+            style=wx.SAVE,
+            action=self.save_polar_series)
+        elif(self.ORBIT == True):     
+            self.ORBIT = False 
+            dir_dialog(None, 
+            message=u"Choose destination folder.",
+            style=wx.SAVE,
+            action=self.save_orbit_series)
+        
+    def onCancel(self, event): 
+        self.frameRateBox.Destroy() 
         
     def add_polar(self):
         self.ax_polar = self.get_ax_polar()
@@ -2878,13 +2969,14 @@ class StressPlotPanel(MatPlotPanel):
         self.polar_prev_button.on_clicked(lambda e: self.polar_slider.prev())
         self.polar_next_button.on_clicked(lambda e: self.polar_slider.next())
         self.polar_last_button.on_clicked(lambda e: self.polar_slider.last())
-        self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_polar_series, e))
+        self.polar_last_button.on_clicked(self.on_save_polar_series)
+        self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.photosAndOrVideo, e))
     
     def add_nsr(self):
         self.ax_nsr = self.get_ax_nsr()
         self.add_nsr_controls()
     
-    def add_nsr_controls(self):
+    def add_nsr_controls(self): 
         x = self.slider_x
         self.ax_nsr_first = self.figure.add_axes([x, self.nsr_y, self.button_l, self.slider_h])
         x += self.button_l
@@ -2905,7 +2997,8 @@ class StressPlotPanel(MatPlotPanel):
         self.nsr_next_button.on_clicked(lambda e: self.nsr_slider.next())
         self.nsr_last_button.on_clicked(lambda e: self.nsr_slider.last())
         self.nsr_save_button = matplotlib.widgets.Button(self.ax_nsr_save, 'Save series')
-        self.nsr_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_nsr_series, e))
+        self.nsr_save_button.on_clicked(self.on_save_nsr_series)
+        self.nsr_save_button.on_clicked(lambda e: wx.CallLater(125, self.photosAndOrVideo, e))
 
     def change_slider(self, ax, slider, label=None, valmin=None, valmax=None, numsteps=None, valinit=None, valfmt=None):
         if label is None:
@@ -2959,32 +3052,23 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax.plot([0.00, 0.20], [0.5, 0.5], linestyle='solid', marker='|', color='black', lw=1)
         self.scale_ax.set_xlim(0.0, 1.0)
     
-    #Temporarily comment this out while working on other things. -ND 2017 
-    """ 
-    def on_save_orbit_series(self, evt):
-        try:
-            dir_dialog(None, 
-                message=u"Choose destination folder.",
-                style=wx.SAVE,
-                action=self.save_orbit_series)
-        except LocalError, e:
-            error_dialog(self, str(e), e.title)
-    """
+    def on_save_orbit_series(self, evt): 
+        try: 
+            #self.ORBIT, self.NSR, and self.POLAR determine which methods are \
+            #called when reusing onNoVideoSelect and onVideoSelect. -ND 2017 
+            self.ORBIT = True 
+        except LocalError, e: 
+            error_dialog(self, str(e), e.title) 
+
     def on_save_nsr_series(self, evt):                                         
         try:
-            dir_dialog(self,
-                message=u"Choose destination folder.",
-                style=wx.SAVE,
-                action=self.save_nsr_series)
+            self.NSR = True
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-
+            
     def on_save_polar_series(self, evt):
         try:
-            dir_dialog(self,
-                       message=u"Save calculation series on nsr period",
-                       style=wx.SAVE,
-                       action=self.save_polar_series)
+            self.POLAR = True  
         except LocalError, e:
             error_dialog(self, str(e), e.title)
 
@@ -4224,40 +4308,42 @@ class ScalarPlotPanel(PlotPanel):
         self.localtime = time.asctime(time.localtime(time.time()))
         self.location = dir + "/" + self.sc.parameters['SYSTEM_ID']
         self.directory = self.location + " " + self.localtime
-        
         if os.path.isdir(self.location):
             os.mkdir(self.directory)
         else:
-            #Commented this out because this creates an empty folder. -ND 2017
+            #Commented this out because it creates an empty folder. -ND 2017
             #os.mkdir(self.location) 
             os.mkdir(self.directory)
-
-        if(StressPlotPanel.photoOnly == True or StressPlotPanel.gifOnly == True):
-            while o <= om: 
-                #The gif/animation relies on the photos created here, so this \ 
-                #happens no matter what. 
-                self.orbit_pos = o
-                self.plot_no_draw()
-                self.scp.orbit_slider.set_val(self.orbit_pos)
-                self.scp.figure.savefig("%s/orbit_%03d.%02d.png" %
-                    (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
-                    bbox_inches='tight', pad_inches=1.5)
-                o += s
-            if(StressPlotPanel.gifOnly == True):
-                #Delete the folder of photos created.
-                images = os.listdir(self.directory)
-                images = sorted(images)
-                print(images) 
-                shutil.rmtree(self.directory)
-                print("gifonly block entered!")
             
+        while o <= om: 
+            #The video relies on the photos created here, so this \ 
+            #happens no matter what. 
+            self.orbit_pos = o
+            self.plot_no_draw()
+            self.scp.orbit_slider.set_val(self.orbit_pos)
+            self.scp.figure.savefig("%s/orbit_%03d.%02d.png" %
+                (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
+                bbox_inches='tight', pad_inches=1.5)
+            o += s
+        if(StressPlotPanel.video == True):
+            framerate = str(ScalarPlotPanel.frameRate)
+            subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                             framerate, '-f', 'image2','-pattern_type', \
+                             'glob', '-i', self.directory + '/orbit_*.png', \
+                             '-r', '10', '-s', '620x380', self.directory + 
+                             ".avi"])
+            if not StressPlotPanel.photo:
+                shutil.rmtree(self.directory)
+    
         self.orbit_pos = old_orbit_pos
         self.reveal_orbit_controls()
         self.init_orbit_slider()
         self.scp.orbit_slider.set_val(self.orbit_pos)
         self.plot()
+        StressPlotPanel.photo = False #Reset. 
+        StressPlotPanel.video = False 
         del b
-        
+    
     def save_nsr_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
@@ -4273,21 +4359,32 @@ class ScalarPlotPanel(PlotPanel):
         if os.path.isdir(location):
             os.mkdir(directory)
         else:
-            os.mkdir(location)
+            os.mkdir(location) 
             os.mkdir(directory)
-            
         for k in range(0, n+1):
             self.nsr_pos = nm + s*k
             self.scp.nsr_slider.set_val(self.nsr_pos)
             self.plot_no_draw()
             self.scp.figure.savefig("%s/nsr_%03d.png" % (directory, k), bbox_inches='tight', pad_inches=0.5)
+        if(StressPlotPanel.video == True):
+            framerate = str(ScalarPlotPanel.frameRate)
+            subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                             framerate, '-f', 'image2','-pattern_type', \
+                             'glob', '-i', directory + '/nsr_*.png', \
+                             '-r', '10', '-s', '620x380', directory + 
+                             ".avi"])
+            if not StressPlotPanel.photo:
+                shutil.rmtree(directory)
         self.nsr_pos = old_nsr_pos
         self.reveal_nsr_controls()
         self.init_nsr_slider()
         self.scp.nsr_slider.set_val(self.nsr_pos)
         self.plot()
+        StressPlotPanel.photo = False 
+        StressPlotPanel.video = False 
         del b
 
+    #The ability to save polar series as photos and/or a video has not yet been added. -ND 2017
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving images. Please wait.", self)
         wx.SafeYield()
