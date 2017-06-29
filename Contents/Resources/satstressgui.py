@@ -2840,7 +2840,7 @@ class StressPlotPanel(MatPlotPanel):
                     if(len(self.choices)==1): #Photo only.
                         self.onNoVideoSelect() 
                 if(len(self.choices)==2 or self.choices[0]==1):
-                    #Both video and photo or just video. 
+                    #Both photo and video or just video. 
                     StressPlotPanel.video = True
                     #UI allowing the user to select a frame rate. 
                     self.frameRateBox = wx.Dialog(self, -1, 
@@ -2876,6 +2876,7 @@ class StressPlotPanel(MatPlotPanel):
                     note2 = wx.StaticText(self.frameRateBox, -1, 
                                           "*The video includes all but the"
                                           + " last frame.")
+
                     vsizer.Add(sizer) 
                     vsizer.AddSpacer(3) 
                     vsizer.Add(note, 1, wx.LEFT, 3)
