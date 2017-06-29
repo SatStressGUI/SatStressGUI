@@ -1,3 +1,0 @@
-[submodule "imageio"]
-	path = imageio
-	url = https://github.com/imageio/imageio.git
