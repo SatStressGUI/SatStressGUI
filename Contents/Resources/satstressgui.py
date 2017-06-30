@@ -2733,9 +2733,9 @@ class StressPlotPanel(MatPlotPanel):
     bbutton_l= 0.12
     slider_h = 0.04
     slider_x = scale_left + scale_bar_length + button_l*2
-    #photo and video are modified in photosAndOrVideo. They are set as class variables 
-    #so that they can be accessed by the ScalarPlotPanel class when saving orbit, nsr, 
-    #or polar series. -ND 2017 
+    #photo and video are modified in photosAndOrVideo. They are set as class variables \
+    #so that they can be accessed by the ScalarPlotPanel class when save_orbit_series or \
+    #save_nsr_series is called. -ND 2017 
     photo = False   
     video = False
 
@@ -2746,11 +2746,10 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax = self.figure.add_axes([scale_left, self.scale_y, scale_bar_length, self.slider_h], frame_on=False)
         self.add_orbit()
         self.add_nsr()
-        #self.ORBIT, self.NSR, and self.POLAR determine which methods are \
-        #called when reusing onNoVideoSelect and onVideoSelect. -ND 2017 
+        #self.ORBIT and self.NSR determine which methods are called \ 
+        #when reusing onNoVideoSelect and onVideoSelect. -ND 2017 
         self.ORBIT = False  
-        self.NSR = False 
-        self.POLAR = False  
+        self.NSR = False  
 
     def get_ax_orbit(self):
         return self.figure.add_axes([scale_left, self.orbit_y, scale_bar_length, self.slider_h])
@@ -2834,10 +2833,9 @@ class StressPlotPanel(MatPlotPanel):
                 dialogueBox.CenterOnParent(-1)
                 self.choices = [] 
                 if(dialogueBox.ShowModal() == wx.ID_OK):
-                    selections = dialogueBox.GetSelections()
-                    #.GetSelections() returns 0 for Photos, 1 for Video (Color), and 2 for Video (Grayscale). 
-                    for selection in selections: 
-                        self.choices.append(selection)
+                    self.choices = dialogueBox.GetSelections()
+                    #.GetSelections() returns a list of numbers corresponding to each selection: \
+                    #0 for Photos, 1 for Video (Color), and 2 for Video (Grayscale). 
                 else: 
                     dialogueBox.Destroy()
                 if(not len(self.choices) > 2):
@@ -2850,7 +2848,6 @@ class StressPlotPanel(MatPlotPanel):
                         break 
                 errorWindow = wx.MessageDialog(self, "Do not choose both Video (Color) and Video (Grayscale)."
                     + " Please try again and choose one.", "Invalid Selection", wx.OK | wx.ICON_ERROR)
-                errorWindow.Centre()
                 errorWindow.ShowModal()
             dialogueBox.Destroy()
             if(self.choices[0]==0): 
@@ -2916,17 +2913,11 @@ class StressPlotPanel(MatPlotPanel):
     #it accepts an additional argument.        
     def onNoVideoSelect(self):
         if(self.NSR == True):
-            self.NSR = False #Reset this variable. 
+            self.NSR = False #Reset. 
             dir_dialog(self,
             message=u"Choose destination folder.",
             style=wx.SAVE,
             action=self.save_nsr_series)
-        elif(self.POLAR == True):
-            self.POLAR = False 
-            dir_dialog(self,
-            message=u"Save calculation series on nsr period",
-            style=wx.SAVE,
-            action=self.save_polar_series)
         elif(self.ORBIT == True):     
             self.ORBIT = False 
             dir_dialog(None, 
@@ -2943,12 +2934,6 @@ class StressPlotPanel(MatPlotPanel):
             message=u"Choose destination folder.",
             style=wx.SAVE,
             action=self.save_nsr_series)
-        elif(self.POLAR == True):
-            self.POLAR = False 
-            dir_dialog(self,
-            message=u"Save calculation series on nsr period",
-            style=wx.SAVE,
-            action=self.save_polar_series)
         elif(self.ORBIT == True):     
             self.ORBIT = False 
             dir_dialog(None, 
@@ -2988,8 +2973,7 @@ class StressPlotPanel(MatPlotPanel):
         self.polar_prev_button.on_clicked(lambda e: self.polar_slider.prev())
         self.polar_next_button.on_clicked(lambda e: self.polar_slider.next())
         self.polar_last_button.on_clicked(lambda e: self.polar_slider.last())
-        self.polar_last_button.on_clicked(self.on_save_polar_series)
-        self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.photosAndOrVideo, e))
+        self.polar_save_button.on_clicked(lambda e: wx.CallLater(125, self.on_save_polar_series, e))
     
     def add_nsr(self):
         self.ax_nsr = self.get_ax_nsr()
@@ -3085,7 +3069,10 @@ class StressPlotPanel(MatPlotPanel):
             
     def on_save_polar_series(self, evt):
         try:
-            self.POLAR = True  
+            dir_dialog(self,
+                       message=u"Save calculation series on nsr period.",
+                       style=wx.SAVE,
+                       action=self.save_polar_series) 
         except LocalError, e:
             error_dialog(self, str(e), e.title)
 
@@ -4423,9 +4410,8 @@ class ScalarPlotPanel(PlotPanel):
         StressPlotPanel.videoGray = False  
         del b
 
-    #The ability to save polar series as photos and/or a video has not yet been added. -ND 2017
     def save_polar_series(self, dir='.'):
-        b = wx.BusyInfo(u"Saving images. Please wait.", self)
+        b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
         old_polar_pos = self.polar_pos
         nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
