@@ -4328,6 +4328,7 @@ class ScalarPlotPanel(PlotPanel):
             o += s
         if(StressPlotPanel.video == True):
             framerate = str(ScalarPlotPanel.frameRate)
+            #FFMPEG is an external program that converts a sequence of images to a video. 
             subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
                              framerate, '-f', 'image2','-pattern_type', \
                              'glob', '-i', self.directory + '/orbit_*.png', \
