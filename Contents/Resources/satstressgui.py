@@ -1236,7 +1236,7 @@ class SatelliteLayersPanel(SatPanel):
             #Makes sure all text ctrls are modified but allows for the NSR \
             #period textctrl to remain unchanged. 
             SatStressPanel.stp.Enable() 
-          
+
     def onNightMode(self, event):
         topFrame = self.GetTopLevelParent()
         items = []
@@ -1274,7 +1274,7 @@ class SatelliteLayersPanel(SatPanel):
                  if isinstance(i, wx.Notebook):
                      i.SetBackgroundColour(defaultColor)
             self.Refresh() 
-            
+                 
     def load(self, evt):
         try:
             file_dialog(self,
@@ -1876,7 +1876,7 @@ class PointPanel(SatPanel):
         u'stresses are being calculated.'), flag=wx.ALL|wx.EXPAND)
 
         sz.AddSpacer(20)
-        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1000,400), style=wx.SIMPLE_BORDER)
+        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1070,390), style=wx.SIMPLE_BORDER)
         self.fieldPanel.SetupScrolling()
 
         rsz = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -1887,12 +1887,13 @@ class PointPanel(SatPanel):
         p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/Space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.pp = self.params_grid(self.fieldPanel, self.header1, '0', width=4, row=self.rows)
         p0.Add(self.pp)
+        cp.AddSpacer(18)
         cp.Add(p0)
         p1 = wx.BoxSizer(orient=wx.VERTICAL)
         p1.Add(wx.StaticText(self.fieldPanel, label=u'Stress Tensor at a point'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.tp = self.params_grid(self.fieldPanel,self.header2, '', row = self.rows)
         p1.Add(self.tp, 1, wx.ALL|wx.EXPAND)
-        cp.AddSpacer(15)
+        cp.AddSpacer(18)
         cp.Add(p1)
         p3 = wx.BoxSizer(orient=wx.VERTICAL)
         p3.Add(wx.StaticText(self.fieldPanel, label=u'Principal Components'), flag=wx.ALIGN_CENTER_HORIZONTAL)
@@ -4914,9 +4915,9 @@ is not completely necessary.)
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1100,707))
-        self.frame.Show(True)
-        self.SetTopWindow(self.frame)
+        SatStressApp.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1106,706))
+        SatStressApp.frame.Show(True)
+        self.SetTopWindow(SatStressApp.frame)
         return True
 
 def main():
