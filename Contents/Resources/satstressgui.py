@@ -3,7 +3,7 @@
 
 # for GUI
 #    wx = python extention module that acts as python lang wrapper for wxWidgets
-#         (cross platform GUI API written in C++)t
+#         (cross platform GUI API written in C++)
 import wx
 import wx.scrolledpanel as scrolled
 # for manipulating tabluar data
@@ -60,12 +60,11 @@ import satstress.physcon
 # Regular Expressions
 import re
 
-
 # Used for mapping and saving to a shapefile.
 from osgeo import ogr
 from osgeo import osr
 
-#Used in save_orbit_series when creating a video. -ND 2017
+#Used in save_orbit_series and save_nsr_series when creating a video. -ND 2017
 import shutil 
 import subprocess
 
@@ -1274,7 +1273,7 @@ class SatelliteLayersPanel(SatPanel):
                  if isinstance(i, wx.Notebook):
                      i.SetBackgroundColour(defaultColor)
             self.Refresh() 
-                 
+
     def load(self, evt):
         try:
             file_dialog(self,
@@ -1332,20 +1331,20 @@ class StressListPanel(SatPanel):
         
         # for Diurnal
         self.parameters = add_checkboxes_to_sizer(self, sz, [ ('Diurnal', 'Diurnal') ])
-        sz.AddSpacer(8)
+        sz.AddSpacer(5)
         
         # for NSR
         self.parameters.update(add_checkboxes_to_sizer(self, sz, 
             [ ('Nonsynchronous Rotation', 'Nonsynchronous Rotation') ]))
 
-        sz.AddSpacer(8)
+        sz.AddSpacer(5)
         # Added this text to provide users with important information. -PS 2016
         sz.Add(wx.StaticText(self, label=u' To input custom Love numbers, use the format <Re> +/- <Im>j.'))
         sz.Add(wx.StaticText(self, label=u' Do not use scientific notation when inputting custom Love numbers.'))
         sz.Add(wx.StaticText(self, label=u' "3.0-1.0e-03j" should be written as "3.0-0.001j".'))
         sz.Add(wx.StaticText(self, label=u" If no Love Numbers are input, the program will calculate them automatically."))
 
-        sz.AddSpacer(8)
+        sz.AddSpacer(5)
         
         # for Diurnal w/ Obliquity
         self.parameters.update(add_checkboxes_to_sizer(self, sz,
@@ -1373,35 +1372,34 @@ class StressListPanel(SatPanel):
         DiObliq_sz.Add(obliq_sz)
 
         sz.Add(DiObliq_sz)
+        sz.AddSpacer(5)
 
         self.parameters.update(add_checkboxes_to_sizer(self, sz,
-            [ ('Ice Shell Thickening', 'Ice Shell Thickening') ]))
+            [ ('Ice Shell Thickening', 'Ice Shell Volume Change') ]))
         ISTParams_sz = wx.BoxSizer(wx.VERTICAL)
-        # include ice thickness parameter for IST aka Ice Shell Thickening
+        #Include ice thickness parameter for IST aka Ice Shell Thickening
         delta_tc_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         delta_tc_sz.AddSpacer(28)
+        iceNote = wx.StaticText(self, label = u'*To calculate ice shell thinning, add a negative sign.')
         self.delta_label = wx.StaticText(self, label=u'Change in Thickness [km] ')
         delta_tc_sz.Add(self.delta_label, flag=wx.ALIGN_CENTER_VERTICAL)
         self.parameters.update(add_text_ctrls(self, delta_tc_sz, [ ('delta_tc', 'delta_tc') ]))
         ISTParams_sz.Add(delta_tc_sz)
+        ISTParams_sz.Add(iceNote)
         ISTParams_sz.AddSpacer(5)
-        # include thermal diffusivity parameter for IST
-        #diff_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        #diff_sz.AddSpacer(28)
-        #self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]  ')
-        #diff_sz.Add(self.diffusivity_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        #self.parameters.update(add_text_ctrls(self, diff_sz, [ ('diffusivity', 'diffusivity') ]))
-        #ISTParams_sz.Add(diff_sz)
         sz.Add(ISTParams_sz)
+        sz.AddSpacer(5)
 
         # Removed the diffusivity option from the GUI because it is not implemented. -PS 2016
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
+        sz.AddSpacer(5)
 
         sz.Add(wx.StaticText(self, label=u" Polar wander is not completely tested, so it may not be accurate"))
         sz.Add(wx.StaticText(self, label=u" to combine it with other stresses."))
         sz.Add(wx.StaticText(self, label=u" The stress map from Polar Wander appears to be correct,"))
         sz.Add(wx.StaticText(self, label=u" but the principal stress vectors are rotated 180° for some reason."))
+        sz.AddSpacer(5) 
 
         Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
@@ -3298,9 +3296,9 @@ class ScalarPlotPanel(PlotPanel):
         return WrapStaticText(self,
             label=u"Display a rasterized scalar stress field defined by calculation on " +\
             u"satellite and grid parameters at the resolution defined by grid.  " +\
-            u"Tension is positive\n " +\
-            u"White circles represent initial rotational poles, black circles are final rotational poles." +\
-            u"White squares are initial sub- and anti-jove points, black square are final points." +\
+            u"Tension is positive.\n" +\
+            u"White circles represent initial rotational poles, black circles are final rotational poles. " +\
+            u"White squares are initial sub- and anti-jove points, black square are final points. " +\
             u"Black triangles are cycloids that could not be initiated, white triangles are cycloids that were initiated but unpropagated.")
 
     def plot_sizer(self):
@@ -4496,7 +4494,7 @@ class SatStressPanel(wx.scrolledpanel.ScrolledPanel):
     
 class SatStressFrame(wx.Frame):
     """
-    Actually holds all the tabs? Wrapper for Panel that holds everythings
+    Actually holds all the tabs? Wrapper for Panel that holds everything.
     """
     def __init__(self, parent, *args, **kw):
         wx.Frame.__init__(self, parent, *args, **kw)
@@ -4873,14 +4871,14 @@ button to the lower right.\n\
 
     def onHelpGrayedOutInstructions(self, evt):
         Help = u"""Panels in this application rely on parameters or information given in previous panels, \
-as such, panels in which the user has not supplied enough parameters or information for are grayed out/disabled until \
+as such, panels in which the user has not supplied enough parameters or information are grayed out/disabled until \
 the user supplies what is necessary. \n\n\
 NOTE: if the Cycloids and Plot panels are grayed out/disabled after the Grid panel has \
 been enabled, the user can enable them by clicking anywhere on the Grid panel. \
 (This application reads an "interaction" that the user has with the Grid panel, such as clicking \
 anywhere on the panel or inputting their own parameters in the panel, as a que to enable the Cycloids and Plot \
 panels. In most cases, the user will have "interacted" with the Grid panel anyways so this information \
-is not completely necessary.) 
+will not always be relevant.) 
         """
          
         self.makeMsgDialog(Help, u'Grayed Out/Disabled Panels')
@@ -4930,5 +4928,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-#GNU Terry Pratchett
