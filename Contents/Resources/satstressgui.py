@@ -4434,16 +4434,17 @@ class ScalarPlotPanel(PlotPanel):
 # ===============================================================================
 # PANEL CONTAINING ALL TABS
 # ===============================================================================
-class SatStressPanel(wx.Panel):
+class SatStressPanel(wx.scrolledpanel.ScrolledPanel):
     """
     Defines the panel that contains all GUI pages
     """    
     def __init__(self, *args, **kw):
-        wx.Panel.__init__(self, *args, **kw)
+        #To enable window resizing and scrolling, make the main panel a \
+        #wx.scrolledpanel.ScrolledPanel. -ND 2017 
+        wx.scrolledpanel.ScrolledPanel.__init__(self, *args, **kw)
+        self.SetupScrolling() 
 
-        self.SetMinSize((1024, 640))
         sz = wx.BoxSizer(orient=wx.VERTICAL)
-
         self.nb = wx.Notebook(self)
 
         self.sc = SatelliteCalculation()
@@ -4475,7 +4476,6 @@ class SatStressPanel(wx.Panel):
         sz.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
         self.SetSizer(sz)
-        self.Fit()
         self.sc.parameters['show_cycl_names'] = False
         wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self.nb.GetId(), self.page_change)
         
@@ -4581,16 +4581,9 @@ class SatStressFrame(wx.Frame):
         # Bind our events from the close dialog 'x' on the frame
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
-        # SetSizeHints(minW, minH, maxW, maxH)
-        # This function effectively enforces a lower bound to SatStressGUI window resizing.
-        # To allow for unrestricted window resizing, simply remove this line.
-        self.SetSizeHints(1045,710,2000, 2000)
-
-        self.Fit()
         self.Show(True)
         self.CenterOnScreen()
         self.p.SetFocus()
-     
                 
     def onExport(self,evt):
         try:
@@ -4921,7 +4914,7 @@ is not completely necessary.)
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(800,800))
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1100,707))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
