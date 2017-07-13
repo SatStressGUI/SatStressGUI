@@ -160,8 +160,6 @@ class SatelliteCalculation(object):
         'Despinning': False}
         # These variables are used by the program to determine where to map the initial/final PW points.  -PS 2016
 
-
-
     def __init__(self):
         self.satellite = None
         self.satellite_changed = False
@@ -481,16 +479,33 @@ class SatelliteCalculation(object):
         except Exception, e:
             raise LocalError(str(e), u'Grid Error')
 
-    # writes calculated love numbers to file
+    #Writes calculated love numbers to a file.
     def save_love(self, filename):
-        f = open(filename, 'w')
+        f = open(filename, 'w') 
         for c in self.get_stresses():
             try:
                 f.write(str(c))
                 f.write("\n")
             except:
-                pass
+                pass 
         f.close()
+
+    def displayLoveNumbers(self):
+        for c in self.get_stresses():
+            print(str(c))
+            if(str(c.__name__) == 'Diurnal'):
+                StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
+                StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
+                StressListPanel.l2DiurnAuto.SetValue(str(c.love.l2)[1:8])
+            if(str(c.__name__) == 'NSR'): 
+                StressListPanel.h2NSRAuto.SetValue(str(c.love.h2)[1:8])
+                StressListPanel.k2NSRAuto.SetValue(str(c.love.k2)[1:8])
+                StressListPanel.l2NSRAuto.SetValue(str(c.love.l2)[1:8])
+            if(str(c.__name__) == "PolarWander"): 
+                #PolarWander Love numbers and Diurnal Love numbers are the same. 
+                StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
+                StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
+                StressListPanel.l2DiurnAuto.SetValue(str(c.love.l2)[1:8])                
 
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
@@ -1227,14 +1242,13 @@ class SatelliteLayersPanel(SatPanel):
         wx.EVT_BUTTON(self, load_b.GetId(), self.load)
         wx.EVT_BUTTON(self, save_b.GetId(), self.save)
     
-    #Once the user inputs parameters in the textctrls on this panel, \
-    #the stress panel is enabled. 
+    #Once the user inputs parameters in the textctrls of this panel, StressListPanel is enabled. 
     def grayOut(self, event): 
         self.textCtrlsModified += 1
         if(self.textCtrlsModified >= self.totalNumberTextCtrls - 1):
             #Makes sure all text ctrls are modified but allows for the NSR \
             #period textctrl to remain unchanged. 
-            SatStressPanel.stp.Enable() 
+            SatStressPanel.stp.Enable()
 
     def onNightMode(self, event):
         topFrame = self.GetTopLevelParent()
@@ -1307,13 +1321,12 @@ class StressListPanel(SatPanel):
     user to input their own love numbers for further calculations
     """
     
-    #Used in grayOut ability. Clicking the grid should enable the Plot and \
+    #Used to grayOut panels. Clicking the grid should enable the Plot and \
     #Cycloid panels only after a stress has been selected. -ND 2017
     gpCanBeClicked = False 
     
     def __init__(self, *args, **kw):
         super(StressListPanel, self).__init__(*args, **kw)
-
         filler = wx.BoxSizer(wx.HORIZONTAL)
         filler.AddSpacer(15)
 
@@ -1323,7 +1336,10 @@ class StressListPanel(SatPanel):
         sz = wx.BoxSizer(orient=wx.VERTICAL)
 
         topsizer.Add(WrapStaticText(self, label=
-            u'Select the stress types to use in further computation, such as Love numbers, stress tensors, plotting of stress trajectories.'),
+            u'Select the stress types to use in further computation, such as Love numbers, stress tensors, plotting of stress trajectories. To ' +
+            'input custom Love numbers, use the format <Re> +/- <Im>j. If no Love numbers are input, the program will calculate them automatically.'
+            +' Do not use scientific notation when inputting custom Love numbers. ' + 
+            'For example, "3.0-1.0e-3j" should be written as "3.0-0.001j."'),
             0, wx.ALL|wx.EXPAND)
         topsizer.AddSpacer(10)
 
@@ -1336,14 +1352,6 @@ class StressListPanel(SatPanel):
         # for NSR
         self.parameters.update(add_checkboxes_to_sizer(self, sz, 
             [ ('Nonsynchronous Rotation', 'Nonsynchronous Rotation') ]))
-
-        sz.AddSpacer(5)
-        # Added this text to provide users with important information. -PS 2016
-        sz.Add(wx.StaticText(self, label=u' To input custom Love numbers, use the format <Re> +/- <Im>j.'))
-        sz.Add(wx.StaticText(self, label=u' Do not use scientific notation when inputting custom Love numbers.'))
-        sz.Add(wx.StaticText(self, label=u' "3.0-1.0e-03j" should be written as "3.0-0.001j".'))
-        sz.Add(wx.StaticText(self, label=u" If no Love Numbers are input, the program will calculate them automatically."))
-
         sz.AddSpacer(5)
         
         # for Diurnal w/ Obliquity
@@ -1360,24 +1368,22 @@ class StressListPanel(SatPanel):
            [ ('periapsis_arg', 'periapsis_arg') ]))
         DiObliq_sz.Add(peri_sz)
         DiObliq_sz.AddSpacer(5)
-        # include degree of obliquity for Diurnal w/ Obliquity
+        #Include degree of obliquity for Diurnal w/ Obliquity.
         obliq_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
-        obliq_sz.AddSpacer(30)
+        obliq_sz.AddSpacer(28)
         self.obliq_label = wx.StaticText(self, label=u'Degree of Obliquity [°]  ')
-        obliq_sz.Add(self.obliq_label, flag=wx.ALIGN_CENTER_HORIZONTAL)
-        obliq_sz.Add(filler)
+        obliq_sz.Add(self.obliq_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        obliq_sz.AddSpacer(16) 
         self.parameters.update(add_text_ctrls(self, obliq_sz,
-            [ ('obliquity', 'obliquity') ]))
-        obliq_sz.AddSpacer(5)
+            [('obliquity', 'obliquity')]))
         DiObliq_sz.Add(obliq_sz)
-
         sz.Add(DiObliq_sz)
         sz.AddSpacer(5)
 
         self.parameters.update(add_checkboxes_to_sizer(self, sz,
             [ ('Ice Shell Thickening', 'Ice Shell Volume Change') ]))
         ISTParams_sz = wx.BoxSizer(wx.VERTICAL)
-        #Include ice thickness parameter for IST aka Ice Shell Thickening
+        #Include ice thickness parameter for IST aka Ice Shell Thickening.
         delta_tc_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
         delta_tc_sz.AddSpacer(28)
         iceNote = wx.StaticText(self, label = u'*To calculate ice shell thinning, add a negative sign.')
@@ -1385,21 +1391,14 @@ class StressListPanel(SatPanel):
         delta_tc_sz.Add(self.delta_label, flag=wx.ALIGN_CENTER_VERTICAL)
         self.parameters.update(add_text_ctrls(self, delta_tc_sz, [ ('delta_tc', 'delta_tc') ]))
         ISTParams_sz.Add(delta_tc_sz)
+        ISTParams_sz.AddSpacer(3)
         ISTParams_sz.Add(iceNote)
-        ISTParams_sz.AddSpacer(5)
         sz.Add(ISTParams_sz)
         sz.AddSpacer(5)
 
-        # Removed the diffusivity option from the GUI because it is not implemented. -PS 2016
+        #Removed the diffusivity option from the GUI because it is not implemented. -PS 2016
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
-        sz.AddSpacer(5)
-
-        sz.Add(wx.StaticText(self, label=u" Polar wander is not completely tested, so it may not be accurate"))
-        sz.Add(wx.StaticText(self, label=u" to combine it with other stresses."))
-        sz.Add(wx.StaticText(self, label=u" The stress map from Polar Wander appears to be correct,"))
-        sz.Add(wx.StaticText(self, label=u" but the principal stress vectors are rotated 180° for some reason."))
-        sz.AddSpacer(5) 
 
         Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) # A GridSizer to hold the polar wander coordinates.  -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
@@ -1434,7 +1433,7 @@ class StressListPanel(SatPanel):
         self.TidalLock = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Assume tidally locked satellite')
         self.TidalLock.SetValue(True)
         self.Bind(wx.EVT_CHECKBOX, self.Lock_Body, self.TidalLock)
-        # Despinning could be implemented as a separate stress, but I did not have time to do this. -PS 2016
+        #Despinning could be implemented as a separate stress, but I did not have time to do this. -PS 2016
         self.DespinningBox = wx.CheckBox(self, wx.ID_ANY, style=wx.ALIGN_RIGHT, label=u'Despinning [hours]')
         self.Bind(wx.EVT_CHECKBOX, self.Despinning, self.DespinningBox)
         self.InitialSpinPeriod = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
@@ -1453,20 +1452,57 @@ class StressListPanel(SatPanel):
             (self.DespinningBox, 0, wx.ALL|wx.EXPAND), (self.InitialSpinPeriod, 0, wx.ALL|wx.EXPAND), (self.FinalSpinPeriod, 0, wx.ALL|wx.EXPAND)])
 
         sz.Add(Polargrid)
+        sz.AddSpacer(3) 
+        sz.Add(wx.StaticText(self, label=u" *Polar wander is not completely tested, so it may not be accurate"))
+        sz.Add(wx.StaticText(self, label=u"   to combine it with other stresses."))
+        sz.Add(wx.StaticText(self, label=u" *The stress map from Polar Wander appears to be correct,"))
+        sz.Add(wx.StaticText(self, label=u"   but the principal stress vectors are rotated 180° for some reason."))
 
-        sz.AddSpacer(15)
+        sz.AddSpacer(35)
         save_love_bt = wx.Button(self, label='Save Love numbers')
         wx.EVT_BUTTON(self, save_love_bt.GetId(), self.on_save_love)
         sz.Add(save_love_bt)
 
-        ##### Create boxes for inputting love number #####
-        ## todo: display calcuated love numbers in these boxes also ##
-        grid = wx.FlexGridSizer(rows=4, cols=4, hgap=0, vgap=5)
-        
+        #UI addition to display auto-generated Love numbers on top of allowing \
+        #the user to input custom Love numbers. -ND 2017 
+        loveSizer = wx.BoxSizer(wx.VERTICAL)
+        loveNoteAuto = wx.StaticText(self, label=u'Program-generated Love numbers (read only):')
+        loveSizer.Add(loveNoteAuto)
+        loveSizer.AddSpacer(5) 
+
+        gridAuto = wx.FlexGridSizer(rows=4, cols=4, hgap=0, vgap=5) #FlexGridSizer for auto-generated Love numbers. 
+        self.h2Auto = wx.StaticText(self, label=u'h\u2082')
+        self.k2Auto = wx.StaticText(self, label=u'k\u2082')
+        self.l2Auto = wx.StaticText(self, label=u'l\u2082')    
+        StressListPanel.h2DiurnAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        StressListPanel.k2DiurnAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        StressListPanel.l2DiurnAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        StressListPanel.h2NSRAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        StressListPanel.k2NSRAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        StressListPanel.l2NSRAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        self.diurnText = wx.StaticText(self, label=u' (Diurnal)')
+        self.nsrText = wx.StaticText(self, label=u' (NSR)')
+
+        gridAuto.AddMany([(self.h2Auto), (self.k2Auto), (self.l2Auto), (self.Blank_label), 
+            (StressListPanel.h2DiurnAuto), (StressListPanel.k2DiurnAuto), (StressListPanel.l2DiurnAuto), (self.diurnText),
+            (StressListPanel.h2NSRAuto), (StressListPanel.k2NSRAuto), (StressListPanel.l2NSRAuto), (self.nsrText)])      
+        loveSizer.Add(gridAuto)
+        cautionLoveNote = wx.StaticText(self, label=u'*Love numbers do not update automatically every time a')
+        cautionLoveNote2 = wx.StaticText(self, label=u'  satellite parameter is changed. Rerun the application')
+        cautionLoveNote3 = wx.StaticText(self, label=u'  to see the new/updated Love numbers.')
+        loveSizer.AddSpacer(3)
+        loveSizer.Add(cautionLoveNote)
+        loveSizer.Add(cautionLoveNote2)
+        loveSizer.Add(cautionLoveNote3)
+        loveSizer.AddSpacer(20)
+        loveNoteCustom = wx.StaticText(self, label=u'Custom Love numbers:')
+        loveSizer.Add(loveNoteCustom)
+        loveSizer.AddSpacer(5) 
+
+        grid = wx.FlexGridSizer(rows=4, cols=4, hgap=0, vgap=5) #FlexGridSizer for custom-inputted Love numbers. 
         self.h2 = wx.StaticText(self, label=u'h\u2082')
         self.k2 = wx.StaticText(self, label=u'k\u2082')
         self.l2 = wx.StaticText(self, label=u'l\u2082')
-
         self.h2Diurn = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT, self.set_h2Diurn, self.h2Diurn)
         self.k2Diurn = wx.TextCtrl(self, wx.ID_ANY, '', style=wx.TE_PROCESS_ENTER)
@@ -1486,14 +1522,13 @@ class StressListPanel(SatPanel):
         self.Bind(wx.EVT_CHECKBOX, self.useUserLove_nsr, self.userNSR)
         
         grid.AddMany([
-            (self.h2, 0, wx.ALL|wx.EXPAND), (self.k2, 0, wx.ALL|wx.EXPAND), (self.l2, 0, wx.ALL|wx.EXPAND), (self.Blank_label, 0, wx.ALL|wx.EXPAND),
-            (self.h2Diurn, 0, wx.ALL|wx.EXPAND), (self.k2Diurn, 0, wx.ALL|wx.EXPAND), (self.l2Diurn, 0, wx.ALL|wx.EXPAND), (self.userDiurn, 0, wx.ALL|wx.EXPAND),
-            (self.h2NSR, 0, wx.ALL|wx.EXPAND), (self.k2NSR, 0, wx.ALL|wx.EXPAND), (self.l2NSR, 0, wx.ALL|wx.EXPAND), (self.userNSR, 0, wx.ALL|wx.EXPAND)
-            ])
+            (self.h2), (self.k2), (self.l2), (self.Blank_label),
+            (self.h2Diurn), (self.k2Diurn), (self.l2Diurn), (self.userDiurn),
+            (self.h2NSR), (self.k2NSR), (self.l2NSR), (self.userNSR)])
 
-
+        loveSizer.Add(grid)
         othersz.Add(sz, 5, wx.ALL|wx.EXPAND)
-        othersz.Add(grid, 5, wx.ALL|wx.EXPAND)
+        othersz.Add(loveSizer, 5, wx.ALL|wx.EXPAND)
 
         topsizer.Add(othersz, wx.ALL|wx.EXPAND)
         self.SetSizer(topsizer)
@@ -1502,13 +1537,9 @@ class StressListPanel(SatPanel):
         self.bind_parameters()
 
         self.parameters['Diurnal'].Bind(wx.EVT_CHECKBOX, self.on_set_diurn)
-
         self.parameters['Nonsynchronous Rotation'].Bind(wx.EVT_CHECKBOX, self.on_set_nsr)
-
         self.parameters['Ice Shell Thickening'].Bind(wx.EVT_CHECKBOX, self.on_set_ist)
-
         self.parameters['Obliquity'].Bind(wx.EVT_CHECKBOX, self.on_set_obliq)
-    
         self.parameters['Polar Wander'].Bind(wx.EVT_CHECKBOX,self.on_set_polar)
 
         # Causes the inputs for individual stresses to be disabled until the stresses are selected.  -PS 2016
@@ -1604,17 +1635,19 @@ class StressListPanel(SatPanel):
     def on_set_diurn(self, evt):
         state = self.parameters['Diurnal'].GetValue()
         self.sc.set_parameter('Diurnal', state)
+        self.sc.displayLoveNumbers() 
         if state:
             self.enable_display_diurnlove()
         else:
             self.disable_display_diurnlove()
         SatStressPanel.gp.Enable() #Part of the grayOut instructions ability.
         SatStressPanel.tp.Enable()
-        StressListPanel.gpCanBeClicked = True         
+        StressListPanel.gpCanBeClicked = True 
 
     def on_set_nsr(self, evt):
         state = self.parameters['Nonsynchronous Rotation'].GetValue()
         self.sc.set_parameter('Nonsynchronous Rotation', state)
+        self.sc.displayLoveNumbers() 
         if state:
             self.enable_display_nsrlove()
         else:
@@ -1626,6 +1659,7 @@ class StressListPanel(SatPanel):
     def on_set_ist(self, evt):
         s = self.parameters['Ice Shell Thickening'].GetValue()
         self.sc.set_parameter('Ice Shell Thickening', s)
+        self.sc.displayLoveNumbers() 
         if s:
             self.enable_istparams()
         else:
@@ -1638,6 +1672,7 @@ class StressListPanel(SatPanel):
         name = 'Obliquity'
         s = self.parameters[name].GetValue()
         self.sc.set_parameter(name, s)
+        self.sc.displayLoveNumbers() 
         if s:
             self.enable_obliq()
         else:
@@ -1649,6 +1684,7 @@ class StressListPanel(SatPanel):
     def on_set_polar(self,evt):
         s = self.parameters['Polar Wander'].GetValue()
         self.sc.set_parameter('Polar Wander', s)
+        self.sc.displayLoveNumbers() 
         if s:
             self.enable_polar()
         else:
@@ -1670,13 +1706,13 @@ class StressListPanel(SatPanel):
         else:
             self.sc.stress_d['Diurnal'].useUser = False
 
-    def useUserLove_nsr(self, evt):
-        if self.userDiurn:
+    def useUserLove_nsr(self, evt): 
+        if self.userDiurn: #Shouldn't this condition instead be "if self.userNSR.GetValue()"? -ND 2017
             self.sc.stress_d['Nonsynchronous Rotation'].useUser = True
         else:
             self.sc.stress_d['Nonsynchronous Rotation'].useUser = False
 
-    # These functions are used to pass values from the GUI to satstress.py without using the file-saving method.  -PS 2016
+    #These functions are used to pass values from the GUI to satstress.py without using the file-saving method.  -PS 2016
 
     def set_h2Diurn(self, evt):
         self.sc.stresses_changed = True
@@ -1826,7 +1862,7 @@ class StressListPanel(SatPanel):
         self.sc.stress_d['Polar Wander'].UserCoordinates.update_FinalSpin(float(evt.GetString()))
 
     def on_save_love(self, evt):
-        # Saves the love numbers generated by the program.
+        #Saves the love numbers generated by the program.
         try:
             file_dialog(self,
                 message=u"Save Love Numbers",
@@ -1874,7 +1910,7 @@ class PointPanel(SatPanel):
         u'stresses are being calculated.'), flag=wx.ALL|wx.EXPAND)
 
         sz.AddSpacer(20)
-        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1070,390), style=wx.SIMPLE_BORDER)
+        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1049,385), style=wx.SIMPLE_BORDER)
         self.fieldPanel.SetupScrolling()
 
         rsz = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -1885,13 +1921,13 @@ class PointPanel(SatPanel):
         p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/Space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.pp = self.params_grid(self.fieldPanel, self.header1, '0', width=4, row=self.rows)
         p0.Add(self.pp)
-        cp.AddSpacer(18)
+        cp.AddSpacer(10)
         cp.Add(p0)
         p1 = wx.BoxSizer(orient=wx.VERTICAL)
         p1.Add(wx.StaticText(self.fieldPanel, label=u'Stress Tensor at a point'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.tp = self.params_grid(self.fieldPanel,self.header2, '', row = self.rows)
         p1.Add(self.tp, 1, wx.ALL|wx.EXPAND)
-        cp.AddSpacer(18)
+        cp.AddSpacer(10)
         cp.Add(p1)
         p3 = wx.BoxSizer(orient=wx.VERTICAL)
         p3.Add(wx.StaticText(self.fieldPanel, label=u'Principal Components'), flag=wx.ALIGN_CENTER_HORIZONTAL)
@@ -2368,7 +2404,6 @@ class CycloidsPanel(SatPanel):
             u'Propagation Strength. The Propagation Speed is usually <10 m/s. ' +
             u'For further information on cycloids see the Help menu.'),
             flag=wx.ALL|wx.EXPAND)
-            #sz.Add(filler)
         
         sz.AddSpacer(5)
         sz.Add(buttonSizer, 0, wx.ALL)
@@ -2849,61 +2884,62 @@ class StressPlotPanel(MatPlotPanel):
                     + " Please try again and choose one.", "Invalid Selection", wx.OK | wx.ICON_ERROR)
                 errorWindow.ShowModal()
             dialogueBox.Destroy()
-            if(self.choices[0]==0): 
-                StressPlotPanel.photo = True
-                if(len(self.choices)==1): #Photo only.
-                    self.onNoVideoSelect() 
-            if(len(self.choices)==2 or self.choices[0]==1 or self.choices[0]==2):
-                #Both photo and video or just video.
-                if(2 in self.choices): 
-                    StressPlotPanel.videoGray = True 
-                else:  
-                    StressPlotPanel.video = True
-                #UI allowing the user to select a frame rate. 
-                self.frameRateBox = wx.Dialog(self, -1, 
-                                              "SatStressGUI V5.0") 
-                self.frameRateBox.SetSize((350,150))
-                vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
+            if(len(self.choices) > 0): 
+                if(self.choices[0]==0): 
+                    StressPlotPanel.photo = True
+                    if(len(self.choices)==1): #Photo only.
+                        self.onNoVideoSelect() 
+                if(len(self.choices)==2 or self.choices[0]==1 or self.choices[0]==2):
+                    #Both photo and video or just video.
+                    if(2 in self.choices): 
+                        StressPlotPanel.videoGray = True 
+                    else:  
+                        StressPlotPanel.video = True
+                    #UI allowing the user to select a frame rate. 
+                    self.frameRateBox = wx.Dialog(self, -1, 
+                                                  "SatStressGUI V5.0") 
+                    self.frameRateBox.SetSize((350,150))
+                    vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
+                    
+                    sizer = wx.BoxSizer(wx.HORIZONTAL)
+                    text = wx.StaticText(self.frameRateBox, -1, "Select a"
+                                         + " frame rate:")
+                    self.spin = wx.SpinCtrl(self.frameRateBox)
+                    self.spin.SetValue(5)
+                    self.spin.SetRange(1,10)
+                    sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL | \
+                            wx.LEFT | wx.BOTTOM | wx.TOP, 3)
+                    sizer.AddSpacer(2)
+                    sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | \
+                              wx.ALL, 3)
                 
-                sizer = wx.BoxSizer(wx.HORIZONTAL)
-                text = wx.StaticText(self.frameRateBox, -1, "Select a"
-                                     + " frame rate:")
-                self.spin = wx.SpinCtrl(self.frameRateBox)
-                self.spin.SetValue(5)
-                self.spin.SetRange(1,10)
-                sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL | \
-                        wx.LEFT | wx.BOTTOM | wx.TOP, 3)
-                sizer.AddSpacer(2)
-                sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | \
-                          wx.ALL, 3)
-            
-                hsizer = wx.BoxSizer(wx.HORIZONTAL) #For buttons. 
-                self.selectButton = wx.Button(self.frameRateBox, -1, 
-                                              "Select")
-                self.cancelButton = wx.Button(self.frameRateBox, -1, 
-                                              "Cancel")
-                self.selectButton.Bind(wx.EVT_BUTTON, self.onVideoSelect)
-                self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
-                hsizer.Add(self.selectButton, 1, wx.ALL, 3)
-                hsizer.Add(self.cancelButton, 1, wx.BOTTOM | wx.TOP | \
-                           wx.RIGHT, 3)
-                
-                note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
-                                     + " (slowest) - 10 (fastest).")
-                note2 = wx.StaticText(self.frameRateBox, -1, 
-                                      "*The video includes all but the"
-                                      + " last frame.")
+                    hsizer = wx.BoxSizer(wx.HORIZONTAL) #For buttons. 
+                    self.selectButton = wx.Button(self.frameRateBox, -1, 
+                                                  "Select")
+                    self.cancelButton = wx.Button(self.frameRateBox, -1, 
+                                                  "Cancel")
+                    self.selectButton.Bind(wx.EVT_BUTTON, self.onVideoSelect)
+                    self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
+                    hsizer.Add(self.selectButton, 1, wx.ALL, 3)
+                    hsizer.Add(self.cancelButton, 1, wx.BOTTOM | wx.TOP | \
+                               wx.RIGHT, 3)
+                    
+                    note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
+                                         + " (slowest) - 10 (fastest).")
+                    note2 = wx.StaticText(self.frameRateBox, -1, 
+                                          "*The video includes all but the"
+                                          + " last frame.")
 
-                vsizer.Add(sizer) 
-                vsizer.AddSpacer(3) 
-                vsizer.Add(note, 1, wx.LEFT, 3)
-                vsizer.Add(note2, 1, wx.LEFT, 3)
-                vsizer.AddSpacer(10)
-                vsizer.Add(hsizer, 1, wx.CENTER)
-                           
-                self.frameRateBox.SetSizer(vsizer)
-                self.frameRateBox.CenterOnParent(-1)
-                self.frameRateBox.Show()
+                    vsizer.Add(sizer) 
+                    vsizer.AddSpacer(3) 
+                    vsizer.Add(note, 1, wx.LEFT, 3)
+                    vsizer.Add(note2, 1, wx.LEFT, 3)
+                    vsizer.AddSpacer(10)
+                    vsizer.Add(hsizer, 1, wx.CENTER)
+                               
+                    self.frameRateBox.SetSizer(vsizer)
+                    self.frameRateBox.CenterOnParent(-1)
+                    self.frameRateBox.Show()
         except LocalError, e:
             error_dialog(self, str(e), e.title)
     
@@ -3295,7 +3331,7 @@ class ScalarPlotPanel(PlotPanel):
     def head_text(self):
         return WrapStaticText(self,
             label=u"Display a rasterized scalar stress field defined by calculation on " +\
-            u"satellite and grid parameters at the resolution defined by grid.  " +\
+            u"satellite and grid parameters at the resolution defined by grid. " +\
             u"Tension is positive.\n" +\
             u"White circles represent initial rotational poles, black circles are final rotational poles. " +\
             u"White squares are initial sub- and anti-jove points, black square are final points. " +\
@@ -4456,7 +4492,7 @@ class SatStressPanel(wx.scrolledpanel.ScrolledPanel):
         
         #Gray out tabs that the user should not be on yet. Enable tabs \ 
         #once adequate information or parameters have been inputted. 
-        #See "grayOut" of panel classes for more details. -ND 2017 
+        #See "grayOut" of panel classes for more information. -ND 2017 
         SatStressPanel.stp.Disable()
         SatStressPanel.tp.Disable()
         SatStressPanel.gp.Disable()
@@ -4788,16 +4824,16 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 
     def onHelpStresses(self, evt):
         Help = u"""The Stresses Tab is used to select which stresses to use.\n\n\
-- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank, unless the user wants to input their own values. \
+- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank unless the user wants to input their own values. \
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
-When inputting custom love numbers, you must use the format <Re> + <Im>j.  Do not use scientific notation. \
-1.2 + 3e-05j would look like 1.2+0.00003j.\n\
+When inputting custom love numbers, you must use the format <Re> +/- <Im>j.  Do not use scientific notation. \
+For example, "1.2+3.0e-5j" should be written as "1.2+0.00003j."\n\
 - The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
 - If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.\n\
-- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite.  \
+- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite. \
 The rotational period should be input in units of hours.\n\
 - All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 """
@@ -4873,7 +4909,7 @@ button to the lower right.\n\
         Help = u"""Panels in this application rely on parameters or information given in previous panels, \
 as such, panels in which the user has not supplied enough parameters or information are grayed out/disabled until \
 the user supplies what is necessary. \n\n\
-NOTE: if the Cycloids and Plot panels are grayed out/disabled after the Grid panel has \
+NOTE: if the Cycloids and Plot panels are grayed out/disabled even after the Grid panel has \
 been enabled, the user can enable them by clicking anywhere on the Grid panel. \
 (This application reads an "interaction" that the user has with the Grid panel, such as clicking \
 anywhere on the panel or inputting their own parameters in the panel, as a que to enable the Cycloids and Plot \
@@ -4913,9 +4949,9 @@ will not always be relevant.)
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        SatStressApp.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1106,706))
-        SatStressApp.frame.Show(True)
-        self.SetTopWindow(SatStressApp.frame)
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1106,706))
+        self.frame.Show(True)
+        self.SetTopWindow(self.frame)
         return True
 
 def main():
