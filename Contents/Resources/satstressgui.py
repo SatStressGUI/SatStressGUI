@@ -492,20 +492,15 @@ class SatelliteCalculation(object):
 
     def displayLoveNumbers(self):
         for c in self.get_stresses():
-            print(str(c))
-            if(str(c.__name__) == 'Diurnal'):
+            if(str(c.__name__) == 'Diurnal' or str(c.__name__) == 'PolarWander'):
+                #PolarWander Love numbers and Diurnal Love numbers are the same.
                 StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
                 StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
                 StressListPanel.l2DiurnAuto.SetValue(str(c.love.l2)[1:8])
             if(str(c.__name__) == 'NSR'): 
                 StressListPanel.h2NSRAuto.SetValue(str(c.love.h2)[1:8])
                 StressListPanel.k2NSRAuto.SetValue(str(c.love.k2)[1:8])
-                StressListPanel.l2NSRAuto.SetValue(str(c.love.l2)[1:8])
-            if(str(c.__name__) == "PolarWander"): 
-                #PolarWander Love numbers and Diurnal Love numbers are the same. 
-                StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
-                StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
-                StressListPanel.l2DiurnAuto.SetValue(str(c.love.l2)[1:8])                
+                StressListPanel.l2NSRAuto.SetValue(str(c.love.l2)[1:8])             
 
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
