@@ -1323,7 +1323,6 @@ class StressListPanel(SatPanel):
     
     def __init__(self, *args, **kw):
         super(StressListPanel, self).__init__(*args, **kw)
-        self.count = 0 
         filler = wx.BoxSizer(wx.HORIZONTAL)
         filler.AddSpacer(15)
 
