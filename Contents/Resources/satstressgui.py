@@ -9,7 +9,6 @@ import wx.scrolledpanel as scrolled
 # for manipulating tabluar data
 #     wx.grid = allows displaying, editing, customizing tabular data'''
 import wx.grid, csv
-
 #     copy/Users/andreismailyan = allows shallow & deep copying operations
 #     sys = access syst specific parameters & fcts, variables held by interpreter
 #     os = allows more direct interaction with OS
@@ -2766,11 +2765,13 @@ class StressPlotPanel(MatPlotPanel):
     bbutton_l= 0.12
     slider_h = 0.04
     slider_x = scale_left + scale_bar_length + button_l*2
-    #photo and video are modified in photosAndOrVideo. They are set as class variables \
-    #so that they can be accessed by the ScalarPlotPanel class when save_orbit_series or \
-    #save_nsr_series is called. -ND 2017 
+
+    #photo, video, and videoGray are modified in photosAndOrVideo. They are set as \
+    #class variables so that they can be accessed by the ScalarPlotPanel class when \
+    #save_orbit_series or save_nsr_series is called. -ND 2017 
     photo = False   
     video = False
+    videoGray = False
 
     def __init__(self, *args, **kw):
         super(StressPlotPanel, self).__init__(*args, **kw)
@@ -2779,8 +2780,7 @@ class StressPlotPanel(MatPlotPanel):
         self.scale_ax = self.figure.add_axes([scale_left, self.scale_y, scale_bar_length, self.slider_h], frame_on=False)
         self.add_orbit()
         self.add_nsr()
-        #self.ORBIT and self.NSR determine which methods are called \ 
-        #when reusing onNoVideoSelect and onVideoSelect. -ND 2017 
+        #self.ORBIT and self.NSR determine which methods are called when reusing onSelect. -ND 2017 
         self.ORBIT = False  
         self.NSR = False  
 
@@ -2855,6 +2855,7 @@ class StressPlotPanel(MatPlotPanel):
     #Add the ability to save series as photos and/or a video. -ND 2017
     def photosAndOrVideo(self, event):
         try:
+            self.videoSelect = True 
             choseTwoVideoOptions = True
             while(choseTwoVideoOptions == True): #Don't let the user choose both Video (Color) and Video (Grayscale).
                 listOfOptions = ["Photos", "Video (Color)", "Video (Grayscale)"]
@@ -2887,81 +2888,69 @@ class StressPlotPanel(MatPlotPanel):
                 if(self.choices[0]==0): 
                     StressPlotPanel.photo = True
                     if(len(self.choices)==1): #Photo only.
-                        self.onNoVideoSelect() 
+                        self.videoSelect = False 
+                        self.onSelect() 
                 if(len(self.choices)==2 or self.choices[0]==1 or self.choices[0]==2):
                     #Both photo and video or just video.
                     if(2 in self.choices): 
                         StressPlotPanel.videoGray = True 
                     else:  
                         StressPlotPanel.video = True
-                    #UI allowing the user to select a frame rate. 
-                    self.frameRateBox = wx.Dialog(self, -1, 
-                                                  "SatStressGUI V5.0") 
-                    self.frameRateBox.SetSize((350,150))
-                    vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
-                    
-                    sizer = wx.BoxSizer(wx.HORIZONTAL)
-                    text = wx.StaticText(self.frameRateBox, -1, "Select a"
-                                         + " frame rate:")
-                    self.spin = wx.SpinCtrl(self.frameRateBox)
-                    self.spin.SetValue(5)
-                    self.spin.SetRange(1,10)
-                    sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL | \
-                            wx.LEFT | wx.BOTTOM | wx.TOP, 3)
-                    sizer.AddSpacer(2)
-                    sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | \
-                              wx.ALL, 3)
-                
-                    hsizer = wx.BoxSizer(wx.HORIZONTAL) #For buttons. 
-                    self.selectButton = wx.Button(self.frameRateBox, -1, 
-                                                  "Select")
-                    self.cancelButton = wx.Button(self.frameRateBox, -1, 
-                                                  "Cancel")
-                    self.selectButton.Bind(wx.EVT_BUTTON, self.onVideoSelect)
-                    self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
-                    hsizer.Add(self.selectButton, 1, wx.ALL, 3)
-                    hsizer.Add(self.cancelButton, 1, wx.BOTTOM | wx.TOP | \
-                               wx.RIGHT, 3)
-                    
-                    note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
-                                         + " (slowest) - 10 (fastest).")
-                    note2 = wx.StaticText(self.frameRateBox, -1, 
-                                          "*The video includes all but the"
-                                          + " last frame.")
-
-                    vsizer.Add(sizer) 
-                    vsizer.AddSpacer(3) 
-                    vsizer.Add(note, 1, wx.LEFT, 3)
-                    vsizer.Add(note2, 1, wx.LEFT, 3)
-                    vsizer.AddSpacer(10)
-                    vsizer.Add(hsizer, 1, wx.CENTER)
-                               
-                    self.frameRateBox.SetSizer(vsizer)
-                    self.frameRateBox.CenterOnParent(-1)
-                    self.frameRateBox.Show()
+                    self.showFrameRate() 
         except LocalError, e:
             error_dialog(self, str(e), e.title)
     
-    #onNoVideoSelect, onVideoSelect, and onCancel are helper functions for \ 
-    #photosAndOrVideo. onVideoSelect needs to be it's own method because \ 
-    #it accepts an additional argument.        
-    def onNoVideoSelect(self):
-        if(self.NSR == True):
-            self.NSR = False #Reset. 
-            dir_dialog(self,
-            message=u"Choose destination folder.",
-            style=wx.SAVE,
-            action=self.save_nsr_series)
-        elif(self.ORBIT == True):     
-            self.ORBIT = False 
-            dir_dialog(None, 
-            message=u"Choose destination folder.",
-            style=wx.SAVE,
-            action=self.save_orbit_series)
+    #UI allowing the user to select a frame rate. 
+    def showFrameRate(self):
+        self.frameRateBox = wx.Dialog(self, -1, 
+                                      "SatStressGUI V5.0") 
+        self.frameRateBox.SetSize((350,150))
+        vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
         
-    def onVideoSelect(self, event):
-        ScalarPlotPanel.frameRate = self.spin.GetValue()
-        self.frameRateBox.Destroy()
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        text = wx.StaticText(self.frameRateBox, -1, "Select a"
+                             + " frame rate:")
+        self.spin = wx.SpinCtrl(self.frameRateBox)
+        self.spin.SetValue(5)
+        self.spin.SetRange(1,10)
+        sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL | \
+                wx.LEFT | wx.BOTTOM | wx.TOP, 3)
+        sizer.AddSpacer(2)
+        sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | \
+                  wx.ALL, 3)
+    
+        hsizer = wx.BoxSizer(wx.HORIZONTAL) #For buttons. 
+        self.selectButton = wx.Button(self.frameRateBox, -1, 
+                                      "Select")
+        self.cancelButton = wx.Button(self.frameRateBox, -1, 
+                                      "Cancel")
+        self.selectButton.Bind(wx.EVT_BUTTON, self.onSelect)
+        self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
+        hsizer.Add(self.selectButton, 1, wx.ALL, 3)
+        hsizer.Add(self.cancelButton, 1, wx.BOTTOM | wx.TOP | \
+                   wx.RIGHT, 3)
+        
+        note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
+                             + " (slowest) - 10 (fastest).")
+        note2 = wx.StaticText(self.frameRateBox, -1, 
+                              "*The video includes all but the"
+                              + " last frame.")
+
+        vsizer.Add(sizer) 
+        vsizer.AddSpacer(3) 
+        vsizer.Add(note, 1, wx.LEFT, 3)
+        vsizer.Add(note2, 1, wx.LEFT, 3)
+        vsizer.AddSpacer(10)
+        vsizer.Add(hsizer, 1, wx.CENTER)
+                   
+        self.frameRateBox.SetSizer(vsizer)
+        self.frameRateBox.CenterOnParent(-1)
+        self.frameRateBox.Show() 
+        
+    def onSelect(self, event = wx.EVT_BUTTON):
+        if(self.videoSelect):
+            ScalarPlotPanel.frameRate = self.spin.GetValue()
+            self.frameRateBox.Destroy()
         if(self.NSR == True):
             self.NSR = False 
             dir_dialog(self,
@@ -3100,7 +3089,7 @@ class StressPlotPanel(MatPlotPanel):
             self.NSR = True
         except LocalError, e:
             error_dialog(self, str(e), e.title)
-            
+    
     def on_save_polar_series(self, evt):
         try:
             dir_dialog(self,
@@ -4354,8 +4343,7 @@ class ScalarPlotPanel(PlotPanel):
             os.mkdir(self.directory)
             
         while o <= om: 
-            #The video relies on the photos created here, so this \ 
-            #happens no matter what. 
+            #The video relies on the photos created here, so this happens no matter what. 
             self.orbit_pos = o
             self.plot_no_draw()
             self.scp.orbit_slider.set_val(self.orbit_pos)
@@ -4365,8 +4353,8 @@ class ScalarPlotPanel(PlotPanel):
             o += s
         if(StressPlotPanel.video == True):
             framerate = str(ScalarPlotPanel.frameRate)
-            #FFMPEG is an external program that converts a sequence of images to a video.
-            #Frame size can be adjusted by modifying the argument '620x380'. 
+            #FFMPEG is an external program (run through the terminal) that converts a sequence \
+            #of images to a video. We use the subprocess module to run FFMPEG through this script. 
             subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
                              framerate, '-f', 'image2','-pattern_type', \
                              'glob', '-i', self.directory + '/orbit_*.png', \
@@ -4444,6 +4432,10 @@ class ScalarPlotPanel(PlotPanel):
         StressPlotPanel.videoGray = False  
         del b
 
+    #I don't think this function (or on_save_polar_series) is ever called on because Polar \
+    #Wander stress is not dependent on orbital position: therefore, there isn't going to be a \
+    #slideshow of photos for the user to slide through if they only select Polar Wander stress. If \
+    #they do select other stresses, either save_orbit_series or save_nsr_series will be called. -ND 2017  
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
@@ -4959,7 +4951,6 @@ def main():
     os.environ['PATH'] += os.path.pathsep+os.path.abspath(os.curdir)
     app = SatStressApp(1) # The 0 aka false parameter means "don't redirect stdout and stderr to a window"    app.MainLoop()
     app.MainLoop()
-
 
 if __name__ == '__main__':
     main()
