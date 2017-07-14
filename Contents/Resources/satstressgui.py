@@ -482,7 +482,7 @@ class SatelliteCalculation(object):
     #Writes calculated love numbers to a file.
     def save_love(self, filename):
         f = open(filename, 'w') 
-        for c in self.get_stresses():
+        for c in StressListPanel.forLove:
             try:
                 f.write(str(c))
                 f.write("\n")
@@ -492,7 +492,8 @@ class SatelliteCalculation(object):
 
     def displayLoveNumbers(self):
         for c in self.get_stresses():
-            if(str(c.__name__) == 'Diurnal' or str(c.__name__) == 'PolarWander'):
+            if(str(c.__name__) == 'Diurnal' or str(c.__name__) == 'PolarWander' 
+                or str(c.__name__) == 'DiurnalObliquity'):
                 #PolarWander Love numbers and Diurnal Love numbers are the same.
                 StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
                 StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
@@ -1322,6 +1323,7 @@ class StressListPanel(SatPanel):
     
     def __init__(self, *args, **kw):
         super(StressListPanel, self).__init__(*args, **kw)
+        self.count = 0 
         filler = wx.BoxSizer(wx.HORIZONTAL)
         filler.AddSpacer(15)
 
@@ -1482,9 +1484,9 @@ class StressListPanel(SatPanel):
             (StressListPanel.h2DiurnAuto), (StressListPanel.k2DiurnAuto), (StressListPanel.l2DiurnAuto), (self.diurnText),
             (StressListPanel.h2NSRAuto), (StressListPanel.k2NSRAuto), (StressListPanel.l2NSRAuto), (self.nsrText)])      
         loveSizer.Add(gridAuto)
-        cautionLoveNote = wx.StaticText(self, label=u'*Love numbers do not update automatically every time a')
-        cautionLoveNote2 = wx.StaticText(self, label=u'  satellite parameter is changed. Rerun the application')
-        cautionLoveNote3 = wx.StaticText(self, label=u'  to see the new/updated Love numbers.')
+        cautionLoveNote = wx.StaticText(self, label=u'*To see updated Love numbers every time a satellite')
+        cautionLoveNote2 = wx.StaticText(self, label=u'  parameter is changed, simply uncheck then recheck the')
+        cautionLoveNote3 = wx.StaticText(self, label=u'  stress box(es) that have been selected.')
         loveSizer.AddSpacer(3)
         loveSizer.Add(cautionLoveNote)
         loveSizer.Add(cautionLoveNote2)
@@ -1630,6 +1632,7 @@ class StressListPanel(SatPanel):
     def on_set_diurn(self, evt):
         state = self.parameters['Diurnal'].GetValue()
         self.sc.set_parameter('Diurnal', state)
+        StressListPanel.forLove = self.sc.get_stresses() 
         self.sc.displayLoveNumbers() 
         if state:
             self.enable_display_diurnlove()
@@ -1642,6 +1645,7 @@ class StressListPanel(SatPanel):
     def on_set_nsr(self, evt):
         state = self.parameters['Nonsynchronous Rotation'].GetValue()
         self.sc.set_parameter('Nonsynchronous Rotation', state)
+        StressListPanel.forLove = self.sc.get_stresses()
         self.sc.displayLoveNumbers() 
         if state:
             self.enable_display_nsrlove()
@@ -1654,7 +1658,8 @@ class StressListPanel(SatPanel):
     def on_set_ist(self, evt):
         s = self.parameters['Ice Shell Thickening'].GetValue()
         self.sc.set_parameter('Ice Shell Thickening', s)
-        self.sc.displayLoveNumbers() 
+        #The Ice Shell Volume Change stress by itself will not generate \ 
+        #Love numbers. It must be used with either Diurnal or NSR. -ND 2017  
         if s:
             self.enable_istparams()
         else:
@@ -1905,7 +1910,7 @@ class PointPanel(SatPanel):
         u'stresses are being calculated.'), flag=wx.ALL|wx.EXPAND)
 
         sz.AddSpacer(20)
-        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1049,385), style=wx.SIMPLE_BORDER)
+        self.fieldPanel = wx.scrolledpanel.ScrolledPanel(self,-1, size=(1048,385), style=wx.SIMPLE_BORDER)
         self.fieldPanel.SetupScrolling()
 
         rsz = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -2206,7 +2211,7 @@ class GridCalcPanel(SatPanel):
         top.Add(grid_id_p)
         top.AddSpacer(6)
         top.Add(lb)
-        top.AddSpacer(6)
+        top.AddSpacer(3)
         top.Add(sb)
         sz.Add(top)
         sz.AddSpacer(15)
@@ -2354,7 +2359,7 @@ class CycloidsPanel(SatPanel):
         load_bt = wx.Button(self, label='Load from file')
         load_bt.Bind(wx.EVT_BUTTON, self.on_load_cyclparams)
         buttonSizer.Add(load_bt)
-        buttonSizer.AddSpacer(5)
+        buttonSizer.AddSpacer(3)
         buttonSizer.Add(save_bt)
 
         self.vary = wx.CheckBox(self, wx.ID_ANY, 'Vary Velocity   k = ')
@@ -3619,7 +3624,7 @@ class ScalarPlotPanel(PlotPanel):
 
         # add checkbox
         lins.Add(lins_ckSizer)
-        lins.AddSpacer(15)
+        lins.AddSpacer(10)
         # add buttons
         lins.Add(self.load_save_buttons(), wx.ALL|wx.ALIGN_RIGHT)
 
@@ -4790,14 +4795,14 @@ features on Europa. Science 285, 1899-1902"""
         self.makeMsgDialog(Resources, u'About Cycloids')
 
     def onTutorial(self, evt):
-        Tutorial = u"""Welcome to SatStressGUI!  This program is designed to model stresses icy satellites \
+        Tutorial = u"""Welcome to SatStressGUI! This program is designed to model stresses icy satellites \
 experience as they orbit their primary.  For more information on this program and the mathematics behind it, \
 check the "Information" menu. \n\n\
 1) Input the satellite's physical parameters on the Satellite tab.\n\
 2) Select which stresses to apply in the Stresses tab.\n\
 - When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
 leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
-- Obliquity must be used with either Diurnal or NSR.\n\
+- The Ice Shell Volume Change stress must be used with either Diurnal or NSR.\n\
 3) In the Grid tab, input a latitude and longitude range to examine.\n\
 - The number of grid points must be equal for both latitude and longitude.\n\
 4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
@@ -4823,7 +4828,7 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
 When inputting custom love numbers, you must use the format <Re> +/- <Im>j.  Do not use scientific notation. \
 For example, "1.2+3.0e-5j" should be written as "1.2+0.00003j."\n\
-- The Obliquity stress must be used with Diurnal or NSR.\n\
+- The Ice Shell Volume Change stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
