@@ -490,7 +490,7 @@ class SatelliteCalculation(object):
         f.close()
 
     def displayLoveNumbers(self):
-        for c in self.get_stresses():
+        for c in StressListPanel.forLove:
             if(str(c.__name__) == 'Diurnal' or str(c.__name__) == 'PolarWander' 
                 or str(c.__name__) == 'DiurnalObliquity'):
                 #PolarWander Love numbers and Diurnal Love numbers are the same.
@@ -1266,7 +1266,7 @@ class SatelliteLayersPanel(SatPanel):
                                             items.append(soManyChild)
                                             
         defaultColor = self.GetBackgroundColour()        
-        if self.toggleButton.GetValue()==True: 
+        if self.toggleButton.GetValue(): 
             self.toggleButton.SetLabel("Disable Night Mode")
             for i in items: 
                 if isinstance(i, wx.StaticText):
@@ -1482,14 +1482,16 @@ class StressListPanel(SatPanel):
             (StressListPanel.h2DiurnAuto), (StressListPanel.k2DiurnAuto), (StressListPanel.l2DiurnAuto), (self.diurnText),
             (StressListPanel.h2NSRAuto), (StressListPanel.k2NSRAuto), (StressListPanel.l2NSRAuto), (self.nsrText)])      
         loveSizer.Add(gridAuto)
-        cautionLoveNote = wx.StaticText(self, label=u'*To see updated Love numbers every time a satellite')
-        cautionLoveNote2 = wx.StaticText(self, label=u'  parameter is changed, simply uncheck then recheck the')
-        cautionLoveNote3 = wx.StaticText(self, label=u'  stress box(es) that have been selected.')
+        loveSizer.AddSpacer(5)
+        updateLoveButton = wx.Button(self, -1, "Update Love numbers")
+        updateLoveButton.Bind(wx.EVT_BUTTON, self.updateLoveNumberDisplay)
+        cautionLoveNote = wx.StaticText(self, label=u'*To see updated program-generated Love numbers when a satellite')
+        cautionLoveNote2 = wx.StaticText(self, label=u'  parameter is changed, click the "Update Love Numbers" button.')
+        loveSizer.Add(updateLoveButton)
         loveSizer.AddSpacer(3)
         loveSizer.Add(cautionLoveNote)
         loveSizer.Add(cautionLoveNote2)
-        loveSizer.Add(cautionLoveNote3)
-        loveSizer.AddSpacer(20)
+        loveSizer.AddSpacer(25)
         loveNoteCustom = wx.StaticText(self, label=u'Custom Love numbers:')
         loveSizer.Add(loveNoteCustom)
         loveSizer.AddSpacer(5) 
@@ -1544,7 +1546,11 @@ class StressListPanel(SatPanel):
         self.disable_obliq()
         self.disable_polar()
 
-    # These functions disable and enable various stress parameters on the GUI. -PS 2016
+    def updateLoveNumberDisplay(self, event):
+        SatStressPanel.stp.on_set_diurn()
+        SatStressPanel.stp.on_set_nsr() 
+
+    #These functions disable and enable various stress parameters on the GUI. -PS 2016
     def disable_display_diurnlove(self):
         for widg in [self.h2, self.k2, self.l2,
                      self.h2Diurn, self.k2Diurn, self.l2Diurn,
@@ -1627,7 +1633,7 @@ class StressListPanel(SatPanel):
          self.InitialSpin_label, self.FinalSpin_label]:
             e.Disable()
 
-    def on_set_diurn(self, evt):
+    def on_set_diurn(self, evt = wx.EVT_CHECKBOX):
         state = self.parameters['Diurnal'].GetValue()
         self.sc.set_parameter('Diurnal', state)
         StressListPanel.forLove = self.sc.get_stresses() 
@@ -1640,7 +1646,7 @@ class StressListPanel(SatPanel):
         SatStressPanel.tp.Enable()
         StressListPanel.gpCanBeClicked = True 
 
-    def on_set_nsr(self, evt):
+    def on_set_nsr(self, evt = wx.EVT_CHECKBOX):
         state = self.parameters['Nonsynchronous Rotation'].GetValue()
         self.sc.set_parameter('Nonsynchronous Rotation', state)
         StressListPanel.forLove = self.sc.get_stresses()
@@ -1670,6 +1676,7 @@ class StressListPanel(SatPanel):
         name = 'Obliquity'
         s = self.parameters[name].GetValue()
         self.sc.set_parameter(name, s)
+        StressListPanel.forLove = self.sc.get_stresses() 
         self.sc.displayLoveNumbers() 
         if s:
             self.enable_obliq()
@@ -1682,6 +1689,7 @@ class StressListPanel(SatPanel):
     def on_set_polar(self,evt):
         s = self.parameters['Polar Wander'].GetValue()
         self.sc.set_parameter('Polar Wander', s)
+        StressListPanel.forLove = self.sc.get_stresses() 
         self.sc.displayLoveNumbers() 
         if s:
             self.enable_polar()
@@ -2215,9 +2223,9 @@ class GridCalcPanel(SatPanel):
         sz.AddSpacer(15)
         sz.Add(gmcp)
         sz.AddSpacer(15)
-        sz.Add(wx.StaticText(self, label = u'Note: Number of latitude and longitude grid points must be equal'))
-        sz.Add(wx.StaticText(self, label=u"Sometimes the map will not generate for certain diurnal orbit values."))
-        sz.Add(wx.StaticText(self, label=u"If this happens, just change your number of increments or end value."))
+        sz.Add(wx.StaticText(self, label = u'*The number of latitude and longitude grid points must be equal.'))
+        sz.Add(wx.StaticText(self, label=u"*Sometimes the map will not generate for certain diurnal orbit values."))
+        sz.Add(wx.StaticText(self, label=u"  If this happens, just change the number of increments or end value."))
 
         self.SetSizer(sz)
 
@@ -2335,7 +2343,7 @@ class CycloidsPanel(SatPanel):
         self.textCtrls = {} #keys are the name of the fields (YIELD,etc) and values are the textCtrl objects for those fields.
         # initialize sizers
         sz = wx.BoxSizer(wx.VERTICAL)
-        gridSizer    = wx.FlexGridSizer(rows=7, cols=2, hgap=5, vgap=0)
+        gridSizer = wx.FlexGridSizer(rows=7, cols=2, hgap=5, vgap=0)
         
         dirSizer = wx.BoxSizer(wx.HORIZONTAL)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -2379,7 +2387,6 @@ class CycloidsPanel(SatPanel):
         
         # add widgets into grid
         # Set the TextCtrl to expand on resize
-        
         fieldsToAdd = [ ('cycloid_name', 'Cycloid Name'), ('YIELD', 'Yield (Threshold) [kPa]: '),('PROPAGATION_STRENGTH','Propagation Strength [kPa]: '),('PROPAGATION_SPEED','Propagation Speed [m/s]: '), ('STARTING_LONGITUDE', 'Starting Longitude: '), ('STARTING_LATITUDE', 'Starting Latitude: ')]
 
         self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
@@ -2391,8 +2398,6 @@ class CycloidsPanel(SatPanel):
         many_params = wx.Button(self, label='Load Multiple Cycloid Parameters')
         wx.EVT_BUTTON(self, many_params.GetId(), self.load_many)
 
-        # add to overarching sizer sz
-        
         sz.Add(WrapStaticText(self,
             label=u'This tab calculates cycloids through combined diurnal and NSR stresses. Cycloids ' +
             u'are arcuate lineaments found on the surface of Europa. ' +
@@ -2402,12 +2407,12 @@ class CycloidsPanel(SatPanel):
             u'Propagation Strength. The Propagation Speed is usually <10 m/s. ' +
             u'For further information on cycloids see the Help menu.'),
             flag=wx.ALL|wx.EXPAND)
-        
+
         sz.AddSpacer(5)
-        sz.Add(buttonSizer, 0, wx.ALL)
-        sz.Add(gridSizer, 0, wx.ALL|wx.EXPAND, 5)
-        sz.Add(self.use_multiple,0, wx.ALL|wx.EXPAND, 5)
-        sz.Add(many_params)
+        sz.Add(buttonSizer, 0, wx.BOTTOM | wx.TOP, 5)
+        sz.Add(gridSizer, 0, wx.TOP | wx.LEFT, 5)
+        sz.Add(self.use_multiple,0, wx.LEFT| wx.BOTTOM |wx.EXPAND, 5)
+        sz.Add(many_params, 0, wx.TOP, 5)
         self.SetSizer(sz)
         sz.Fit(self)
     
@@ -2857,7 +2862,7 @@ class StressPlotPanel(MatPlotPanel):
         try:
             self.videoSelect = True 
             choseTwoVideoOptions = True
-            while(choseTwoVideoOptions == True): #Don't let the user choose both Video (Color) and Video (Grayscale).
+            while(choseTwoVideoOptions): #Don't let the user choose both Video (Color) and Video (Grayscale).
                 listOfOptions = ["Photos", "Video (Color)", "Video (Grayscale)"]
                 dialogueBox = wx.MultiChoiceDialog(self, "Would you like to save "+ 
                                                    "the series as photos, a "+
@@ -2900,7 +2905,7 @@ class StressPlotPanel(MatPlotPanel):
         except LocalError, e:
             error_dialog(self, str(e), e.title)
     
-    #UI allowing the user to select a frame rate. 
+    #UI which allows the user to select a frame rate. 
     def showFrameRate(self):
         self.frameRateBox = wx.Dialog(self, -1, 
                                       "SatStressGUI V5.0") 
@@ -2951,13 +2956,13 @@ class StressPlotPanel(MatPlotPanel):
         if(self.videoSelect):
             ScalarPlotPanel.frameRate = self.spin.GetValue()
             self.frameRateBox.Destroy()
-        if(self.NSR == True):
+        if(self.NSR):
             self.NSR = False 
             dir_dialog(self,
             message=u"Choose destination folder.",
             style=wx.SAVE,
             action=self.save_nsr_series)
-        elif(self.ORBIT == True):     
+        elif(self.ORBIT):     
             self.ORBIT = False 
             dir_dialog(None, 
             message=u"Choose destination folder.",
@@ -4351,7 +4356,7 @@ class ScalarPlotPanel(PlotPanel):
                 (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
                 bbox_inches='tight', pad_inches=1.5)
             o += s
-        if(StressPlotPanel.video == True):
+        if(StressPlotPanel.video):
             framerate = str(ScalarPlotPanel.frameRate)
             #FFMPEG is an external program (run through the terminal) that converts a sequence \
             #of images to a video. We use the subprocess module to run FFMPEG through this script. 
@@ -4362,7 +4367,7 @@ class ScalarPlotPanel(PlotPanel):
                              ".avi"])
             if not StressPlotPanel.photo: 
                 shutil.rmtree(self.directory)
-        elif(StressPlotPanel.videoGray == True):
+        elif(StressPlotPanel.videoGray):
             framerate = str(ScalarPlotPanel.frameRate)
             subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
                              framerate, '-f', 'image2','-pattern_type', \
@@ -4404,7 +4409,7 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.nsr_slider.set_val(self.nsr_pos)
             self.plot_no_draw()
             self.scp.figure.savefig("%s/nsr_%03d.png" % (directory, k), bbox_inches='tight', pad_inches=0.5)
-        if(StressPlotPanel.video == True):
+        if(StressPlotPanel.video):
             framerate = str(ScalarPlotPanel.frameRate)
             subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
                              framerate, '-f', 'image2','-pattern_type', \
@@ -4413,7 +4418,7 @@ class ScalarPlotPanel(PlotPanel):
                              ".avi"])
             if not StressPlotPanel.photo:
                 shutil.rmtree(directory)
-        elif(StressPlotPanel.videoGray == True): 
+        elif(StressPlotPanel.videoGray): 
             framerate = str(ScalarPlotPanel.frameRate)
             subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
                              framerate, '-f', 'image2','-pattern_type', \
@@ -4508,7 +4513,7 @@ class SatStressPanel(wx.scrolledpanel.ScrolledPanel):
     def onClickGrid(self, event):
         #gpCanBeClicked is set to True when the user selects \
         #their desired stress(es).
-        if(StressListPanel.gpCanBeClicked == True):
+        if(StressListPanel.gpCanBeClicked):
             SatStressPanel.spp.Enable() 
             SatStressPanel.cy.Enable() 
 
