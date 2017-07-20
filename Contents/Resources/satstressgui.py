@@ -999,6 +999,8 @@ class RadioBox2(wx.Control):
         for c, d in choices[1:]:
             self.__radiobuttons[c] = wx.RadioButton(self, label=d)
             if c == 'west': 
+                #Specific references to the "east positive" and "west positive" buttons are needed \
+                #to bind them to the appropriate event. -ND 2017 
                 RadioBox2.westButton = self.__radiobuttons[c] 
             if c == value:
                 self.__radiobuttons[c].SetValue(True)
@@ -1916,8 +1918,9 @@ class PointPanel(SatPanel):
         self.b = wx.Button(self, label=u'Calculate stress')
         self.load_b = wx.Button(self, label=u'Load from file')
         self.clear_b = wx.Button(self, label=u'Clear all points')
-        self.clear_b.Bind(wx.EVT_BUTTON, self.onClear)
+        self.autopopulate_b = wx.Button(self, label=u'Autopopulate')
         bp.Add(self.b, 1, wx.RIGHT| wx.TOP | wx.BOTTOM | wx.EXPAND, 3)
+        bp.Add(self.autopopulate_b, 1, wx.RIGHT | wx.TOP | wx.BOTTOM | wx.EXPAND, 3)
         bp.Add(self.load_b, 1, wx.RIGHT | wx.BOTTOM | wx.TOP | wx.EXPAND, 3)
         bp.Add(self.save_b, 1, wx.RIGHT | wx.BOTTOM | wx.TOP | wx.EXPAND, 3)
         bp.Add(self.clear_b, 1, wx.RIGHT | wx.BOTTOM | wx.TOP | wx.EXPAND, 3)
@@ -1926,17 +1929,16 @@ class PointPanel(SatPanel):
         sz.Add(bp)
      
         sz.AddSpacer(15)
-
         self.SetSizer(sz)
-
-
-        self.row_ctrl.Bind(wx.EVT_SPINCTRL, self.spinCtrl)
-        self.row_ctrl.Bind(wx.EVT_TEXT, self.spinCtrl)
-        #self.row_ctrl.Bind(wx.EVT_SPIN_DOWN, lambda evt, szr = pp: self.spin_down(evt, szr))
-        # Here we bind the load and save buttons to the respective events
+        
+        #Here we bind the buttons to the respective events.
         wx.EVT_BUTTON(self, self.b.GetId(), self.on_calc)
         self.load_b.Bind(wx.EVT_BUTTON, self.load)
         self.save_b.Bind(wx.EVT_BUTTON, self.save)
+        self.clear_b.Bind(wx.EVT_BUTTON, self.onClear)
+        self.autopopulate_b.Bind(wx.EVT_BUTTON, self.onAutopopulate)
+        self.row_ctrl.Bind(wx.EVT_SPINCTRL, self.spinCtrl)
+        self.row_ctrl.Bind(wx.EVT_TEXT, self.spinCtrl)
         self.update_parameters()
         self.bind_parameters()
         self.updating = False
@@ -1945,6 +1947,143 @@ class PointPanel(SatPanel):
             self.parameters['orbit'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_orbit_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_t_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_t_update(evt, row))
+
+    #Add the ability to autopopulate the latitude/longitude and orbital position columns. -ND 2017 
+    def onAutopopulate(self, event): 
+        self.autopopulateBox = wx.Dialog(self, -1, "SatStressGUI V5.0")
+        vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
+        latitudeSizer = wx.BoxSizer(wx.HORIZONTAL)
+        longitudeSizer = wx.BoxSizer(wx.HORIZONTAL)
+        orbitalStartEndSizer = wx.BoxSizer(wx.HORIZONTAL)
+        orbitalIncrementSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Widgets to add.  
+        note = wx.StaticText(self.autopopulateBox, -1, "Autopopulate with constant latitude/longitude and set orbital increment.")
+        latitudeText = wx.StaticText(self.autopopulateBox, -1, "Latitude:")
+        longitudeText = wx.StaticText(self.autopopulateBox, -1, "Longitude:")
+        orbitalStartEndText = wx.StaticText(self.autopopulateBox, -1, label=u"Orbital pos (start/end) [°]:") 
+        orbitalStandEndText2 = wx.StaticText(self.autopopulateBox, -1, "to")
+        orbitalIncrementText = wx.StaticText(self.autopopulateBox, -1, label=u"Orbital pos (increment) [°]:")
+        self.latitudeTextCtrl = wx.TextCtrl(self.autopopulateBox)
+        self.longitudeTextCtrl = wx.TextCtrl(self.autopopulateBox)
+        self.orbitalStartTextCtrl = wx.TextCtrl(self.autopopulateBox)
+        self.orbitalEndTextCtrl = wx.TextCtrl(self.autopopulateBox)
+        self.orbitalIncrementSpinCtrl = wx.SpinCtrl(self.autopopulateBox)
+        self.orbitalIncrementSpinCtrl.SetValue(10)
+        self.orbitalIncrementSpinCtrl.SetRange(1,36) 
+
+        #Add widgets to their respective subsizers. 
+        latitudeSizer.Add(latitudeText, flag = wx.ALIGN_CENTER_VERTICAL)
+        latitudeSizer.AddSpacer(2) 
+        latitudeSizer.Add(self.latitudeTextCtrl, flag = wx.ALIGN_CENTER_VERTICAL)
+        longitudeSizer.Add(longitudeText, flag = wx.ALIGN_CENTER_VERTICAL)
+        longitudeSizer.AddSpacer(2) 
+        longitudeSizer.Add(self.longitudeTextCtrl, flag =wx.ALIGN_CENTER_VERTICAL)
+        orbitalStartEndSizer.Add(orbitalStartEndText, flag = wx.ALIGN_CENTER_VERTICAL)
+        orbitalStartEndSizer.AddSpacer(2) 
+        orbitalStartEndSizer.Add(self.orbitalStartTextCtrl, flag = wx.ALIGN_CENTER_VERTICAL)
+        orbitalStartEndSizer.AddSpacer(3)
+        orbitalStartEndSizer.Add(orbitalStandEndText2, flag = wx.ALIGN_CENTER_VERTICAL)
+        orbitalStartEndSizer.AddSpacer(3)
+        orbitalStartEndSizer.Add(self.orbitalEndTextCtrl, flag = wx.ALIGN_CENTER_VERTICAL)
+        orbitalIncrementSizer.Add(orbitalIncrementText, flag = wx.ALIGN_CENTER_VERTICAL)
+        orbitalIncrementSizer.AddSpacer(2) 
+        orbitalIncrementSizer.Add(self.orbitalIncrementSpinCtrl, flag = wx.ALIGN_CENTER_VERTICAL)
+
+        #For select and cancel buttons.
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)  
+        self.selectButton = wx.Button(self.autopopulateBox, -1, 
+                                      "Select")
+        self.cancelButton = wx.Button(self.autopopulateBox, -1, 
+                                      "Cancel")
+        self.selectButton.Bind(wx.EVT_BUTTON, self.onSelect)
+        self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
+        hsizer.Add(self.selectButton, 1)
+        hsizer.Add(self.cancelButton, 1, wx.LEFT, 2)
+
+        #Add note and subsizers to master sizer. 
+        vsizer.Add(note, flag = wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT | wx.TOP, border = 5)
+        vsizer.AddSpacer(8)
+        vsizer.Add(latitudeSizer, flag = wx.LEFT | wx.RIGHT, border = 5)
+        vsizer.AddSpacer(8)
+        vsizer.Add(longitudeSizer, flag = wx.LEFT | wx.RIGHT, border = 5)
+        vsizer.AddSpacer(8)
+        vsizer.Add(orbitalStartEndSizer, flag = wx.LEFT | wx.RIGHT, border = 5)
+        vsizer.AddSpacer(8)
+        vsizer.Add(orbitalIncrementSizer, flag = wx.LEFT | wx.RIGHT, border = 5)
+        vsizer.AddSpacer(15)
+        vsizer.Add(hsizer, flag = wx.CENTER | wx.BOTTOM, border = 5)
+
+        self.autopopulateBox.SetSizer(vsizer)
+        self.autopopulateBox.Fit() 
+        self.autopopulateBox.CenterOnParent(-1)
+        self.autopopulateBox.Show() 
+
+    #Add the ability to clear all points on the point panel. -ND 2017
+    def onClear(self, event):
+        for i in range(0, len(self.getAllTextCtrls()) - 1): 
+            self.textctrls[i].Clear()
+
+    #Helper method used in onAutopopulate. 
+    def onSelect(self, event): 
+        #Create a temporary CSV file with the latitudes/longitudes/orbital positions specified 
+        #by the user, call self.load_entries to load that file to the Point Panel, then delete 
+        #the temporary CSV file. 
+        latitude = int(self.latitudeTextCtrl.GetValue())
+        longitude = int(self.longitudeTextCtrl.GetValue())
+        start = int(self.orbitalStartTextCtrl.GetValue())
+        end = int(self.orbitalEndTextCtrl.GetValue())
+        increment = self.orbitalIncrementSpinCtrl.GetValue()  
+        rowsNeeded = ((end - start)/increment) + 1
+
+        labels = [['theta [degrees]', 'phi [degrees]', 't [yrs]', 'orbital pos [degrees]', \
+        'Stt [kPa]', 'Spt [kPa]', 'Spp [kPa]', 'sigma1 [kPa]', 'sigma3 [kPa]', 'alpha [degrees]']]
+        latitudes = []
+        longitudes = [] 
+        times = []
+        increments = [] 
+        for i in range(0, rowsNeeded): 
+            latitudes.append(latitude)
+            longitudes.append(longitude)
+            increments.append(start)
+            times.append(0)
+            start += increment 
+
+        allValues = [] 
+        allValues.append(latitudes)
+        allValues.append(longitudes)
+        allValues.append(times)
+        allValues.append(increments)
+        allValues = zip(*allValues)
+        fileName = time.asctime(time.localtime(time.time()))
+
+        fd = open(fileName + ".csv", 'wb')
+        writer = csv.writer(fd, dialect='excel', quotechar='"', quoting=csv.QUOTE_ALL)
+        writer.writerows(labels)
+        for val in allValues: 
+            writer.writerow(val)
+        fd.close()
+
+        self.load_entries(fileName + ".csv")
+        os.remove(fileName + ".csv")
+        self.autopopulateBox.Destroy() 
+
+    #Helper method used in onAutopopulate. 
+    def onCancel(self, event): 
+        self.autopopulateBox.Destroy() 
+
+    #Helper method used in onAutopopulate and onClear. 
+    def getAllTextCtrls(self): 
+        self.textctrls = []
+        for children in self.GetChildren():
+            if isinstance(children, wx.TextCtrl):
+                self.textctrls.append(children)
+            elif hasattr(children, "GetChildren"):
+                for child in children.GetChildren():
+                    if isinstance(child, wx.TextCtrl):
+                        self.textctrls.append(child)
+
+        return self.textctrls
 
     #updates the orbit text ctrls when t is changed
     def on_t_update(self, evt, row = 1):
@@ -1958,20 +2097,6 @@ class PointPanel(SatPanel):
         except:
             traceback.print_exc()
         self.updating = False
-    
-    #Add the ability to clear all points on the point panel. -ND 2017
-    def onClear(self, event): 
-        textctrls = []
-        for children in self.GetChildren():
-            if isinstance(children, wx.TextCtrl):
-                textctrls.append(children)
-            elif hasattr(children, "GetChildren"):
-                for child in children.GetChildren():
-                    if isinstance(child, wx.TextCtrl): 
-                        textctrls.append(child)
-        
-        for i in range(0, len(textctrls) - 2): 
-            textctrls[i].Clear()
                         
     #updates the t text ctrls when orbital position is changed
     def on_orbit_update(self, evt, row = 1):
@@ -1994,7 +2119,7 @@ class PointPanel(SatPanel):
         except LocalError, e:
             error_dialog(self, str(e), e.title)
     
-    #These functions were meant to handle events generated by the spin control used to change number of points to calculate
+    #These functions were meant to handle events generated by the spin control used to change number of points to calculate.
     def spinCtrl(self, evt):
         spin_value = evt.GetEventObject().GetValue()
         if spin_value == '':
@@ -2079,7 +2204,7 @@ class PointPanel(SatPanel):
     def load_entries(self, filename):
         f = open(filename)
         csvreader = csv.reader(f)
-        coord = csvreader.next()  #Skip headers
+        coord = csvreader.next()  #Skip headers.
         data = list(csvreader)
         self.set_num_rows(len(data))
         try:
@@ -2869,31 +2994,26 @@ class StressPlotPanel(MatPlotPanel):
     def showFrameRate(self):
         self.frameRateBox = wx.Dialog(self, -1, 
                                       "SatStressGUI V5.0") 
-        self.frameRateBox.SetSize((350,150))
         vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
         
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL) #For frame rate selection. 
         text = wx.StaticText(self.frameRateBox, -1, "Select a"
                              + " frame rate:")
         self.spin = wx.SpinCtrl(self.frameRateBox)
         self.spin.SetValue(5)
         self.spin.SetRange(1,10)
-        sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL | \
-                wx.LEFT | wx.BOTTOM | wx.TOP, 3)
-        sizer.AddSpacer(2)
-        sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | \
-                  wx.ALL, 3)
+        sizer.Add(text, 1, wx.ALIGN_CENTER_VERTICAL)
+        sizer.Add(self.spin, 1, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
     
-        hsizer = wx.BoxSizer(wx.HORIZONTAL) #For buttons. 
+        hsizer = wx.BoxSizer(wx.HORIZONTAL) #For select and cancel buttons. 
         self.selectButton = wx.Button(self.frameRateBox, -1, 
                                       "Select")
         self.cancelButton = wx.Button(self.frameRateBox, -1, 
                                       "Cancel")
         self.selectButton.Bind(wx.EVT_BUTTON, self.onSelect)
         self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
-        hsizer.Add(self.selectButton, 1, wx.ALL, 3)
-        hsizer.Add(self.cancelButton, 1, wx.BOTTOM | wx.TOP | \
-                   wx.RIGHT, 3)
+        hsizer.Add(self.selectButton, 1)
+        hsizer.Add(self.cancelButton, 1, wx.LEFT, 2)
         
         note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
                              + " (slowest) - 10 (fastest).")
@@ -2901,14 +3021,16 @@ class StressPlotPanel(MatPlotPanel):
                               "*The video includes all but the"
                               + " last frame.")
 
-        vsizer.Add(sizer) 
-        vsizer.AddSpacer(3) 
-        vsizer.Add(note, 1, wx.LEFT, 3)
-        vsizer.Add(note2, 1, wx.LEFT, 3)
-        vsizer.AddSpacer(10)
-        vsizer.Add(hsizer, 1, wx.CENTER)
-                   
+        vsizer.Add(sizer, flag = wx.LEFT | wx.RIGHT | wx.TOP, border = 5)
+        vsizer.AddSpacer(3)
+        vsizer.Add(note, flag = wx.LEFT | wx.RIGHT, border = 5)
+        vsizer.AddSpacer(8)
+        vsizer.Add(note2, flag = wx.LEFT | wx.RIGHT, border = 5)
+        vsizer.AddSpacer(15)
+        vsizer.Add(hsizer, flag = wx.CENTER | wx.BOTTOM, border = 5)
+        
         self.frameRateBox.SetSizer(vsizer)
+        self.frameRateBox.Fit() 
         self.frameRateBox.CenterOnParent(-1)
         self.frameRateBox.Show() 
         
@@ -3216,7 +3338,6 @@ class PlotPanel(SatPanel):
         return basemap_ax
 
     def draw_coords(self):
-            self.count = 0 
             #Draw a grid onto the plot -- independent of actual grid tab.
             coord_lons  = numpy.arange(
             numpy.radians(self.grid.lon_min), 
@@ -4342,12 +4463,9 @@ class ScalarPlotPanel(PlotPanel):
         if os.path.isdir(self.location):
             os.mkdir(self.directory)
         else:
-            #Commented this out because it creates an empty folder. -ND 2017
-            #os.mkdir(self.location) 
             os.mkdir(self.directory)
             
         while o <= om: 
-            #The video relies on the photos created here, so this happens no matter what. 
             self.orbit_pos = o
             self.plot_no_draw()
             self.scp.orbit_slider.set_val(self.orbit_pos)
