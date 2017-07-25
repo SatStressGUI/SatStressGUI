@@ -1051,7 +1051,7 @@ def add_table_header(parent, sz, parameters_d):
         sz.Add(st, flag=wx.ALIGN_CENTER)
     return sts
 
-#takes a dictionary of parameters and adds it to a wx.TextCtrl object
+#Takes a dictionary of parameters and adds it to a wx.TextCtrl object.
 def add_text_ctrls(parent, sz, parameters_d, rows = 1, point=False):
     parameters = {}
     if point:
@@ -1218,7 +1218,7 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(lp)
 
         sz.AddSpacer(10)
-        # This text was added to provide new users with important information. -PS 2016
+        #This text was added to provide new users with important information. -PS 2016
         sz.Add(wx.StaticText(self, label=u'This model makes several assumptions when calculating stresses:'))
         sz.Add(wx.StaticText(self, label=u'1. The body is assumed to be composed of four layers, with the third layer being a liquid ocean.'))
         sz.Add(wx.StaticText(self, label=u'2. It is assumed to behave in a viscoelastic manner.'))
@@ -1227,7 +1227,7 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u'5. Polar Wander stress is calculated using an elastic model.'))
         sz.Add(wx.StaticText(self, label=u'6. The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10x the satellite\'s mass.'))
         
-        sz.AddSpacer(220)
+        sz.AddSpacer(249)
         helpSizer = wx.BoxSizer(wx.HORIZONTAL)
         HelpText = wx.StaticText(self, label=u'*For help in using this program, select "Getting Started" in the Help menu.')
         HelpFont = wx.Font(14, wx.DEFAULT, wx.NORMAL, 0) #Sets the font and size of the text. -PS 2016
@@ -1342,20 +1342,25 @@ class StressListPanel(SatPanel):
         self.parameters.update(add_checkboxes_to_sizer(self, sz,
             [ ('Ice Shell Thickening', 'Ice Shell Volume Change') ]))
         ISTParams_sz = wx.BoxSizer(wx.VERTICAL)
-        #Include ice thickness parameter for IST aka Ice Shell Thickening.
-        delta_tc_sz = wx.BoxSizer(orient=wx.HORIZONTAL)
+        delta_tc_sz = wx.BoxSizer(orient=wx.HORIZONTAL) #Include ice thickness parameter for Ice Shell Volume Change. 
         delta_tc_sz.AddSpacer(28)
-        iceNote = wx.StaticText(self, label = u'*To calculate ice shell thinning, add a negative sign.')
         self.delta_label = wx.StaticText(self, label=u'Change in Thickness [km] ')
         delta_tc_sz.Add(self.delta_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        self.parameters.update(add_text_ctrls(self, delta_tc_sz, [ ('delta_tc', 'delta_tc') ]))
+        self.parameters.update(add_text_ctrls(self, delta_tc_sz, [('delta_tc', 'delta_tc')]))
+        thermal_sz = wx.BoxSizer(orient = wx.HORIZONTAL) #Include thermal diffusivity parameter for Ice Shell Volume Change. 
+        thermal_sz.AddSpacer(28)
+        self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]')
+        thermal_sz.Add(self.diffusivity_label, flag = wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border = 6)
+        self.parameters.update(add_text_ctrls(self, thermal_sz, [('diffusivity', 'diffusivity')]))
+
+        iceNote = wx.StaticText(self, label = u'*To calculate ice shell thinning, add a negative sign.')
         ISTParams_sz.Add(delta_tc_sz)
+        ISTParams_sz.AddSpacer(5)
+        ISTParams_sz.Add(thermal_sz)
         ISTParams_sz.AddSpacer(3)
         ISTParams_sz.Add(iceNote)
         sz.Add(ISTParams_sz)
         sz.AddSpacer(5)
-
-        #Removed the diffusivity option from the GUI because it is not implemented. -PS 2016
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
@@ -1401,7 +1406,7 @@ class StressListPanel(SatPanel):
         self.Bind(wx.EVT_TEXT, self.set_FinalSpinPeriod, self.FinalSpinPeriod)
 
         Polargrid.AddMany([
-            (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
+            (self.Blank_label, 0, wx.ALL|wx.EXPAND), (self.Latitude_label, 0, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL), (self.Longitude_label, 0, wx.ALL|wx.EXPAND),
             (self.PoleInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaRi, 0, wx.ALL|wx.EXPAND), (self.PWphiRi, 0, wx.ALL|wx.EXPAND),
             (self.PoleFinal, 0, wx.ALL|wx.EXPAND), (self.PWthetaRf, 0, wx.ALL|wx.EXPAND), (self.PWphiRf, 0, wx.ALL|wx.EXPAND),
             (self.TidalInitial, 0, wx.ALL|wx.EXPAND), (self.PWthetaTi, 0, wx.ALL|wx.EXPAND), (self.PWphiTi, 0, wx.ALL|wx.EXPAND),
@@ -1417,7 +1422,7 @@ class StressListPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u" *The stress map from Polar Wander appears to be correct,"))
         sz.Add(wx.StaticText(self, label=u"   but the principal stress vectors are rotated 180° for some reason."))
 
-        sz.AddSpacer(35)
+        sz.AddSpacer(32)
         save_love_bt = wx.Button(self, label='Save Love numbers')
         wx.EVT_BUTTON(self, save_love_bt.GetId(), self.on_save_love)
         sz.Add(save_love_bt)
@@ -1449,7 +1454,7 @@ class StressListPanel(SatPanel):
         updateLoveButton = wx.Button(self, -1, "Update Love numbers")
         updateLoveButton.Bind(wx.EVT_BUTTON, self.updateLoveNumberDisplay)
         cautionLoveNote = wx.StaticText(self, label=u'*To see updated Love numbers when a satellite parameter')
-        cautionLoveNote2 = wx.StaticText(self, label=u'  is changed, click the "Update Love Numbers" button.')
+        cautionLoveNote2 = wx.StaticText(self, label=u'  is changed, click the "Update Love numbers" button.')
         loveSizer.Add(updateLoveButton)
         loveSizer.AddSpacer(3)
         loveSizer.Add(cautionLoveNote)
@@ -1539,17 +1544,17 @@ class StressListPanel(SatPanel):
             widg.Enable()
 
     def disable_istparams(self):
-        for e in [self.delta_label, self.parameters['delta_tc']]:
-            e.Disable()
-        """
+        #for e in [self.delta_label, self.parameters['delta_tc']]:
+            #e.Disable()        
         for e in [self.delta_label, self.parameters['delta_tc'],
                   self.diffusivity_label, self.parameters['diffusivity'] ]:
             e.Disable()
-        """
+        
 
     def enable_istparams(self):
         """Don't yet enable diffusivity as it is only relevant for the viscoelastic case."""
-        for e in [self.delta_label, self.parameters['delta_tc'] ]:
+        for e in [self.delta_label, self.parameters['delta_tc'], self.diffusivity_label, 
+            self.parameters['diffusivity']]:
             e.Enable()
 
     def disable_obliq(self):
@@ -1625,8 +1630,7 @@ class StressListPanel(SatPanel):
     def on_set_ist(self, evt):
         s = self.parameters['Ice Shell Thickening'].GetValue()
         self.sc.set_parameter('Ice Shell Thickening', s)
-        #The Ice Shell Volume Change stress by itself will not generate \ 
-        #Love numbers. It must be used with either Diurnal or NSR. -ND 2017  
+        #The Ice Shell Volume Change stress by itself will not generate Love numbers. It must be used with either Diurnal or NSR. -ND 2017  
         if s:
             self.enable_istparams()
         else:
@@ -1874,7 +1878,7 @@ class PointPanel(SatPanel):
         sz = wx.BoxSizer(orient=wx.VERTICAL)
         
         sz.Add(WrapStaticText(self, label=
-        u'This tab is for calculating the stress tensor at a location at the surface ' +\
+        u'This tab is for calculating the stress tensor at a location on the surface ' +\
         u'at a point in the orbit. It uses the Stresses tab to determine which ' +\
         u'stresses are being calculated.'), flag=wx.ALL|wx.EXPAND)
 
@@ -3413,12 +3417,12 @@ class ScalarPlotPanel(PlotPanel):
         main_sz.Add(self.head_text(), flag=wx.EXPAND|wx.ALL)
         main_sz.AddSpacer(5)
         main_sz.Add(self.plot_sizer(), flag=wx.EXPAND|wx.ALL)
-        main_sz.AddSpacer(5)
+        main_sz.AddSpacer(20)
 
         main_sz.Add(self.lineaments_sizer())
-        main_sz.AddSpacer(5)
+        main_sz.AddSpacer(10)
         main_sz.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
-        main_sz.AddSpacer(5)
+        main_sz.AddSpacer(10)
         main_sz.Add(self.cycloids_sizer())
 
         self.SetSizer(main_sz)
@@ -4602,8 +4606,8 @@ class SatStressPanel(wx.scrolledpanel.ScrolledPanel):
         SatStressPanel.cy = CycloidsPanel(self.nb, satellite_calculation=self.sc)
         SatStressPanel.spp = ScalarPlotPanel(self.nb, satellite_calculation=self.sc)
         
-        #Gray out tabs that the user should not be on yet. Enable tabs \ 
-        #once adequate information or parameters have been inputted. 
+        #Gray out tabs that the user should not be on yet.  
+        #Enable tabs once adequate information or parameters have been inputted. 
         #See "grayOut" of panel classes for more information. -ND 2017 
         SatStressPanel.stp.Disable()
         SatStressPanel.tp.Disable()
@@ -4941,7 +4945,7 @@ Checking the "Input Love Numbers" box will allow you to use custom Love numbers.
 When inputting custom love numbers, you must use the format <Re> +/- <Im>j.  Do not use scientific notation. \
 For example, "1.2+3.0e-5j" should be written as "1.2+0.00003j."\n\
 - The Obliquity stress must be used with Diurnal or NSR.\n\
-- The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
+- The thermal diffusivity of the Ice Shell Volume Change stress does not currently function.\n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
 - If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.\n\
@@ -5061,7 +5065,7 @@ will not always be relevant.)
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1106,706))
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1085,735))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
