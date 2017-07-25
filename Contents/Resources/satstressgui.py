@@ -313,7 +313,7 @@ class SatelliteCalculation(object):
         if self.parameters['NSR_PERIOD'] == 'inf':
             self.parameters['NSR_PERIOD'] = 'infinity'
 
-    # opens a satellite file and parses it for relevant variables
+    #Opens a satellite file and parses it for relevant variables.
     def load_satellite(self, filename):
         f = open(filename)
         try:
@@ -353,13 +353,13 @@ class SatelliteCalculation(object):
     def save_satellite(self, filename=None):
         tmp = False
         if not filename:
-            filename = os.tempnam(None, 'sat') # Saves to the temporary directory.  This is necessary b/c of how satstress.py handles reading in the variables.  -PS 2016
+            filename = os.tempnam(None, 'sat') #Saves to the temporary directory. This is necessary b/c of how satstress.py handles reading in the variables.  -PS 2016
             tmp = True
         f = open(filename, 'w')
         t = self.parameters['NSR_PERIOD']
         self.nsr_period_years2seconds()
         f.write(self.dump_satellite())
-        self.parameters['NSR_PERIOD'] = t #why does it do this? -PS 2016
+        self.parameters['NSR_PERIOD'] = t #Why does it do this? -PS 2016 
         f.close()
         if not tmp:
             self.satellite_save_changed = False
@@ -369,7 +369,7 @@ class SatelliteCalculation(object):
     def get_stresses(self):
         if self.stresses_changed or self.satellite_changed or not self.stresses:
             sat = self.get_satellite()
-            self.stresses = [ self.stress_d[v](sat) for v in filter(lambda v: self.parameters.get(v), self.stress_d.keys()) ]
+            self.stresses = [self.stress_d[v](sat) for v in filter(lambda v: self.parameters.get(v), self.stress_d.keys())]
         return self.stresses
 
     # updates grid or makes one if one does not already exist
@@ -1422,8 +1422,7 @@ class StressListPanel(SatPanel):
         wx.EVT_BUTTON(self, save_love_bt.GetId(), self.on_save_love)
         sz.Add(save_love_bt)
 
-        #UI addition to display auto-generated Love numbers on top \
-        #of allowing the user to input custom Love numbers. -ND 2017 
+        #UI addition for displaying program-generated Love numbers. -ND 2017 
         loveSizer = wx.BoxSizer(wx.VERTICAL)
         loveNoteAuto = wx.StaticText(self, label=u'Program-generated Love numbers (read only):')
         loveSizer.Add(loveNoteAuto)
@@ -1600,7 +1599,7 @@ class StressListPanel(SatPanel):
     def on_set_diurn(self, evt = wx.EVT_CHECKBOX):
         state = self.parameters['Diurnal'].GetValue()
         self.sc.set_parameter('Diurnal', state)
-        StressListPanel.forLove = self.sc.get_stresses() 
+        StressListPanel.forLove = self.sc.get_stresses() #Used to display program-generated Love numbers. -ND 2017
         self.sc.displayLoveNumbers() 
         if state:
             self.enable_display_diurnlove()
@@ -1888,13 +1887,13 @@ class PointPanel(SatPanel):
         p2 = wx.BoxSizer(orient=wx.VERTICAL)
         cp = wx.BoxSizer(orient=wx.HORIZONTAL)
         p0 = wx.BoxSizer(orient=wx.VERTICAL)
-        p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/Space location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        p0.Add(wx.StaticText(self.fieldPanel, label=u'Time/Space Location'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.pp = self.params_grid(self.fieldPanel, self.header1, '0', width=4, row=self.rows)
         p0.Add(self.pp)
         cp.AddSpacer(10)
         cp.Add(p0)
         p1 = wx.BoxSizer(orient=wx.VERTICAL)
-        p1.Add(wx.StaticText(self.fieldPanel, label=u'Stress Tensor at a point'), flag=wx.ALIGN_CENTER_HORIZONTAL)
+        p1.Add(wx.StaticText(self.fieldPanel, label=u'Stress Tensor'), flag=wx.ALIGN_CENTER_HORIZONTAL)
         self.tp = self.params_grid(self.fieldPanel,self.header2, '', row = self.rows)
         p1.Add(self.tp, 1, wx.ALL|wx.EXPAND)
         cp.AddSpacer(10)
@@ -1931,7 +1930,7 @@ class PointPanel(SatPanel):
         sz.AddSpacer(15)
         self.SetSizer(sz)
         
-        #Here we bind the buttons to the respective events.
+        #Here we bind the buttons to their respective events.
         wx.EVT_BUTTON(self, self.b.GetId(), self.on_calc)
         self.load_b.Bind(wx.EVT_BUTTON, self.load)
         self.save_b.Bind(wx.EVT_BUTTON, self.save)
@@ -1948,7 +1947,7 @@ class PointPanel(SatPanel):
             self.parameters['t'][i].Bind(wx.EVT_KILL_FOCUS, lambda evt, row = i: self.on_t_update(evt, row))
             self.parameters['t'][i].Bind(wx.EVT_TEXT, lambda evt, row = i: self.on_t_update(evt, row))
 
-    #Add the ability to autopopulate the latitude/longitude and orbital position columns. -ND 2017 
+    #Add the ability to autopopulate the latitude/longitude/orbital position columns. -ND 2017 
     def onAutopopulate(self, event): 
         self.autopopulateBox = wx.Dialog(self, -1, "SatStressGUI V5.0")
         vsizer = wx.BoxSizer(wx.VERTICAL) #Master sizer. 
@@ -2072,7 +2071,7 @@ class PointPanel(SatPanel):
     def onCancel(self, event): 
         self.autopopulateBox.Destroy() 
 
-    #Helper method used in onAutopopulate and onClear. 
+    #Helper method used in onClear. 
     def getAllTextCtrls(self): 
         self.textctrls = []
         for children in self.GetChildren():
@@ -2080,7 +2079,7 @@ class PointPanel(SatPanel):
                 self.textctrls.append(children)
             elif hasattr(children, "GetChildren"):
                 for child in children.GetChildren():
-                    if isinstance(child, wx.TextCtrl):
+                    if isinstance(child, wx.TextCtrl) and not isinstance(children, wx.SpinCtrl):
                         self.textctrls.append(child)
 
         return self.textctrls
@@ -4915,7 +4914,7 @@ check the "Information" menu. \n\n\
 2) Select which stresses to apply in the Stresses tab.\n\
 - When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
 leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
-- The Ice Shell Volume Change stress must be used with either Diurnal or NSR.\n\
+- The Obliquity stress must be used with either Diurnal or NSR.\n\
 3) In the Grid tab, input a latitude and longitude range to examine.\n\
 - The number of grid points must be equal for both latitude and longitude.\n\
 4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
@@ -4941,7 +4940,7 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
 When inputting custom love numbers, you must use the format <Re> +/- <Im>j.  Do not use scientific notation. \
 For example, "1.2+3.0e-5j" should be written as "1.2+0.00003j."\n\
-- The Ice Shell Volume Change stress must be used with Diurnal or NSR.\n\
+- The Obliquity stress must be used with Diurnal or NSR.\n\
 - The Thermal Diffusivity of the Ice Shell Thickening stress does not currently function.\n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
