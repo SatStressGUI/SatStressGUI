@@ -265,6 +265,9 @@ class SatelliteCalculation(object):
         elif parameter == 'diffusivity':
             self.stresses_changed = True
             self.stress_d['Ice Shell Thickening'].diffusivity = self.get_parameter(float, 'diffusivity', 0)
+        elif parameter == 'lam_1': 
+            self.stresses_changed = True 
+            self.stress_d['Ice Shell Thickening'].lam_1 = self.get_parameter(float, 'lam_1', 0)
         # stress parameter
         elif parameter == 'obliquity':
             self.stresses_changed = True
@@ -384,7 +387,7 @@ class SatelliteCalculation(object):
         if v:
             self.parameters[p] = "%g" % (v*seconds_in_year)
 
-    # converts seconds to years in the paramters
+    # converts seconds to years in the parameters
     def parameter_secs2yrs(self, p):
         v = self.get_parameter(float, p)
         if v:
@@ -1227,7 +1230,7 @@ class SatelliteLayersPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u'5. Polar Wander stress is calculated using an elastic model.'))
         sz.Add(wx.StaticText(self, label=u'6. The orbit is assumed to have an eccentricity of <0.25, and the primary\'s mass be at least 10x the satellite\'s mass.'))
         
-        sz.AddSpacer(249)
+        sz.AddSpacer(222)
         helpSizer = wx.BoxSizer(wx.HORIZONTAL)
         HelpText = wx.StaticText(self, label=u'*For help in using this program, select "Getting Started" in the Help menu.')
         HelpFont = wx.Font(14, wx.DEFAULT, wx.NORMAL, 0) #Sets the font and size of the text. -PS 2016
@@ -1349,15 +1352,23 @@ class StressListPanel(SatPanel):
         self.parameters.update(add_text_ctrls(self, delta_tc_sz, [('delta_tc', 'delta_tc')]))
         thermal_sz = wx.BoxSizer(orient = wx.HORIZONTAL) #Include thermal diffusivity parameter for Ice Shell Volume Change. 
         thermal_sz.AddSpacer(28)
+        lambda_sz = wx.BoxSizer(wx.HORIZONTAL)
+        lambda_sz.AddSpacer(28)
         self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]')
+        self.lambda_label = wx.StaticText(self, label=u'Stefan Parameter')
+
+
         thermal_sz.Add(self.diffusivity_label, flag = wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border = 6)
         self.parameters.update(add_text_ctrls(self, thermal_sz, [('diffusivity', 'diffusivity')]))
+        lambda_sz.Add(self.lambda_label, flag = wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border = 55)
+        self.parameters.update(add_text_ctrls(self, lambda_sz, [('lam_1', 'lam_1')]))
 
         iceNote = wx.StaticText(self, label = u'*To calculate ice shell thinning, add a negative sign.')
         ISTParams_sz.Add(delta_tc_sz)
         ISTParams_sz.AddSpacer(5)
         ISTParams_sz.Add(thermal_sz)
-        ISTParams_sz.AddSpacer(3)
+        ISTParams_sz.AddSpacer(5)
+        ISTParams_sz.Add(lambda_sz, flag = wx.BOTTOM, border = 3)
         ISTParams_sz.Add(iceNote)
         sz.Add(ISTParams_sz)
         sz.AddSpacer(5)
@@ -1422,11 +1433,6 @@ class StressListPanel(SatPanel):
         sz.Add(wx.StaticText(self, label=u" *The stress map from Polar Wander appears to be correct,"))
         sz.Add(wx.StaticText(self, label=u"   but the principal stress vectors are rotated 180° for some reason."))
 
-        sz.AddSpacer(32)
-        save_love_bt = wx.Button(self, label='Save Love numbers')
-        wx.EVT_BUTTON(self, save_love_bt.GetId(), self.on_save_love)
-        sz.Add(save_love_bt)
-
         #UI addition for displaying program-generated Love numbers. -ND 2017 
         loveSizer = wx.BoxSizer(wx.VERTICAL)
         loveNoteAuto = wx.StaticText(self, label=u'Program-generated Love numbers (read only):')
@@ -1453,9 +1459,14 @@ class StressListPanel(SatPanel):
         loveSizer.AddSpacer(5)
         updateLoveButton = wx.Button(self, -1, "Update Love numbers")
         updateLoveButton.Bind(wx.EVT_BUTTON, self.updateLoveNumberDisplay)
+        save_love_bt = wx.Button(self, label='Save Love numbers')
+        wx.EVT_BUTTON(self, save_love_bt.GetId(), self.on_save_love)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(save_love_bt, flag = wx.RIGHT, border = 3)
+        hsizer.Add(updateLoveButton)
         cautionLoveNote = wx.StaticText(self, label=u'*To see updated Love numbers when a satellite parameter')
         cautionLoveNote2 = wx.StaticText(self, label=u'  is changed, click the "Update Love numbers" button.')
-        loveSizer.Add(updateLoveButton)
+        loveSizer.Add(hsizer)
         loveSizer.AddSpacer(3)
         loveSizer.Add(cautionLoveNote)
         loveSizer.Add(cautionLoveNote2)
@@ -1546,16 +1557,17 @@ class StressListPanel(SatPanel):
     def disable_istparams(self):
         #for e in [self.delta_label, self.parameters['delta_tc']]:
             #e.Disable()        
-        for e in [self.delta_label, self.parameters['delta_tc'],
-                  self.diffusivity_label, self.parameters['diffusivity'] ]:
+        for e in [self.delta_label, self.parameters['delta_tc'], self.diffusivity_label, 
+                self.parameters['diffusivity'], self.lambda_label, self.parameters['lam_1']]:
             e.Disable()
         
 
     def enable_istparams(self):
         """Don't yet enable diffusivity as it is only relevant for the viscoelastic case."""
         for e in [self.delta_label, self.parameters['delta_tc'], self.diffusivity_label, 
-            self.parameters['diffusivity']]:
+                self.parameters['diffusivity'], self.lambda_label, self.parameters['lam_1']]:
             e.Enable()
+        print(self.parameters)
 
     def disable_obliq(self):
         for e in [self.obliq_label, self.parameters['obliquity'],
@@ -1866,8 +1878,10 @@ class PointPanel(SatPanel):
     
     def __init__(self, *args, **kw):
         super(PointPanel, self).__init__(*args, **kw)
-        #change self.rows to change how many rows are displayed in the GUI
-        self.rows = 20
+        #Change self.rows to change how many rows are displayed in the GUI.
+        #Changed self.rows to 100 so that all text ctrls of all 100 rows would be bound to 
+        #the correct event handler (namely on_t_update and on_orbit_update) later. -ND 2017 
+        self.rows = 100
         self.sc.set_parameter('point_rows',self.rows)
         
         #parameter name and their labels
@@ -2498,11 +2512,11 @@ class CycloidsPanel(SatPanel):
             u'For further information on cycloids see the Help menu.'),
             flag=wx.ALL|wx.EXPAND)
 
-        sz.AddSpacer(5)
+        sz.AddSpacer(2) 
         sz.Add(buttonSizer, 0, wx.BOTTOM | wx.TOP, 5)
         sz.Add(gridSizer, 0, wx.TOP | wx.LEFT, 5)
         sz.Add(self.use_multiple,0, wx.LEFT| wx.BOTTOM |wx.EXPAND, 5)
-        sz.Add(many_params, 0, wx.TOP, 5)
+        sz.Add(many_params)
         self.SetSizer(sz)
         sz.Fit(self)
     
@@ -3417,13 +3431,11 @@ class ScalarPlotPanel(PlotPanel):
         main_sz.Add(self.head_text(), flag=wx.EXPAND|wx.ALL)
         main_sz.AddSpacer(5)
         main_sz.Add(self.plot_sizer(), flag=wx.EXPAND|wx.ALL)
-        main_sz.AddSpacer(20)
+        main_sz.AddSpacer(12)
 
-        main_sz.Add(self.lineaments_sizer())
-        main_sz.AddSpacer(10)
+        main_sz.Add(self.lineaments_sizer(), flag = wx.BOTTOM, border = 2)
         main_sz.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
-        main_sz.AddSpacer(10)
-        main_sz.Add(self.cycloids_sizer())
+        main_sz.Add(self.cycloids_sizer(), flag = wx.TOP, border = 2)
 
         self.SetSizer(main_sz)
         self.Fit()
@@ -3883,7 +3895,7 @@ class ScalarPlotPanel(PlotPanel):
         # bind to event
         self.plot_cycl.Bind(wx.EVT_CHECKBOX, self.generate_cycl)
 
-        # A checkbox to plot triangles at the cycloid's location if they are unable to start or propagate.  -PS 2016
+        # A checkbox to plot triangles at the cycloid's location if they are unable to start or propagate. -PS 2016
         self.plot_triangles = wx.CheckBox(self, label='Plot marker if unable to create cycloid')
         ckSizer.Add(self.plot_triangles, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         self.plot_triangles.Bind(wx.EVT_CHECKBOX, self.generate_cycloid_markers)
@@ -3894,7 +3906,7 @@ class ScalarPlotPanel(PlotPanel):
         self.cycl_names_cb.Bind(wx.EVT_CHECKBOX, self.plot_cycl_names)
         self.cycl_names_cb.SetValue(False)
         
-        saveMany = wx.Button(self, label="Save Multiple Cycloids")
+        saveMany = wx.Button(self, label="Save multiple cycloids")
         saveMany.Bind(wx.EVT_BUTTON, self.save_many_cycloids)
         ckSizer.AddSpacer(5)
         ckSizer.Add(saveMany)
@@ -5065,7 +5077,7 @@ will not always be relevant.)
 # 
 class SatStressApp(wx.App):
     def OnInit(self):
-        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1085,735))
+        self.frame = SatStressFrame(None, title=u'SatStressGUI V5.0', size=(1085,710))
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True
