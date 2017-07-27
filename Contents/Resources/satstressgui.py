@@ -494,16 +494,17 @@ class SatelliteCalculation(object):
 
     def displayLoveNumbers(self):
         for c in StressListPanel.forLove:
-            if(str(c.__name__) == 'Diurnal' or str(c.__name__) == 'PolarWander' 
-                or str(c.__name__) == 'DiurnalObliquity'):
-                #PolarWander Love numbers and Diurnal Love numbers are the same.
-                StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
-                StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
-                StressListPanel.l2DiurnAuto.SetValue(str(c.love.l2)[1:8])
-            if(str(c.__name__) == 'NSR'): 
-                StressListPanel.h2NSRAuto.SetValue(str(c.love.h2)[1:8])
-                StressListPanel.k2NSRAuto.SetValue(str(c.love.k2)[1:8])
-                StressListPanel.l2NSRAuto.SetValue(str(c.love.l2)[1:8])             
+            if not isinstance(c, satstress.satstress.IST):
+                if(str(c.__name__) == 'Diurnal' or str(c.__name__) == 'PolarWander' 
+                    or str(c.__name__) == 'DiurnalObliquity'):
+                    #PolarWander Love numbers and Diurnal Love numbers are the same.
+                    StressListPanel.h2DiurnAuto.SetValue(str(c.love.h2)[1:8])
+                    StressListPanel.k2DiurnAuto.SetValue(str(c.love.k2)[1:8])
+                    StressListPanel.l2DiurnAuto.SetValue(str(c.love.l2)[1:8])
+                if(str(c.__name__) == 'NSR'): 
+                    StressListPanel.h2NSRAuto.SetValue(str(c.love.h2)[1:8])
+                    StressListPanel.k2NSRAuto.SetValue(str(c.love.k2)[1:8])
+                    StressListPanel.l2NSRAuto.SetValue(str(c.love.l2)[1:8])             
 
     # updates the calculations and changes the state of self.getstress
     def calculate(self):
@@ -530,7 +531,7 @@ class SatelliteCalculation(object):
 
     #Calculates tensor stresses. 
     def calc_tensor(self, directionSelection, rows=1):
-        #directionSelection: 0 = east-positive, 1 = west-positive. 
+        #directionSelection: 0 = east-positive, 1 = west-positive, 2 = 0-360. 
         #directionSelection is modified on the Point panel and allows the user to select their 
         #desired coordinate system for the Point panel. -ND 2017 
         for i in range(rows):
@@ -540,7 +541,10 @@ class SatelliteCalculation(object):
                 #The calculations in this application assume an east-positive coordinate system, so if the user opts 
                 #for a west-positive coordinate system we use the opposite of whatever longitude value they input 
                 #in the calculations. 
-                phi = -phi 
+                phi = -phi
+            elif directionSelection==2:  
+                if phi < 0: 
+                    phi += 360 #Conversion from 0±180 to 0-360. 
             theta, phi = map(numpy.radians, [theta, phi])
             calc = self.get_calc()
             Ttt, Tpt, Tpp = [ "%g" % (x/1000.) for x in calc.tensor(numpy.pi/2 - theta, phi, t)]
@@ -1955,12 +1959,12 @@ class PointPanel(SatPanel):
         bp.Add(self.clear_b, 1, wx.RIGHT | wx.TOP | wx.EXPAND, 3)
 
         #Add the ability to change the coordinate system from east-positive to west-positive. -ND 2017  
-        bp.AddSpacer(70)
+        bp.AddSpacer(20)
         directionText = wx.StaticText(self, label=u'Coordinate system: ')
-        self.directionBox = wx.ComboBox(self, value = 'East Positive', choices = ['East Positive', 'West Positive'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
+        self.directionBox = wx.ComboBox(self, value = u'east Positive (0±180)', choices = [u'east positive (0±180)', u'west positive (0±180)', '0-360'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
         bp.Add(directionText, flag = wx.TOP | wx.ALIGN_LEFT, border = 7)
         bp.Add(self.directionBox, flag = wx.TOP | wx.ALIGN_LEFT, border = 5)
-        bp.AddSpacer(10)
+        bp.AddSpacer(5)
         bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.TOP | wx.ALIGN_LEFT, border = 7)
         bp.Add(self.row_ctrl)
         sz.Add(bp)
