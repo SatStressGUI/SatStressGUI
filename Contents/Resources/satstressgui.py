@@ -528,11 +528,19 @@ class SatelliteCalculation(object):
             self.calculate()
         return self.calc
 
-    # calculates tensor stresses
-    def calc_tensor(self, rows=1):
+    #Calculates tensor stresses. 
+    def calc_tensor(self, directionSelection, rows=1):
+        #directionSelection: 0 = east-positive, 1 = west-positive. 
+        #directionSelection is modified on the Point panel and allows the user to select their 
+        #desired coordinate system for the Point panel. -ND 2017 
         for i in range(rows):
             theta, phi, t = [ float(self.parameters[p][i]) for p in ['theta', 'phi', 't'] ]
             t *= seconds_in_year
+            if directionSelection==1:
+                #The calculations in this application assume an east-positive coordinate system, so if the user opts 
+                #for a west-positive coordinate system we use the opposite of whatever longitude value they input 
+                #in the calculations. 
+                phi = -phi 
             theta, phi = map(numpy.radians, [theta, phi])
             calc = self.get_calc()
             Ttt, Tpt, Tpp = [ "%g" % (x/1000.) for x in calc.tensor(numpy.pi/2 - theta, phi, t)]
@@ -544,9 +552,9 @@ class SatelliteCalculation(object):
             self.parameters['s3'][i] = "%g" % (s3/1000.)
             self.parameters['a'][i] = "%.2f" % numpy.degrees(a1)
         
-    # saves netcdf files from parameters
-    # This function currently won't work because we have commented out the netCDF3 import.
-    # The netCDF functionality isn't really necessary, and the netCDF library doesn't play well on Windows. -PS 2016
+    #saves netcdf files from parameters
+    #This function currently won't work because we have commented out the netCDF3 import.
+    #The netCDF functionality isn't really necessary, and the netCDF library doesn't play well on Windows. -PS 2016
     def save_netcdf(self, filename):
         try:
             sat = self.get_satellite()
@@ -1127,7 +1135,6 @@ class SatPanel(wx.Panel):
             if (not isinstance(self.parameters[k], list)):
                 if (not k in self.sc.parameters or (k in self.sc.parameters and not (self.sc.parameters[k] == self.parameters[k].GetValue() ) ) ):
                     self.sc.set_parameter(k, self.parameters[k].GetValue())
-        
             else:
                 self.sc.set_parameter(k, self.parameters[k][i].GetValue(), i)
         return on_change
@@ -1283,7 +1290,7 @@ class StressListPanel(SatPanel):
     user to input their own love numbers for further calculations
     """
     
-    #Used to grayOut panels. Clicking the grid should enable the Plot and \
+    #Used to grayOut panels. Clicking the grid should enable the Plot and 
     #Cycloid panels only after a stress has been selected. -ND 2017
     gpCanBeClicked = False 
     
@@ -1350,11 +1357,11 @@ class StressListPanel(SatPanel):
         self.delta_label = wx.StaticText(self, label=u'Change in Thickness [km] ')
         delta_tc_sz.Add(self.delta_label, flag=wx.ALIGN_CENTER_VERTICAL)
         self.parameters.update(add_text_ctrls(self, delta_tc_sz, [('delta_tc', 'delta_tc')]))
-        thermal_sz = wx.BoxSizer(orient = wx.HORIZONTAL) #Include thermal diffusivity parameter for Ice Shell Volume Change. 
+        thermal_sz = wx.BoxSizer(orient = wx.HORIZONTAL) #Include thermal diffusivity & stefan parameter for Ice Shell Volume Change. -ND 2017
         thermal_sz.AddSpacer(28)
         lambda_sz = wx.BoxSizer(wx.HORIZONTAL)
         lambda_sz.AddSpacer(28)
-        self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]')
+        self.diffusivity_label = wx.StaticText(self, label=u'Thermal Diffusivity [m\u00b2/s]') 
         self.lambda_label = wx.StaticText(self, label=u'Stefan Parameter')
 
 
@@ -1449,12 +1456,18 @@ class StressListPanel(SatPanel):
         StressListPanel.h2NSRAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
         StressListPanel.k2NSRAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
         StressListPanel.l2NSRAuto = wx.TextCtrl(self, style = wx.TE_READONLY)
+        StressListPanel.h2DiurnAuto.Disable() 
+        StressListPanel.k2DiurnAuto.Disable() 
+        StressListPanel.l2DiurnAuto.Disable() 
+        StressListPanel.h2NSRAuto.Disable()
+        StressListPanel.k2NSRAuto.Disable()
+        StressListPanel.l2NSRAuto.Disable()  
         self.diurnText = wx.StaticText(self, label=u' (Diurnal)')
         self.nsrText = wx.StaticText(self, label=u' (NSR)')
 
         gridAuto.AddMany([(self.h2Auto), (self.k2Auto), (self.l2Auto), (self.Blank_label), 
-            (StressListPanel.h2DiurnAuto), (StressListPanel.k2DiurnAuto), (StressListPanel.l2DiurnAuto), (self.diurnText),
-            (StressListPanel.h2NSRAuto), (StressListPanel.k2NSRAuto), (StressListPanel.l2NSRAuto), (self.nsrText)])      
+            (StressListPanel.h2DiurnAuto), (StressListPanel.k2DiurnAuto), (StressListPanel.l2DiurnAuto), (self.diurnText, 0, wx.ALIGN_CENTER_VERTICAL),
+            (StressListPanel.h2NSRAuto), (StressListPanel.k2NSRAuto), (StressListPanel.l2NSRAuto), (self.nsrText, 0, wx.ALIGN_CENTER_VERTICAL)])      
         loveSizer.Add(gridAuto)
         loveSizer.AddSpacer(5)
         updateLoveButton = wx.Button(self, -1, "Update Love numbers")
@@ -1567,7 +1580,6 @@ class StressListPanel(SatPanel):
         for e in [self.delta_label, self.parameters['delta_tc'], self.diffusivity_label, 
                 self.parameters['diffusivity'], self.lambda_label, self.parameters['lam_1']]:
             e.Enable()
-        print(self.parameters)
 
     def disable_obliq(self):
         for e in [self.obliq_label, self.parameters['obliquity'],
@@ -1937,11 +1949,19 @@ class PointPanel(SatPanel):
         self.clear_b = wx.Button(self, label=u'Clear all points')
         self.autopopulate_b = wx.Button(self, label=u'Autopopulate')
         bp.Add(self.b, 1, wx.RIGHT| wx.TOP | wx.BOTTOM | wx.EXPAND, 3)
-        bp.Add(self.autopopulate_b, 1, wx.RIGHT | wx.TOP | wx.BOTTOM | wx.EXPAND, 3)
-        bp.Add(self.load_b, 1, wx.RIGHT | wx.BOTTOM | wx.TOP | wx.EXPAND, 3)
-        bp.Add(self.save_b, 1, wx.RIGHT | wx.BOTTOM | wx.TOP | wx.EXPAND, 3)
-        bp.Add(self.clear_b, 1, wx.RIGHT | wx.BOTTOM | wx.TOP | wx.EXPAND, 3)
-        bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.ALIGN_CENTER_VERTICAL)
+        bp.Add(self.autopopulate_b, 1, wx.RIGHT | wx.TOP | wx.EXPAND, 3)
+        bp.Add(self.load_b, 1, wx.RIGHT | wx.TOP | wx.EXPAND, 3)
+        bp.Add(self.save_b, 1, wx.RIGHT | wx.TOP | wx.EXPAND, 3)
+        bp.Add(self.clear_b, 1, wx.RIGHT | wx.TOP | wx.EXPAND, 3)
+
+        #Add the ability to change the coordinate system from east-positive to west-positive. -ND 2017  
+        bp.AddSpacer(70)
+        directionText = wx.StaticText(self, label=u'Coordinate system: ')
+        self.directionBox = wx.ComboBox(self, value = 'East Positive', choices = ['East Positive', 'West Positive'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
+        bp.Add(directionText, flag = wx.TOP | wx.ALIGN_LEFT, border = 7)
+        bp.Add(self.directionBox, flag = wx.TOP | wx.ALIGN_LEFT, border = 5)
+        bp.AddSpacer(10)
+        bp.Add(WrapStaticText(self, label=u'Rows: '), flag = wx.TOP | wx.ALIGN_LEFT, border = 7)
         bp.Add(self.row_ctrl)
         sz.Add(bp)
      
@@ -2131,7 +2151,7 @@ class PointPanel(SatPanel):
     def on_calc(self, evt):
         try:
             self.b.SetFocus()
-            self.sc.calc_tensor(self.rows)
+            self.sc.calc_tensor(self.directionBox.GetSelection(), self.rows)
             self.update_parameters()
         except LocalError, e:
             error_dialog(self, str(e), e.title)
@@ -2493,7 +2513,7 @@ class CycloidsPanel(SatPanel):
         # Set the TextCtrl to expand on resize
         fieldsToAdd = [ ('cycloid_name', 'Cycloid name:'), ('YIELD', 'Yield (threshold) [kPa]: '),('PROPAGATION_STRENGTH','Propagation strength [kPa]: '),('PROPAGATION_SPEED','Propagation speed [m/s]: '), ('STARTING_LONGITUDE', 'Starting longitude: '), ('STARTING_LATITUDE', 'Starting latitude: ')]
 
-        self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd ))
+        self.textCtrls.update(self.add_text_control(gridSizer, fieldsToAdd))
         self.sc.parameters['cycloid_name'] = ""
      
         gridSizer.Add(dirSizer)
@@ -2528,7 +2548,7 @@ class CycloidsPanel(SatPanel):
             #txtCtrlObj.Bind(wx.EVT_CHAR,self.OnChar)
             txtCtrlObj.Bind(wx.EVT_TEXT, self.OnText)
             txtCtrls[p] = txtCtrlObj
-            sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALL)
+            sz.Add(txtCtrlObj, flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
             self.parameters[p] = txtCtrlObj
         return txtCtrls
 
@@ -3380,9 +3400,9 @@ class PlotPanel(SatPanel):
                 negativeTicks = allTicks[half:-1] #Make the second half of the ticks negative. 
                 startAndEnd = [allTicks[0]]
                 self.meridians = self.basemap_ax.drawmeridians(positiveTicks,
-                    labels=[1,0,0,1], labelstyle = '+/-', fmt=self.positiveIncrements, linewidth=0.5, color='gray', yoffset=5)
+                    labels=[1,0,0,1], labelstyle = '+/-', fmt=self.positiveIncrements, linewidth=0.5, color='gray')
                 self.meridians = self.basemap_ax.drawmeridians(negativeTicks,
-                    labels=[1,0,0,1], labelstyle = '+/-', fmt=self.negativeIncrements, linewidth=0.5, color='gray', yoffset=5)
+                    labels=[1,0,0,1], labelstyle = '+/-', fmt=self.negativeIncrements, linewidth=0.5, color='gray')
                 self.meridians = self.basemap_ax.drawmeridians(startAndEnd,
                     labels=[1,0,0,1], labelstyle = '+/-', linewidth=0.5, color='gray', yoffset=5)
             self.parallels = self.basemap_ax.drawparallels(numpy.around(numpy.degrees(coord_lats)),
@@ -4488,26 +4508,36 @@ class ScalarPlotPanel(PlotPanel):
                 (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
                 bbox_inches='tight', pad_inches=1.5)
             o += s
-        if(StressPlotPanel.video):
+        try: 
             framerate = str(ScalarPlotPanel.frameRate)
-            #FFMPEG is an external program (run through the terminal) that converts a sequence \
-            #of images to a video. We use the subprocess module to run FFMPEG through this script. 
-            subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                             framerate, '-f', 'image2','-pattern_type', \
-                             'glob', '-i', self.directory + '/orbit_*.png', \
-                             '-r', '10', '-s', '620x380', self.directory + 
-                             ".avi"])
-            if not StressPlotPanel.photo: 
-                shutil.rmtree(self.directory)
-        elif(StressPlotPanel.videoGray):
-            framerate = str(ScalarPlotPanel.frameRate)
-            subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                             framerate, '-f', 'image2','-pattern_type', \
-                             'glob', '-i', self.directory + '/orbit_*.png', \
-                             '-r', '10', '-s', '620x380', '-flags', 'gray', self.directory + 
-                             ".avi"])
-            if not StressPlotPanel.photo:
-                shutil.rmtree(self.directory)
+            if(StressPlotPanel.video):
+                #FFMPEG is an external program (run through the terminal) that converts a sequence 
+                #of images to a video. We use the subprocess module to run FFMPEG through this script. 
+                #Currently, the application asks the user to install homebrew and then use homebrew to 
+                #install FFMPEG themselves before this feature is available. This is because I could not 
+                #find out how to add FFMPEG as a dependency in the application. -ND 2017 
+                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                 framerate, '-f', 'image2','-pattern_type', \
+                                 'glob', '-i', self.directory + '/orbit_*.png', \
+                                 '-r', '10', '-s', '620x380', self.directory + 
+                                 ".avi"])
+            elif(StressPlotPanel.videoGray):
+                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                 framerate, '-f', 'image2','-pattern_type', \
+                                 'glob', '-i', self.directory + '/orbit_*.png', \
+                                 '-r', '10', '-s', '620x380', '-flags', 'gray', self.directory + 
+                                 ".avi"])
+        except: 
+            error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
+To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
+Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
+brew install ffmpeg \n
+If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+""", u'Video Error')
+        if not StressPlotPanel.photo:
+            shutil.rmtree(self.directory) #Now delete the folder of photos which the video relied on. 
 
         self.orbit_pos = old_orbit_pos
         self.reveal_orbit_controls()
@@ -4520,7 +4550,7 @@ class ScalarPlotPanel(PlotPanel):
         del b
     
     def save_nsr_series(self, dir='.'):
-        b = wx.BusyInfo(u"Saving series. Please wait.", self)
+        b = wx.BusyInfo(u"Saving NSR series. Please wait.", self)
         wx.SafeYield()
         old_nsr_pos = self.nsr_pos
         nm = self.sc.get_parameter(float, 'TIME_MIN', 0)
@@ -4541,24 +4571,32 @@ class ScalarPlotPanel(PlotPanel):
             self.scp.nsr_slider.set_val(self.nsr_pos)
             self.plot_no_draw()
             self.scp.figure.savefig("%s/nsr_%03d.png" % (directory, k), bbox_inches='tight', pad_inches=0.5)
-        if(StressPlotPanel.video):
+        try: 
             framerate = str(ScalarPlotPanel.frameRate)
-            subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                             framerate, '-f', 'image2','-pattern_type', \
-                             'glob', '-i', directory + '/nsr_*.png', \
-                             '-r', '10', '-s', '620x380', directory + 
-                             ".avi"])
-            if not StressPlotPanel.photo:
+            if(StressPlotPanel.video):
+                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                 framerate, '-f', 'image2','-pattern_type', \
+                                 'glob', '-i', directory + '/nsr_*.png', \
+                                 '-r', '10', '-s', '620x380', directory + 
+                                 ".avi"])
+            elif(StressPlotPanel.videoGray): 
+                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                 framerate, '-f', 'image2','-pattern_type', \
+                                 'glob', '-i', directory + '/nsr_*.png', \
+                                 '-r', '10', '-s', '620x380', '-flags', 'gray', directory + 
+                                 ".avi"])
+        except:
+            error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
+To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
+Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
+brew install ffmpeg \n
+If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+""", u'Video Error')
+        if not StressPlotPanel.photo:
                 shutil.rmtree(directory)
-        elif(StressPlotPanel.videoGray): 
-            framerate = str(ScalarPlotPanel.frameRate)
-            subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                             framerate, '-f', 'image2','-pattern_type', \
-                             'glob', '-i', directory + '/nsr_*.png', \
-                             '-r', '10', '-s', '620x380', '-flags', 'gray', directory + 
-                             ".avi"])
-            if not StressPlotPanel.photo:
-                shutil.rmtree(directory)
+
         self.nsr_pos = old_nsr_pos
         self.reveal_nsr_controls()
         self.init_nsr_slider()
@@ -5027,9 +5065,9 @@ button to the lower right.\n\
 - The vectors created by Polar Wander do not currently appear to be generating correctly.\n\
 - When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.\n\
   - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.\n\
-- Cycloids can be saved as Shape files via the appropriate button.  Loading of shape files is currently not supported.\n\
+- Cycloids can be saved as Shape files via the appropriate button. Loading of shape files is currently not supported.\n\
 - NOTE: The cycloids cannot be saved as netcdf files currently.\n\
-- NOTE: The Lineaments features does not function currently.
+- NOTE: The Lineaments feature does not function currently.\n\
 """
         self.makeMsgDialog(Help, u'The Plot Tab')
 
