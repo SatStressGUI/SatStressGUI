@@ -531,20 +531,15 @@ class SatelliteCalculation(object):
 
     #Calculates tensor stresses. 
     def calc_tensor(self, directionSelection, rows=1):
-        #directionSelection: 0 = east-positive, 1 = west-positive, 2 = 0-360. 
-        #directionSelection is modified on the Point panel and allows the user to select their 
-        #desired coordinate system for the Point panel. -ND 2017 
         for i in range(rows):
             theta, phi, t = [ float(self.parameters[p][i]) for p in ['theta', 'phi', 't'] ]
             t *= seconds_in_year
-            if directionSelection==1:
-                #The calculations in this application assume an east-positive coordinate system, so if the user opts 
-                #for a west-positive coordinate system we use the opposite of whatever longitude value they input 
-                #in the calculations. 
+            #0 = east-positive, 1 = west-positive, 2 = 0-360. 
+            if directionSelection == 1:
                 phi = -phi
-            elif directionSelection==2:  
-                if phi < 0: 
-                    phi += 360 #Conversion from 0±180 to 0-360. 
+            elif directionSelection == 2:  
+                if phi > 180: 
+                    phi -= 360 #Conversion from 0-360 to 0±180. 
             theta, phi = map(numpy.radians, [theta, phi])
             calc = self.get_calc()
             Ttt, Tpt, Tpp = [ "%g" % (x/1000.) for x in calc.tensor(numpy.pi/2 - theta, phi, t)]
@@ -1961,7 +1956,7 @@ class PointPanel(SatPanel):
         #Add the ability to change the coordinate system from east-positive to west-positive. -ND 2017  
         bp.AddSpacer(20)
         directionText = wx.StaticText(self, label=u'Coordinate system: ')
-        self.directionBox = wx.ComboBox(self, value = u'east Positive (0±180)', choices = [u'east positive (0±180)', u'west positive (0±180)', '0-360'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
+        self.directionBox = wx.ComboBox(self, value = u'east positive (0±180)', choices = [u'east positive (0±180)', u'west positive (0±180)', '0-360'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
         bp.Add(directionText, flag = wx.TOP | wx.ALIGN_LEFT, border = 7)
         bp.Add(self.directionBox, flag = wx.TOP | wx.ALIGN_LEFT, border = 5)
         bp.AddSpacer(5)
@@ -2062,7 +2057,7 @@ class PointPanel(SatPanel):
 
     #Add the ability to clear all points on the point panel. -ND 2017
     def onClear(self, event):
-        for i in range(0, len(self.getAllTextCtrls()) - 1): 
+        for i in range(0, len(self.getAllTextCtrls())): 
             self.textctrls[i].Clear()
 
     #Helper method used in onAutopopulate. 
