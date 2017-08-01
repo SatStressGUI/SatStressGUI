@@ -534,12 +534,14 @@ class SatelliteCalculation(object):
         for i in range(rows):
             theta, phi, t = [ float(self.parameters[p][i]) for p in ['theta', 'phi', 't'] ]
             t *= seconds_in_year
-            #0 = east-positive, 1 = west-positive, 2 = 0-360. 
+            #0 = east-positive (0±180), 1 = west-positive (0±180), 2 = east positive (0-360), 3 = west positive (0-360). 
             if directionSelection == 1:
-                phi = -phi
-            elif directionSelection == 2:  
+                phi = -phi #Conversion from west positive (0±180) to east positive (0±180).
+            elif directionSelection == 2 or directionSelection == 3:  
                 if phi > 180: 
-                    phi -= 360 #Conversion from 0-360 to 0±180. 
+                    phi -= 360 #Conversion from east positive (0-360) to east positive (0±180). 
+                if directionSelection == 3: 
+                    phi = -phi #Conversion from west positive (0-360) to east positive (0±180).
             theta, phi = map(numpy.radians, [theta, phi])
             calc = self.get_calc()
             Ttt, Tpt, Tpp = [ "%g" % (x/1000.) for x in calc.tensor(numpy.pi/2 - theta, phi, t)]
@@ -1956,7 +1958,7 @@ class PointPanel(SatPanel):
         #Add the ability to change the coordinate system from east-positive to west-positive. -ND 2017  
         bp.AddSpacer(20)
         directionText = wx.StaticText(self, label=u'Coordinate system: ')
-        self.directionBox = wx.ComboBox(self, value = u'east positive (0±180)', choices = [u'east positive (0±180)', u'west positive (0±180)', '0-360'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
+        self.directionBox = wx.ComboBox(self, value = u'east positive (0±180)', choices = [u'east positive (0±180)', u'west positive (0±180)', 'east positive (0-360)', 'west positive (0-360)'], style = wx.CB_DROPDOWN | wx.CB_READONLY)
         bp.Add(directionText, flag = wx.TOP | wx.ALIGN_LEFT, border = 7)
         bp.Add(self.directionBox, flag = wx.TOP | wx.ALIGN_LEFT, border = 5)
         bp.AddSpacer(5)
@@ -3053,15 +3055,10 @@ class StressPlotPanel(MatPlotPanel):
         
         note = wx.StaticText(self.frameRateBox, -1, "Note: 1"  
                              + " (slowest) - 10 (fastest).")
-        note2 = wx.StaticText(self.frameRateBox, -1, 
-                              "*The video includes all but the"
-                              + " last frame.")
 
         vsizer.Add(sizer, flag = wx.LEFT | wx.RIGHT | wx.TOP, border = 5)
         vsizer.AddSpacer(3)
         vsizer.Add(note, flag = wx.LEFT | wx.RIGHT, border = 5)
-        vsizer.AddSpacer(8)
-        vsizer.Add(note2, flag = wx.LEFT | wx.RIGHT, border = 5)
         vsizer.AddSpacer(15)
         vsizer.Add(hsizer, flag = wx.CENTER | wx.BOTTOM, border = 5)
         
@@ -4606,10 +4603,10 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         StressPlotPanel.videoGray = False  
         del b
 
-    #I don't think this function (or on_save_polar_series) is ever called on because Polar \
-    #Wander stress is not dependent on orbital position: therefore, there isn't going to be a \
-    #slideshow of photos for the user to slide through if they only select Polar Wander stress. If \
-    #they do select other stresses, either save_orbit_series or save_nsr_series will be called. -ND 2017  
+    #I don't think this function (or on_save_polar_series) is ever called on because Polar 
+    #Wander stress is not dependent on orbital position: therefore, there isn't going to be a 
+    #slideshow of photos for the user to slide through if they only select Polar Wander stress. 
+    #If they do select other stresses, either save_orbit_series or save_nsr_series will be called. -ND 2017  
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
