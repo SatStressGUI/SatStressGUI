@@ -2499,13 +2499,6 @@ class CycloidsPanel(SatPanel):
             self.parameters[p] = txtCtrlObj
         return txtCtrls
 
-    def OnChar(self,event):
-        #Checks to make sure only numbers are entered into a box.
-        #Some characters are allowed for imaginary numbers and scientific notation. -PS 2016
-        charEntered= event.GetKeyCode()
-        if (charEntered >= 48 and charEntered <= 57) or charEntered == 8 or charEntered == 9 or charEntered == 13 or charEntered == 45 or charEntered ==46:
-            event.Skip()
-
     def OnText(self,event):
         self.sc.cycloid_changed = True
         if not event.GetEventObject().GetValue() == 'None':
@@ -3651,9 +3644,9 @@ class ScalarPlotPanel(PlotPanel):
         except LocalError, e:
             error_dialog(self, str(e), e.title)
 
-    #Defining lineament controls and related functions
+    #Defining lineament controls and related functions.
     def lineaments_sizer(self):
-       #Defines sizer for controls for lineament plotting
+       #Defines sizer for controls for lineament plotting.
         self.l_count = 2
         self.generated = { 'data': [], 'color': wx.ColourData(), 'lines': [] }
         self.loaded = { 'data': [], 'color': wx.ColourData(), 'lines': [] }
