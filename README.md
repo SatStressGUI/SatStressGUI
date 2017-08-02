@@ -48,6 +48,7 @@ This is due to two reasons. First, the amplitude of the planet's gravitational f
 and slightly slower (again compared to its synchronous rotation rate) at apoapse. This results in a 'librational tide', where the planet appears to rock back and forth in the sky.
 
 For more information on diurnal tides, please see:
+
     Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, 
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation 
 and orbital eccentricity using gravitational potential theory, 
@@ -55,41 +56,49 @@ Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
 
 
 #Obliquity
+
 A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.
 
-For more information on stresses due to oblique orbits, see:n
+For more information on stresses due to oblique orbits, see:
+
     Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero 
 obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The 
 case of Europa. Icarus, 215(1), 417-438.
 
 
 #Ice Shell Thickening
-As satellites age, they could become cooler or warmer.
-This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. This process would force the ice shell to expand or shrink, putting extensional stress on the surface.
+
+As satellites age, they could become cooler or warmer. This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. This process would force the ice shell to expand or shrink, putting extensional stress on the surface.
 
 For more information on Ice Shell Volume Change as a stressing mechanism, please see:
 
     Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application 
 to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
+
     Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites
 with an enhanced SatStressGUI, 47th LPSC, abs. 1375.
+
     Wahr, J., et al., 2009. Modeling stresses on satellites due to nonsynchronous rotation and orbital eccentricity using gravitational potentialtheory, Icarus, 200, p. 186-206.
 
 
 
 
 #Polar
+
 Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). 
 Sometimes, this also results in a reorientation of the poles. The north pole appears to wander over the surface as the crust reorients itself. This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, 
 as well as the parent planet appearing to change its location in the sky. 
 This stressing mechanism is calculated using an elastic model.
 
 For more information on Polar Wander as a stressing mechanism, please see:
+
     Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.n
+    
     Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
 
 
 #Cycloids
+
 Cycloids are arcuate lineaments found on the surface of Europa.  They are thought to be created when a fracture in the ice is propagated because of the stresses. In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.Once the fracture has started, it will propagate through the ice at a certain velocity. This velocity could be constant, or could vary depending on the magnitude of the stress. During the cycloid's propagation, the satellite will continue orbiting around its primary. This causes the stress field on the satellite to change, making the cycloids curve. When the stress is no longer greater than the requisite propagation strength, the cycloid stops moving.
 If the stress reaches the propagation strength again, it will continue.
 
@@ -97,11 +106,13 @@ For more information, please see:
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
 
 #How To Use
+
 To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (Sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (You can use Load to load .sat, .grid, and .cycl files as well).
 
 Information on the tabs and their parameters are given below:
 
 #Satellite 
+
 The Satellite Tab is used to input the physical properties of the satellite.
 
 - SatStressGUI assumes a 4-layer (upper ice layer, lower ice layer, liquid ocean layer, and core) satellite body.
@@ -112,6 +123,7 @@ The Satellite Tab is used to input the physical properties of the satellite.
 - If you have changed a number but nothing seems to happen, try hitting 'Enter' in the box you changed.
 
 #Stresses 
+
 The Stresses Tab is used to select which stresses to use.
 
 - For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank unless the user wants to input their own values. Checking the "Input Love Numbers" box will allow you to use custom Love numbers. 
@@ -126,6 +138,7 @@ The rotational period should be input in units of hours.
 - All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
 
 #Grid
+
 The Grid Tab is used to specify what section of the satellite to look at in the plot.
 
 - For more information about each stress, see the Information menu.
@@ -139,6 +152,7 @@ Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be add
 The Start Time is when the plotting starts, and the End Time is when the plotting ends.
 
 #Cycloids
+
 The Cycloids Tab allows the user to generate a cycloidal feature on the map.
 
 - The cycloids are modeled and plotted on the Plot Tab.
@@ -149,6 +163,7 @@ The Cycloids Tab allows the user to generate a cycloidal feature on the map.
 - For more information on cycloids, see the Information menu.
 
 #Plot
+
 The Plot Tab shows a map of the stresses on the surface of the satellite.
 
 - Tension on the map is shown as positive and compression is shown as negative.
