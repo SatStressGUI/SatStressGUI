@@ -62,7 +62,7 @@ For more information on stresses due to oblique orbits, see:
     Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The case of Europa. Icarus, 215(1), 417-438.
 
 
-#Ice Shell Thickening
+#Ice Shell Volume Change
 
 As satellites age, they could become cooler or warmer. This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. This process would force the ice shell to expand or shrink, putting extensional stress on the surface.
 
