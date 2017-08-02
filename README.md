@@ -20,7 +20,7 @@ SatStressGUI V5.0 was developed at the Jet Propulsion Laboratory, California Ins
 and is based on SatStressGUI.
 SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho.
 SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at
-http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress
+http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress.
 
 ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any 
 commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
@@ -30,9 +30,9 @@ U.S. export laws and regulations. User has the responsibility to obtain export
 licenses, or other export authority as may be required before exporting such
 information to foreign countries or providing access to foreign persons.
 
-Older versions of this program can be found at https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
+Older versions of this program can be found here: https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
 
-A fork which reqrote the program in a Model-View-Controller Architecture can be found at https://github.com/AndreI11/SatStressGui
+A fork which rewrote the program in a Model-View-Controller Architecture can be found here: https://github.com/AndreI11/SatStressGui
 
 
 ============================================================================
