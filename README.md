@@ -34,6 +34,7 @@ Older versions of this program can be found at https://drive.google.com/foldervi
 
 A fork which reqrote the program in a Model-View-Controller Architecture can be found at https://github.com/AndreI11/SatStressGui
 
+============================================================================
 
 #Getting Started
 
@@ -96,6 +97,8 @@ If the stress reaches the propagation strength again, it will continue.
 For more information, please see:
 
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
+  
+============================================================================  
 
 #How To Use
 
