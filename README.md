@@ -36,11 +36,13 @@ A fork which reqrote the program in a Model-View-Controller Architecture can be 
 
 
 #Getting Started
+
 SatStressGUI is currently capable of calculating and plotting Diurnal, Non-Synchronous Rotation, Obliquity, Ice Shell Volume Change, and Polar Wander stresses and is able to simulate the formation of cycloids.
 
 An explanation of these stresses and cycloids as well as additional references is given:
 
 #Diurnal
+
 Diurnal tidal stresses arise when a satellite is in an eccentric orbit. 
 This is due to two reasons. First, the amplitude of the planet's gravitational force is greater at periapse than it is at apoapse. Secondly, the planet is rotating slightly faster (compared to its synchronous rotation rate) at periapse 
 and slightly slower (again compared to its synchronous rotation rate) at apoapse. This results in a 'librational tide', where the planet appears to rock back and forth in the sky.
