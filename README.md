@@ -40,7 +40,7 @@ A fork which rewrote the program in a Model-View-Controller Architecture can be 
 
 SatStressGUI is currently capable of calculating and plotting Diurnal, Non-Synchronous Rotation, Obliquity, Ice Shell Volume Change, and Polar Wander stresses and is able to simulate the formation of cycloids.
 
-An explanation of these stresses and cycloids as well as additional references is given:
+An explanation of these stresses and cycloids as well as additional references are given:
 
 #Diurnal
 
