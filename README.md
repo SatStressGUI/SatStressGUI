@@ -75,7 +75,7 @@ For more information on Ice Shell Volume Change as a stressing mechanism, please
     Wahr, J., et al., 2009. Modeling stresses on satellites due to nonsynchronous rotation and orbital eccentricity using gravitational potentialtheory, Icarus, 200, p. 186-206.
 
 
-#Polar
+#Polar Wander
 
 Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). 
 Sometimes, this also results in a reorientation of the poles. The north pole appears to wander over the surface as the crust reorients itself. This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, 
