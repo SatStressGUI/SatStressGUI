@@ -102,7 +102,7 @@ For more information, please see:
 
 #How To Use
 
-To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (You can use Load to load .sat, .grid, and .cycl files as well).
+To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (You can use load to load .sat, .grid, and .cycl files as well).
 
 Information on the tabs and their parameters are given below:
 
