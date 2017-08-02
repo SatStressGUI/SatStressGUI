@@ -87,7 +87,6 @@ class LocalError(Exception):
 # and grid files.
 # ===============================================================================
 class SatelliteCalculation(object): 
-    
     #u'string' == unicode('string')
     #Useful for representing more characters than normal ASCII can.
     satellite_vars = [
@@ -274,7 +273,6 @@ class SatelliteCalculation(object):
             #TODO
         self.cycloid_changed = True
             
-
     #Accessor for parameters.
     def get_parameter(self, f, parameter, default_value=None):
         try:
@@ -1347,7 +1345,7 @@ class StressListPanel(SatPanel):
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
-        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) #A GridSizer to hold the polar wander coordinates.  -PS 2016
+        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) #A GridSizer to hold the polar wander coordinates. -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
@@ -4397,36 +4395,39 @@ class ScalarPlotPanel(PlotPanel):
                 (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
                 bbox_inches='tight', pad_inches=1.5)
             o += s
-        try: 
-            framerate = str(ScalarPlotPanel.frameRate)
-            if(StressPlotPanel.video):
-                #FFMPEG is an external program (run through the terminal) that converts a sequence 
-                #of images to a video. We use the subprocess module to run FFMPEG through this script. 
-                #Currently, the application asks the user to install homebrew and then use homebrew to 
-                #install FFMPEG themselves before this feature is available. This is because I could not 
-                #find out how to add FFMPEG as a dependency in the application. -ND 2017 
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', self.directory + '/orbit_*.png', \
-                                 '-r', '10', '-s', '620x380', self.directory + 
-                                 ".avi"])
-            elif(StressPlotPanel.videoGray):
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', self.directory + '/orbit_*.png', \
-                                 '-r', '10', '-s', '620x380', '-flags', 'gray', self.directory + 
-                                 ".avi"])
-        except: 
-            error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
-To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
-Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
-brew install ffmpeg \n
-If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-""", u'Video Error')
+
+        if StressPlotPanel.video or StressPlotPanel.videoGray: 
+            try: 
+                framerate = str(ScalarPlotPanel.frameRate)
+                if(StressPlotPanel.video):
+                    #FFMPEG is an external program (run through the terminal) that converts a sequence 
+                    #of images to a video. We use the subprocess module to run FFMPEG through this script. 
+                    #Currently, the application asks the user to install Homebrew and then use Homebrew to 
+                    #install FFMPEG themselves before this feature is available. This is because I could not 
+                    #find out how to add FFMPEG as a dependency in the application. -ND 2017 
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', self.directory + '/orbit_*.png', \
+                                     '-r', '10', '-s', '620x380', self.directory + 
+                                     ".avi"])
+                elif(StressPlotPanel.videoGray):
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', self.directory + '/orbit_*.png', \
+                                     '-r', '10', '-s', '620x380', '-flags', 'gray', self.directory + 
+                                     ".avi"])
+            except: 
+                error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
+    To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
+    Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
+    brew install ffmpeg \n
+    If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    """, u'Video Error')
         if not StressPlotPanel.photo:
-            shutil.rmtree(self.directory) #Now delete the folder of photos which the video relied on. 
+            #Delete the folder of photos which the video relied on if the user did not want to save the series as photos too. 
+            shutil.rmtree(self.directory) 
 
         self.orbit_pos = old_orbit_pos
         self.reveal_orbit_controls()
@@ -4455,34 +4456,37 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         else:
             os.mkdir(location) 
             os.mkdir(directory)
+
         for k in range(0, n+1):
             self.nsr_pos = nm + s*k
             self.scp.nsr_slider.set_val(self.nsr_pos)
             self.plot_no_draw()
             self.scp.figure.savefig("%s/nsr_%03d.png" % (directory, k), bbox_inches='tight', pad_inches=0.5)
-        try: 
-            framerate = str(ScalarPlotPanel.frameRate)
-            if(StressPlotPanel.video):
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', directory + '/nsr_*.png', \
-                                 '-r', '10', '-s', '620x380', directory + 
-                                 ".avi"])
-            elif(StressPlotPanel.videoGray): 
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', directory + '/nsr_*.png', \
-                                 '-r', '10', '-s', '620x380', '-flags', 'gray', directory + 
-                                 ".avi"])
-        except:
-            error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
-To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
-Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
-brew install ffmpeg \n
-If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-""", u'Video Error')
+
+        if StressPlotPanel.video or StressPlotPanel.videoGray: 
+            try: 
+                framerate = str(ScalarPlotPanel.frameRate)
+                if(StressPlotPanel.video):
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', directory + '/nsr_*.png', \
+                                     '-r', '10', '-s', '620x380', directory + 
+                                     ".avi"])
+                elif(StressPlotPanel.videoGray): 
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', directory + '/nsr_*.png', \
+                                     '-r', '10', '-s', '620x380', '-flags', 'gray', directory + 
+                                     ".avi"])
+            except:
+                error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
+    To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
+    Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
+    brew install ffmpeg \n
+    If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    """, u'Video Error')
         if not StressPlotPanel.photo:
                 shutil.rmtree(directory)
 
@@ -4496,6 +4500,8 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         StressPlotPanel.videoGray = False  
         del b
 
+    #If the calculations for Polar Wander are improved to be viscoelastic, the code for saving Polar series as 
+    #a video will need to be added in the save_polar_series method. -ND 2017  
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
@@ -4515,7 +4521,6 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         self.scp.polar_slider.set_val(self.polar_pos)
         self.plot()
         del b
-
 
 # ===============================================================================
 # PANEL CONTAINING ALL TABS; defines the panel that contains all GUI pages. 
