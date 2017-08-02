@@ -32,17 +32,15 @@ information to foreign countries or providing access to foreign persons.
 
 Older versions of this program can be found here: https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
 
-A fork which rewrote the program in a Model-View-Controller Architecture can be found here: https://github.com/AndreI11/SatStressGui
+A fork which rewrote the program in a Model-View-Controller Architecture can be found here: https://github.com/AndreI11/SatStressGui.
 
-
-============================================================================
-
+=============================================================
 
 #Getting Started
 
 SatStressGUI is currently capable of calculating and plotting Diurnal, Non-Synchronous Rotation, Obliquity, Ice Shell Volume Change, and Polar Wander stresses and is able to simulate the formation of cycloids.
 
-An explanation of these stresses and cycloids as well as additional references is given:
+An explanation of these stresses and cycloids as well as additional references are given:
 
 #Diurnal
 
@@ -64,20 +62,20 @@ For more information on stresses due to oblique orbits, see:
     Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The case of Europa. Icarus, 215(1), 417-438.
 
 
-#Ice Shell Thickening
+#Ice Shell Volume Change
 
 As satellites age, they could become cooler or warmer. This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. This process would force the ice shell to expand or shrink, putting extensional stress on the surface.
 
 For more information on Ice Shell Volume Change as a stressing mechanism, please see:
 
-    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
+    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application to Europa. Journal of Geophysical Research: Planets (1991-2012), 109 (E12).
 
     Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites with an enhanced SatStressGUI, 47th LPSC, abs. 1375.
 
     Wahr, J., et al., 2009. Modeling stresses on satellites due to nonsynchronous rotation and orbital eccentricity using gravitational potentialtheory, Icarus, 200, p. 186-206.
 
 
-#Polar
+#Polar Wander
 
 Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). 
 Sometimes, this also results in a reorientation of the poles. The north pole appears to wander over the surface as the crust reorients itself. This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, 
@@ -86,7 +84,7 @@ This stressing mechanism is calculated using an elastic model.
 
 For more information on Polar Wander as a stressing mechanism, please see:
 
-    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.n
+    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.
     
     Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
 
@@ -98,15 +96,13 @@ If the stress reaches the propagation strength again, it will continue.
 
 For more information, please see:
 
-    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
+    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal features on Europa. Science 285, 1899-1902.
   
-  
-============================================================================  
-
+=============================================================  
 
 #How To Use
 
-To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (You can use Load to load .sat, .grid, and .cycl files as well).
+To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (you can use load to load .sat, .grid, and .cycl files as well).
 
 Information on the tabs and their parameters are given below:
 

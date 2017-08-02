@@ -87,7 +87,6 @@ class LocalError(Exception):
 # and grid files.
 # ===============================================================================
 class SatelliteCalculation(object): 
-    
     #u'string' == unicode('string')
     #Useful for representing more characters than normal ASCII can.
     satellite_vars = [
@@ -274,7 +273,6 @@ class SatelliteCalculation(object):
             #TODO
         self.cycloid_changed = True
             
-
     #Accessor for parameters.
     def get_parameter(self, f, parameter, default_value=None):
         try:
@@ -1347,7 +1345,7 @@ class StressListPanel(SatPanel):
         
         self.parameters.update(add_checkboxes_to_sizer(self, sz, [ ('Polar Wander', 'Polar Wander') ]))
 
-        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) #A GridSizer to hold the polar wander coordinates.  -PS 2016
+        Polargrid = wx.FlexGridSizer(rows=9, cols=3, hgap=3, vgap=5) #A GridSizer to hold the polar wander coordinates. -PS 2016
         self.Latitude_label = wx.StaticText(self, label=u'Latitude [°]')
         self.Longitude_label = wx.StaticText(self, label=u'Longitude [°]')
         self.Blank_label = wx.StaticText(self, label=u' ')
@@ -4397,36 +4395,39 @@ class ScalarPlotPanel(PlotPanel):
                 (self.directory, int(self.orbit_pos), round(100.*(self.orbit_pos - int(self.orbit_pos)))),
                 bbox_inches='tight', pad_inches=1.5)
             o += s
-        try: 
-            framerate = str(ScalarPlotPanel.frameRate)
-            if(StressPlotPanel.video):
-                #FFMPEG is an external program (run through the terminal) that converts a sequence 
-                #of images to a video. We use the subprocess module to run FFMPEG through this script. 
-                #Currently, the application asks the user to install homebrew and then use homebrew to 
-                #install FFMPEG themselves before this feature is available. This is because I could not 
-                #find out how to add FFMPEG as a dependency in the application. -ND 2017 
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', self.directory + '/orbit_*.png', \
-                                 '-r', '10', '-s', '620x380', self.directory + 
-                                 ".avi"])
-            elif(StressPlotPanel.videoGray):
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', self.directory + '/orbit_*.png', \
-                                 '-r', '10', '-s', '620x380', '-flags', 'gray', self.directory + 
-                                 ".avi"])
-        except: 
-            error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
-To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
-Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
-brew install ffmpeg \n
-If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-""", u'Video Error')
+
+        if StressPlotPanel.video or StressPlotPanel.videoGray: 
+            try: 
+                framerate = str(ScalarPlotPanel.frameRate)
+                if(StressPlotPanel.video):
+                    #FFMPEG is an external program (run through the terminal) that converts a sequence 
+                    #of images to a video. We use the subprocess module to run FFMPEG through this script. 
+                    #Currently, the application asks the user to install Homebrew and then use Homebrew to 
+                    #install FFMPEG themselves before this feature is available. This is because I could not 
+                    #find out how to add FFMPEG as a dependency in the application. -ND 2017 
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', self.directory + '/orbit_*.png', \
+                                     '-r', '10', '-s', '620x380', self.directory + 
+                                     ".avi"])
+                elif(StressPlotPanel.videoGray):
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', self.directory + '/orbit_*.png', \
+                                     '-r', '10', '-s', '620x380', '-flags', 'gray', self.directory + 
+                                     ".avi"])
+            except: 
+                error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
+    To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
+    Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
+    brew install ffmpeg \n
+    If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    """, u'Video Error')
         if not StressPlotPanel.photo:
-            shutil.rmtree(self.directory) #Now delete the folder of photos which the video relied on. 
+            #Delete the folder of photos which the video relied on if the user did not want to save the series as photos too. 
+            shutil.rmtree(self.directory) 
 
         self.orbit_pos = old_orbit_pos
         self.reveal_orbit_controls()
@@ -4455,34 +4456,37 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         else:
             os.mkdir(location) 
             os.mkdir(directory)
+
         for k in range(0, n+1):
             self.nsr_pos = nm + s*k
             self.scp.nsr_slider.set_val(self.nsr_pos)
             self.plot_no_draw()
             self.scp.figure.savefig("%s/nsr_%03d.png" % (directory, k), bbox_inches='tight', pad_inches=0.5)
-        try: 
-            framerate = str(ScalarPlotPanel.frameRate)
-            if(StressPlotPanel.video):
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', directory + '/nsr_*.png', \
-                                 '-r', '10', '-s', '620x380', directory + 
-                                 ".avi"])
-            elif(StressPlotPanel.videoGray): 
-                subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
-                                 framerate, '-f', 'image2','-pattern_type', \
-                                 'glob', '-i', directory + '/nsr_*.png', \
-                                 '-r', '10', '-s', '620x380', '-flags', 'gray', directory + 
-                                 ".avi"])
-        except:
-            error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
-To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
-Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
-brew install ffmpeg \n
-If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-""", u'Video Error')
+
+        if StressPlotPanel.video or StressPlotPanel.videoGray: 
+            try: 
+                framerate = str(ScalarPlotPanel.frameRate)
+                if(StressPlotPanel.video):
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', directory + '/nsr_*.png', \
+                                     '-r', '10', '-s', '620x380', directory + 
+                                     ".avi"])
+                elif(StressPlotPanel.videoGray): 
+                    subprocess.call(['/usr/local/bin/ffmpeg', '-framerate', \
+                                     framerate, '-f', 'image2','-pattern_type', \
+                                     'glob', '-i', directory + '/nsr_*.png', \
+                                     '-r', '10', '-s', '620x380', '-flags', 'gray', directory + 
+                                     ".avi"])
+            except:
+                error_dialog(self, """This feature requires the user to have Homebrew and FFMPEG installed. \n
+    To install Homebrew, copy and paste the following command onto Mac Terminal and click Enter: \n
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" \n
+    Once Homebrew is installed, the user can install FFMPEG by copying and pasting the following command onto Mac Terminal and clicking Enter: \n
+    brew install ffmpeg \n
+    If the user wishes to uninstall Homebrew and FFMPEG, copy and paste the following command onto Mac Terminal and click Enter: \n
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    """, u'Video Error')
         if not StressPlotPanel.photo:
                 shutil.rmtree(directory)
 
@@ -4496,6 +4500,8 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         StressPlotPanel.videoGray = False  
         del b
 
+    #If the calculations for Polar Wander are improved to be viscoelastic, the code for saving Polar series as 
+    #a video will need to be added in the save_polar_series method. -ND 2017  
     def save_polar_series(self, dir='.'):
         b = wx.BusyInfo(u"Saving series. Please wait.", self)
         wx.SafeYield()
@@ -4515,7 +4521,6 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
         self.scp.polar_slider.set_val(self.polar_pos)
         self.plot()
         del b
-
 
 # ===============================================================================
 # PANEL CONTAINING ALL TABS; defines the panel that contains all GUI pages. 
@@ -4719,7 +4724,7 @@ class SatStressFrame(wx.Frame):
         #Indentation (lack thereof) is necessary to prevent tab spaces on the GUI at every new line in the source code.
         spiel = u"""ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any \
 commercial use must be negotiated with the Office of Technology Transfer at the \
-California Institute of Technology. \n\n
+California Institute of Technology. \n
 This software may be subject to U.S. export control laws and regulations. \
 By accepting this document, the user agrees to comply with all applicable \
 U.S. export laws and regulations. User has the responsibility to obtain export \
@@ -4746,7 +4751,7 @@ Andre Ismailyan, Peter Sinclair, Nhu Doan, and Chad Harper."""
     def onUpdates(self, evt):
         updates = u"""This is version 5.0 of SatStressGUI.  For more information, please visit: \n\n\
 https://github.com/SatStressGUI/SatStressGUI\n\n\
-In this version several bugs were fixed and a new stressing mechanism (Polar Wander) was added. \
+In this version several bugs were fixed and a new stressing mechanism (Ice Shell Volume Change in the viscoelastic case) was added. \
 To find detailed notes of all the changes, suggest improvements, or report bugs, please visit the GitHub page."""
         
         self.makeMsgDialog(updates, u'Version 5.0')
@@ -4764,7 +4769,7 @@ Secondly, the planet is rotating slightly faster (compared to its synchronous ro
 and slightly slower (again compared to its synchronous rotation rate) at apoapse. \
 This results in a 'librational tide', where the planet appears to rock back and forth in the sky.\n\n\
 For more information on diurnal tides, please see:\n\
-Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
+    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
 and orbital eccentricity using gravitational potential theory, \
 Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
@@ -4778,7 +4783,7 @@ Thus, the planet appears to move across the sky, and the tidal bulge moves benea
 This results in surface stresses. \
 The period of this rotation should be > 10,000 years.\n\n\
 For more information on NSR, please see:\n\
-Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
+    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
 M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
 and orbital eccentricity using gravitational potential theory, \
 Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
@@ -4789,22 +4794,25 @@ Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
         Resources = u"""A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. \
 A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. \
 However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.\n\n\
-For more information on stresses due to oblique orbits, see:\n\
-Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
+For more information on stresses due to oblique orbits, please see:\n\
+    Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
 obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
 case of Europa. Icarus, 215(1), 417-438.
 """
         self.makeMsgDialog(Resources, u'About Olibque Orbits')
 
     def onISTref(self, evt):
-        Resources = u"""As satellites age, they could become cooler. \
-This would result in more of the liquid ocean freezing, increasing the thickness of the icy crust. \
-This process would force the ice shell to expand, putting extensional stress on the surface.\n\n\
-For more information on Ice Shell Thickening as a stressing mechanism, please see:\n\
-Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application \
-to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
+        Resources = u"""As satellites age, they could become cooler or warmer. \
+This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. \
+This process would force the ice shell to expand or shrink, putting extensional stress on the surface.\n\n\
+For more information on Ice Shell Volume Change as a stressing mechanism, please see:\n\
+    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application \
+to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).\n\
+    Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites \
+with an enhanced SatStressGUI, 47th LPSC, abs. 1375.\n\
+    Wahr, J., et al., 2009. Modeling stresses on satellites due to nonsynchronous rotation and orbital eccentricity using gravitational potentialtheory, Icarus, 200, p. 186-206.
 """
-        self.makeMsgDialog(Resources, u'About Ice Shell Thickening')
+        self.makeMsgDialog(Resources, u'About Ice Shell Volume Change')
 
 
     def onPWref(self, evt):
@@ -4844,7 +4852,6 @@ check the "Information" menu. \n\n\
 2) Select which stresses to apply in the Stresses tab.\n\
 - When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
 leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
-- The Obliquity stress must be used with either Diurnal or NSR.\n\
 3) In the Grid tab, input a latitude and longitude range to examine.\n\
 - The number of grid points must be equal for both latitude and longitude.\n\
 4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
@@ -4856,11 +4863,12 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 
     def onHelpSat(self, evt):
         Help = u"""The Satellite Tab is used to input the physical properties of the satellite.\n\n\
+- SatStressGUI assumes a 4-layer (upper ice layer, lower ice layer, liquid ocean layer, and core) satellite body.\n\
 - Each entry should use the units denoted in the square brackets next to the box.\n\
 - The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.\n\
 - The NSR period is usually on the order of 100,000 years.  If you are not using NSR, you can leave it as 'infinity'.\n\
-- The orbital eccentricity must be < 0.25.  Otherwise the program cannot reasonably calculate stresses.\n\
-- If you have changed a number, but nothing seems to happen, try hitting 'Enter' in the box you changed.\n\
+- The orbital eccentricity must be < 0.25. Otherwise, the program cannot reasonably calculate stresses.\n\
+- If you have changed a number but nothing seems to happen, try hitting 'Enter' in the box you changed.\n\
 """
         self.makeMsgDialog(Help, u'The Satellite Tab')
 
@@ -4870,8 +4878,7 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
 When inputting custom love numbers, you must use the format <Re> +/- <Im>j.  Do not use scientific notation. \
 For example, "1.2+3.0e-5j" should be written as "1.2+0.00003j."\n\
-- The Obliquity stress must be used with Diurnal or NSR.\n\
-- The thermal diffusivity of the Ice Shell Volume Change stress does not currently function.\n\
+- If left blank, the program will use .65 as the value for the Stefan Parameter in Ice Shell Volume Change. \n\
 - Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
 - By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
 - If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.\n\
@@ -4886,16 +4893,16 @@ The rotational period should be input in units of hours.\n\
 - Enter a latitude, longitude, year, and orbital position for each point.\n\
 - Press the "Calculate Stress" button.\n\
 - Use the "Save to File" button to save the results as a .cvs file.\n\n\
-- θ: Latitude (-90.00 to 90.00) [°]\n\
-- φ: Longitude (-180.00 to180.00 (positive West or East to choose from)) [°]\n\
-- t: Time since periapse (Periapse = 0) [yrs], used for secular stress calculations\n\
-- orbital pos: Orbital position since periapse (Periapse = 0) [°], used for diurnal stress calculations\n\
-- Stt: East-West component of stress field [kPa]\n\
-- Spt: Off diagonal component of stress field [kPa]\n\
-- Spp: North-South component of stress field [kPa]\n\
-- σ1: Maximum tension [kPa]\n\
-- σ3: Maximum compression [kPa]\n\
-- α: The angle between σ1 and due north (clockwise is positive) [°]
+- θ: latitude (-90.00 to 90.00) [°]\n\
+- φ: longitude (-180.00 to180.00 (positive West or East to choose from)) [°]\n\
+- t: time since periapse (periapse = 0) [yrs], used for secular stress calculations\n\
+- orbital pos: orbital position since periapse (periapse = 0) [°], used for diurnal stress calculations\n\
+- Stt: east-west component of stress field [kPa]\n\
+- Spt: off diagonal component of stress field [kPa]\n\
+- Spp: north-south component of stress field [kPa]\n\
+- σ1: maximum tension [kPa]\n\
+- σ3: maximum compression [kPa]\n\
+- α: the angle between σ1 and due north (clockwise is positive) [°]
 """
         self.makeMsgDialog(Help, u'The Point Tab')
 
@@ -4906,10 +4913,10 @@ The rotational period should be input in units of hours.\n\
 - NOTE: The number of latitude and longitude grid points must be equal.\n\
 - To examine the whole moon, use a latitude range from -90 to 90 and a longitude range of -180 to 180.\n\
 - Each row will only activate when the appropriate stress is enabled.\n\
-- The "Orbital Position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. \
+- The "orbital position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. \
 Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be added by increasing the maximum beyond 360 degrees.\n\
 - The map will occasionally not work for certain positions.  If this happens, simply change the number of increments or the end position.\n\
-- The "Amount of NSR Buildup" row is used to determine how long the ice shell has been rotating. \
+- The "amount of NSR build up" row is used to determine how long the ice shell has been rotating. \
 The Start Time is when the plotting starts, and the End Time is when the plotting ends.\n\
 """
         self.makeMsgDialog(Help, u'The Grid Tab')
@@ -4927,21 +4934,21 @@ The Start Time is when the plotting starts, and the End Time is when the plottin
 
     def onHelpPlot(self, evt):
         Help = u"""The Plot Tab shows a map of the stresses on the surface of the satellite.\n\n\
-- Tension on the map is shown as positive, and compression as negative.
+- Tension on the map is shown as positive and compression is shown as negative.
 - You can step through the plots by using the buttons to the bottom right of the graph.\n\
-- Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "Save Series" \
+- Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "save series" \
 button to the lower right.\n\
 - The panel on the right allows manipulation of the map, changing the scale and type of map, as well as the stresses showed.\n\
 - The bottom panel enables and disables cycloids.\n\
 - When using Polar Wander, the initial and final locations of the rotational poles and/or sub- and anti-jove points will appear on the graph.\n\
-  - The initial North and South poles will be white circles.\n\
-  - The final North and South poles will be black circles.\n\
+  - The initial north and south poles will be white circles.\n\
+  - The final north and south poles will be black circles.\n\
   - The initial sub- and anti-jove points will be white squares.\n\
   - The final sub- and anti-jove points will be black squares.\n\
 - The vectors created by Polar Wander do not currently appear to be generating correctly.\n\
 - When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.\n\
   - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.\n\
-- Cycloids can be saved as Shape files via the appropriate button. Loading of shape files is currently not supported.\n\
+- Cycloids can be saved as shape files via the appropriate button. Loading of shape files is currently not supported.\n\
 - NOTE: The cycloids cannot be saved as netcdf files currently.\n\
 - NOTE: The Lineaments feature does not function currently.\n\
 """
