@@ -96,7 +96,7 @@ If the stress reaches the propagation strength again, it will continue.
 
 For more information, please see:
 
-    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal features on Europa. Science 285, 1899-1902
+    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal features on Europa. Science 285, 1899-1902.
   
 =============================================================  
 
