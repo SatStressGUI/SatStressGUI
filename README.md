@@ -35,7 +35,9 @@ Older versions of this program can be found here: https://drive.google.com/folde
 A fork which rewrote the program in a Model-View-Controller Architecture can be found here: https://github.com/AndreI11/SatStressGui
 
 
+
 ============================================================================
+
 
 
 #Getting Started
@@ -100,8 +102,10 @@ For more information, please see:
 
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
   
-  
+
+
 ============================================================================  
+
 
 
 #How To Use
