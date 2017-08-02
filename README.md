@@ -1,4 +1,5 @@
 #About
+
 This repository contains the code for SatStressGUI, a program which models stresses in icy satellites.
 
 To use this program, download the package and run the satstressgui executable file located in Contents/MacOS.
