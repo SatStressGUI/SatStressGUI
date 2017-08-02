@@ -4858,6 +4858,7 @@ leave them blank to allow the program to calculate Love numbers based on the sat
 
     def onHelpSat(self, evt):
         Help = u"""The Satellite Tab is used to input the physical properties of the satellite.\n\n\
+- SatStressGUI assumes a 4-layer (upper ice layer, lower ice layer, liquid ocean layer, and core) satellite body.\n\
 - Each entry should use the units denoted in the square brackets next to the box.\n\
 - The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.\n\
 - The NSR period is usually on the order of 100,000 years.  If you are not using NSR, you can leave it as 'infinity'.\n\
