@@ -49,10 +49,7 @@ and slightly slower (again compared to its synchronous rotation rate) at apoapse
 
 For more information on diurnal tides, please see:
 
-    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, 
-M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation 
-and orbital eccentricity using gravitational potential theory, 
-Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
+    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation and orbital eccentricity using gravitational potential theory, Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
 
 
 #Obliquity
@@ -61,9 +58,7 @@ A satellite's obliquity (or axial tilt) is the angle between it rotational axis 
 
 For more information on stresses due to oblique orbits, see:
 
-    Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero 
-obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The 
-case of Europa. Icarus, 215(1), 417-438.
+    Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The case of Europa. Icarus, 215(1), 417-438.
 
 
 #Ice Shell Thickening
@@ -72,15 +67,11 @@ As satellites age, they could become cooler or warmer. This would result in more
 
 For more information on Ice Shell Volume Change as a stressing mechanism, please see:
 
-    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application 
-to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
+    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
 
-    Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites
-with an enhanced SatStressGUI, 47th LPSC, abs. 1375.
+    Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites with an enhanced SatStressGUI, 47th LPSC, abs. 1375.
 
     Wahr, J., et al., 2009. Modeling stresses on satellites due to nonsynchronous rotation and orbital eccentricity using gravitational potentialtheory, Icarus, 200, p. 186-206.
-
-
 
 
 #Polar
@@ -103,6 +94,7 @@ Cycloids are arcuate lineaments found on the surface of Europa.  They are though
 If the stress reaches the propagation strength again, it will continue.
 
 For more information, please see:
+
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
 
 #How To Use
