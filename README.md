@@ -32,7 +32,7 @@ information to foreign countries or providing access to foreign persons.
 
 Older versions of this program can be found here: https://drive.google.com/folderview?id=0B_8nH6qrvb9gRXlaY1A4SkhLcGs&usp=sharing.
 
-A fork which rewrote the program in a Model-View-Controller Architecture can be found here: https://github.com/AndreI11/SatStressGui
+A fork which rewrote the program in a Model-View-Controller Architecture can be found here: https://github.com/AndreI11/SatStressGui.
 
 =============================================================
 
