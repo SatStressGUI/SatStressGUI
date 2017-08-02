@@ -34,7 +34,9 @@ Older versions of this program can be found at https://drive.google.com/foldervi
 
 A fork which reqrote the program in a Model-View-Controller Architecture can be found at https://github.com/AndreI11/SatStressGui
 
+
 ============================================================================
+
 
 #Getting Started
 
@@ -98,11 +100,13 @@ For more information, please see:
 
     Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
   
+  
 ============================================================================  
+
 
 #How To Use
 
-To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (Sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (You can use Load to load .sat, .grid, and .cycl files as well).
+To either plot or calculate stresses, the satellite, stresses, and grid must first be defined in their respective tabs. Satellite and Grid have buttons for loading and saving their parameters (sample .sat and .grid files are included in the sample folder). Alternatively, you may save or load the whole state of the program through File -> Export and File -> Load (You can use Load to load .sat, .grid, and .cycl files as well).
 
 Information on the tabs and their parameters are given below:
 
