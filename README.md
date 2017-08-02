@@ -68,7 +68,7 @@ As satellites age, they could become cooler or warmer. This would result in more
 
 For more information on Ice Shell Volume Change as a stressing mechanism, please see:
 
-    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
+    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application to Europa. Journal of Geophysical Research: Planets (1991-2012), 109 (E12).
 
     Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites with an enhanced SatStressGUI, 47th LPSC, abs. 1375.
 
@@ -84,7 +84,7 @@ This stressing mechanism is calculated using an elastic model.
 
 For more information on Polar Wander as a stressing mechanism, please see:
 
-    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.n
+    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.
     
     Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
 
@@ -96,7 +96,7 @@ If the stress reaches the propagation strength again, it will continue.
 
 For more information, please see:
 
-    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal 
+    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal features on Europa. Science 285, 1899-1902
   
 =============================================================  
 
