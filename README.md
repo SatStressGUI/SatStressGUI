@@ -68,6 +68,7 @@ As satellites age, they could become cooler or warmer.
 This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. This process would force the ice shell to expand or shrink, putting extensional stress on the surface.
 
 For more information on Ice Shell Volume Change as a stressing mechanism, please see:
+
     Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application 
 to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).
     Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites
