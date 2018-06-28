@@ -1,0 +1,4 @@
+Diurnal tidal stresses arise when a satellite is in an eccentric orbit. This is due to two reasons. First, the amplitude of the planet's gravitational force is greater at periapse than it is at apoapse. Secondly, the planet is rotating slightly faster (compared to its synchronous rotation rate) at periapse and slightly slower (again compared to its synchronous rotation rate) at apoapse. This results in a 'librational tide', where the planet appears to rock back and forth in the sky.
+
+For more information on diurnal tides, please see:
+	Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, M. M. Selvans, and R.T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation and orbital eccentricity using gravitational potential theory, Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.

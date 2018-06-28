@@ -1,0 +1,4 @@
+A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.
+
+For more information on stresses due to oblique orbits, please see:
+    Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The case of Europa. Icarus, 215(1), 417-438.
