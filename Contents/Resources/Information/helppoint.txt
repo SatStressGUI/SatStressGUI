@@ -1,0 +1,16 @@
+The Point Tab can be used to calculate the stress at any discrete point in space and time.
+
+- Enter a latitude, longitude, year, and orbital position for each point.
+- Press the "Calculate Stress" button.
+- Use the "Save to File" button to save the results as a .cvs file.
+
+- θ: latitude (-90.00 to 90.00) [°]
+- φ: longitude (-180.00 to180.00 (positive West or East to choose from)) [°]
+- t: time since periapse (periapse = 0) [yrs], used for secular stress calculations
+- orbital pos: orbital position since periapse (periapse = 0) [°], used for diurnal stress calculations
+- Stt: east-west component of stress field [kPa]
+- Spt: off diagonal component of stress field [kPa]
+- Spp: north-south component of stress field [kPa]
+- σ1: maximum tension [kPa]
+- σ3: maximum compression [kPa]
+- α: the angle between σ1 and due north (clockwise is positive) [°]

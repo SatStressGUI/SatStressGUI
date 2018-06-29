@@ -1,0 +1,6 @@
+Nonsynchronous rotation (NSR) occurs when a satellite's lithosphere is decoupled from its core. When this happens, the tidal bulge of the shell causes it to experience a net torque, and could rotate more quickly than the synchronous rate. Thus, the planet appears to move across the sky, and the tidal bulge moves beneath the shell. This results in surface stresses.
+The period of this rotation should be > 10,000 years.
+
+
+For more information on NSR, please see:
+    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation and orbital eccentricity using gravitational potential theory, Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.

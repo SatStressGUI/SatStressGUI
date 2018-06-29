@@ -1,0 +1,18 @@
+The Plot Tab shows a map of the stresses on the surface of the satellite.
+
+- Tension on the map is shown as positive and compression is shown as negative.
+- You can step through the plots by using the buttons to the bottom right of the graph.
+- Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "save series" button to the lower right.
+- The panel on the right allows manipulation of the map, changing the scale and type of map, as well as the stresses showed.
+- The bottom panel enables and disables cycloids.
+- When using Polar Wander, the initial and final locations of the rotational poles and/or sub- and anti-jove points will appear on the graph.
+  - The initial north and south poles will be white circles.
+  - The final north and south poles will be black circles.
+  - The initial sub- and anti-jove points will be white squares.
+  - The final sub- and anti-jove points will be black squares.
+- The vectors created by Polar Wander do not currently appear to be generating correctly.
+- When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.
+  - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.
+- Cycloids can be saved as shape files via the appropriate button. Loading of shape files is currently not supported.
+- NOTE: The cycloids cannot be saved as netcdf files currently.
+- NOTE: The Lineaments feature does not function currently.

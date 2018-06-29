@@ -1081,7 +1081,8 @@ class SatPanel(wx.Panel):
         #Why are you removing the attribute?
         super(SatPanel, self).__init__(*args, **kw)
         self.parameters = {}
-        self.radioBoxes = [] 
+        self.radioBoxes = []
+
     def bind_parameters(self):
         for k, p in self.parameters.items():
             f = self.mk_change_param(k)
@@ -1132,8 +1133,12 @@ class SatPanel(wx.Panel):
                             ctrl.SetValue(False)
                     else:
                         ctrl.SetValue(self.sc.parameters[p])
-            except KeyError:
-                print str(KeyError)
+            except KeyError, e:
+                #Keys in the SatelliteCalculation Class are not defined, uncomment print statements to see stderr message
+                pass
+                #print str(KeyError)
+                #print str(e)
+                
     def get_panel_param(self, p):
         return self.parameters[p]
 
@@ -4719,254 +4724,56 @@ class SatStressFrame(wx.Frame):
     def onQuit(self, evt):
         self.Close()
 
+    def messageDisplay(self,filename,title):
+        path = "Information/"+filename
+        f = open(path,"r")
+        try:
+            content = f.readlines()
+            strContent = ''.join(content) 
+            uniStrContent = unicode(strContent, "utf-8")
+
+            self.makeMsgDialog(uniStrContent, title)
+        finally:
+            f.close()
 
     def onRights(self, evt):
-        #Indentation (lack thereof) is necessary to prevent tab spaces on the GUI at every new line in the source code.
-        spiel = u"""ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any \
-commercial use must be negotiated with the Office of Technology Transfer at the \
-California Institute of Technology. \n
-This software may be subject to U.S. export control laws and regulations. \
-By accepting this document, the user agrees to comply with all applicable \
-U.S. export laws and regulations. User has the responsibility to obtain export \
-licenses, or other export authority as may be required before exporting such \
-information to foreign countries or providing access to foreign persons. """
-
         copyright = "Copyright 2017, by the California Institute of Technology." #Update year whenever a new version is released.
-        self.makeMsgDialog(spiel, copyright)
-
+        self.messageDisplay("rights.txt",copyright)
     def onDevelopment(self, evt):
-        spiel = u"""SatStressGUI V5.0 was developed at the Jet Propulsion Laboratory, \
-California Institute of Technology and is based on SatStressGUI. \
-SatStressGUI was developed by the Planetary Geology Research group at the University of Idaho. \
-SatStressGUI is based on SatStress, which was designed by Zane Selvans and is available at \
-http://code.google.com/p/satstress and most recently at https://github.com/zaneselvans/satstress. \
-\n\nSatStressGUI V5.0 has been created upon efforts by \
-Zane Selvans, Mikael Beuthe, Jonathan Kay, Lee Tang, \
-Simon Kattenhorn, C.M. Cooper, Emily S. Martin, \
-David Dubois, Ben J. Ayton, Jessica B. Li, \
-Andre Ismailyan, Peter Sinclair, Nhu Doan, and Chad Harper."""
-        
-        self.makeMsgDialog(spiel, u'Developers')
-
+        self.messageDisplay("development.txt","Developers")
     def onUpdates(self, evt):
-        updates = u"""This is version 5.0 of SatStressGUI.  For more information, please visit: \n\n\
-https://github.com/SatStressGUI/SatStressGUI\n\n\
-In this version several bugs were fixed and a new stressing mechanism (Ice Shell Volume Change in the viscoelastic case) was added. \
-To find detailed notes of all the changes, suggest improvements, or report bugs, please visit the GitHub page."""
-        
-        self.makeMsgDialog(updates, u'Version 5.0')
-
-    def onContacts(self, evt):
-        #Create a message dialog box.
-        self.makeMsgDialog(u"Alex Patthoff via patthoff@jpl.nasa.gov",
-                           u"Primary Contact")
-
+        self.messageDisplay("updates.txt","Version 5.0")
+    def onContacts(self, evt):#Create a message dialog box.
+        self.makeMsgDialog(u"Alex Patthoff via patthoff@jpl.nasa.gov",u"Primary Contact")
     def onDiurnalref(self, evt):
-        Resources = u"""Diurnal tidal stresses arise when a satellite is in an eccentric orbit. \
-This is due to two reasons. \
-First, the amplitude of the planet's gravitational force is greater at periapse than it is at apoapse. \
-Secondly, the planet is rotating slightly faster (compared to its synchronous rotation rate) at periapse \
-and slightly slower (again compared to its synchronous rotation rate) at apoapse. \
-This results in a 'librational tide', where the planet appears to rock back and forth in the sky.\n\n\
-For more information on diurnal tides, please see:\n\
-    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
-M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
-and orbital eccentricity using gravitational potential theory, \
-Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
-"""
-        self.makeMsgDialog(Resources, u'About Diurnal Tides')
-
+        self.messageDisplay("diurnalref.txt","About Diurnal Tides")
     def onNSRref(self, evt):
-        Resources = u"""Nonsynchronous rotation (NSR) occurs when a satellite's lithosphere is decoupled from its core. \
-When this happens, the tidal bulge of the shell causes it to experience a net torque, and could rotate more quickly than the synchronous rate. \
-Thus, the planet appears to move across the sky, and the tidal bulge moves beneath the shell. \
-This results in surface stresses. \
-The period of this rotation should be > 10,000 years.\n\n\
-For more information on NSR, please see:\n\
-    Wahr, J., Z. A. Selvans, M. E. Mullen, A. C. Barr, G. C. Collins, \
-M. M. Selvans, and R. T. Pappalardo, Modeling stresses on satellites due to non-synchronous rotation \
-and orbital eccentricity using gravitational potential theory, \
-Icarus, Volume 200, Issue 1, March 2009, Pages 188-206.
-"""
-        self.makeMsgDialog(Resources, u'About Nonsynchronous Rotation')
-
+        self.messageDisplay("NSRref.txt","About Nonsynchronous Rotation")
     def onObliquityref(self, evt):
-        Resources = u"""A satellite's obliquity (or axial tilt) is the angle between it rotational axis and its orbital axis. \
-A satellite of zero obliquity will have a rotational axis perpendicular to its orbital plane. \
-However, when the obliquity is nonzero, it causes the stresses due to diurnal tides and non-synchronous rotation to be asymmetric.\n\n\
-For more information on stresses due to oblique orbits, please see:\n\
-    Jara-Orue, H. M., & Vermeersen, B. L. (2011). Effects of low-viscous layers and a non-zero \
-obliquity on surface stresses induced by diurnal tides and non-synchronous rotation: The \
-case of Europa. Icarus, 215(1), 417-438.
-"""
-        self.makeMsgDialog(Resources, u'About Olibque Orbits')
-
+        self.messageDisplay("Obliquityref.txt","About Oblique Orbits")
     def onISTref(self, evt):
-        Resources = u"""As satellites age, they could become cooler or warmer. \
-This would result in more of the liquid ocean freezing or melting, thereby increasing or decreasing the thickness of the icy crust. \
-This process would force the ice shell to expand or shrink, putting extensional stress on the surface.\n\n\
-For more information on Ice Shell Volume Change as a stressing mechanism, please see:\n\
-    Nimmo, F. (2004). Stresses generated in cooling viscoelastic ice shells: Application \
-to Europa. Journal of Geophysical Research: Planets (1991-2012), 109(E12).\n\
-    Patthoff, D.A., et al. 2016. Viscoelastic modeling of tidal stresses on satellites \
-with an enhanced SatStressGUI, 47th LPSC, abs. 1375.\n\
-    Wahr, J., et al., 2009. Modeling stresses on satellites due to nonsynchronous rotation and orbital eccentricity using gravitational potentialtheory, Icarus, 200, p. 186-206.
-"""
-        self.makeMsgDialog(Resources, u'About Ice Shell Volume Change')
-
-
+        self.messageDisplay("ISTref.txt","About Ice Shell Volume Change")
     def onPWref(self, evt):
-        Resources = u"""Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. \
-If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). \
-Sometimes, this also results in a reorientation of the poles. \
-The north pole appears to wander over the surface as the crust reorients itself. \
-This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, \
-as well as the parent planet appearing to change its location in the sky. \n\n\
-This stressing mechanism is calculated using an elastic model.\n\n\
-For more information on Polar Wander as a stressing mechanism, please see:\n\
-    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.\n\
-    Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.
-"""
-        self.makeMsgDialog(Resources, u'About Polar Wander')
-
+        self.messageDisplay("PWref.txt","About Polar Wander")
     def onCycloidsref(self, evt):
-        Resources = u"""Cycloids are arcuate lineaments found on the surface of Europa.  \
-They are thought to be created when a fracture in the ice is propagated because of the stresses. \
-In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice.\
-Once the fracture has started, it will propagate through the ice at a certain velocity.\
-This velocity could be constant, or could vary depending on the magnitude of the stress.\
-During the cycloid's propagation, the satellite will continue orbiting around its primary.\
-This causes the stress field on the satellite to change, making the cycloids curve.\
-When the stress is no longer greater than the requisite propagation strength, the cycloid stops moving.\
-If the stress reaches the propagation strength again, it will continue.\n\n\
-For more information, please see:\n\
-    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal \
-features on Europa. Science 285, 1899-1902"""
-        self.makeMsgDialog(Resources, u'About Cycloids')
-
+        self.messageDisplay("Cycloidsref.txt","About Cycloids")
     def onTutorial(self, evt):
-        Tutorial = u"""Welcome to SatStressGUI! This program is designed to model stresses icy satellites \
-experience as they orbit their primary.  For more information on this program and the mathematics behind it, \
-check the "Information" menu. \n\n\
-1) Input the satellite's physical parameters on the Satellite tab.\n\
-2) Select which stresses to apply in the Stresses tab.\n\
-- When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or \
-leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.\n\
-3) In the Grid tab, input a latitude and longitude range to examine.\n\
-- The number of grid points must be equal for both latitude and longitude.\n\
-4) Also in the Grid tab, input the relevant information for the selected stresses.\n\
-5) Change to the Plot tab to see the stress maps.\n\
-- For more information on how to use the maps, see "Plot" in the Help Menu.\n\
-6) Use the Point tab to calculate the stress at discrete points in space and time.
-"""
-        self.makeMsgDialog(Tutorial, u'Getting Started')
-
+        self.messageDisplay("tutorial.txt","Getting Started")
     def onHelpSat(self, evt):
-        Help = u"""The Satellite Tab is used to input the physical properties of the satellite.\n\n\
-- SatStressGUI assumes a 4-layer (upper ice layer, lower ice layer, liquid ocean layer, and core) satellite body.\n\
-- Each entry should use the units denoted in the square brackets next to the box.\n\
-- The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.\n\
-- The NSR period is usually on the order of 100,000 years.  If you are not using NSR, you can leave it as 'infinity'.\n\
-- The orbital eccentricity must be < 0.25. Otherwise, the program cannot reasonably calculate stresses.\n\
-- If you have changed a number but nothing seems to happen, try hitting 'Enter' in the box you changed.\n\
-"""
-        self.makeMsgDialog(Help, u'The Satellite Tab')
-
+        self.messageDisplay("helpsat.txt","The Satellite Tab")
     def onHelpStresses(self, evt):
-        Help = u"""The Stresses Tab is used to select which stresses to use.\n\n\
-- For Diurnal and NSR stresses, the h2, k2, and l2 boxes should be left blank unless the user wants to input their own values. \
-Checking the "Input Love Numbers" box will allow you to use custom Love numbers. \
-When inputting custom love numbers, you must use the format <Re> +/- <Im>j.  Do not use scientific notation. \
-For example, "1.2+3.0e-5j" should be written as "1.2+0.00003j."\n\
-- If left blank, the program will use .65 as the value for the Stefan Parameter in Ice Shell Volume Change. \n\
-- Polar Wander uses an elastic, time-independent calculation, so it should probably not be used with other stresses.\n\
-- By turning on the "Assume tidally locked satellite" option, the program will calculate the tidal axis as always perpendicular to the rotational axis.\n\
-- If you turn off the tidal locking option and the plot does not update, press 'Enter' in each of the tidal axis text boxes.\n\
-- Activating the "Despinning" box allows the user to change the initial and final rotation rate of the satellite. \
-The rotational period should be input in units of hours.\n\
-- All coordinates should be input as latitude and longitude; conversion to colatitude is handled by the program.
-"""
-        self.makeMsgDialog(Help, u'The Stresses Tab')
-
+        self.messageDisplay("helpstresses.txt","The Stresses Tab")
     def onHelpPoint(self, evt):
-        Help = u"""The Point Tab can be used to calculate the stress at any discrete point in space and time.\n\n\
-- Enter a latitude, longitude, year, and orbital position for each point.\n\
-- Press the "Calculate Stress" button.\n\
-- Use the "Save to File" button to save the results as a .cvs file.\n\n\
-- θ: latitude (-90.00 to 90.00) [°]\n\
-- φ: longitude (-180.00 to180.00 (positive West or East to choose from)) [°]\n\
-- t: time since periapse (periapse = 0) [yrs], used for secular stress calculations\n\
-- orbital pos: orbital position since periapse (periapse = 0) [°], used for diurnal stress calculations\n\
-- Stt: east-west component of stress field [kPa]\n\
-- Spt: off diagonal component of stress field [kPa]\n\
-- Spp: north-south component of stress field [kPa]\n\
-- σ1: maximum tension [kPa]\n\
-- σ3: maximum compression [kPa]\n\
-- α: the angle between σ1 and due north (clockwise is positive) [°]
-"""
-        self.makeMsgDialog(Help, u'The Point Tab')
-
-
+        self.messageDisplay("helppoint.txt","The Point Tab")
     def onHelpGrid(self, evt):
-        Help = u"""The Grid Tab is used to specify what section of the satellite to look at.\n\n\
-- For more information about each stress, see the Information menu.\n\
-- NOTE: The number of latitude and longitude grid points must be equal.\n\
-- To examine the whole moon, use a latitude range from -90 to 90 and a longitude range of -180 to 180.\n\
-- Each row will only activate when the appropriate stress is enabled.\n\
-- The "orbital position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. \
-Inputting 0 to 360 degrees will be one full orbit.  Additional orbits can be added by increasing the maximum beyond 360 degrees.\n\
-- The map will occasionally not work for certain positions.  If this happens, simply change the number of increments or the end position.\n\
-- The "amount of NSR build up" row is used to determine how long the ice shell has been rotating. \
-The Start Time is when the plotting starts, and the End Time is when the plotting ends.\n\
-"""
-        self.makeMsgDialog(Help, u'The Grid Tab')
-
+        self.messageDisplay("helpgrid.txt","The Grid Tab")
     def onHelpCycloids(self, evt):
-        Help = u"""The Cycloids Tab allows the user to generate a cycloidal feature on the map.\n\n\
-- The cycloids are modeled and plotted on the Plot Tab.\n\
-- The Yield Threshold is how much stress must be put on the crust to break the ice and initiate a fracture.\n\
-- The Propagation Strength is how much stress must be put on the crust to make the split continue, and the split continues at the Propagation Speed.\n\
-- The Starting Latitude and Longitude determine where the cycloid begins, and the Direction determines the curvature of the cycloid.\n\
-- NOTE: The Vary Velocity option is currently untested.\n\
-- For more information on cycloids, see the Information menu.
-"""
-        self.makeMsgDialog(Help, u'The Cycloids Tab')
-
+        self.messageDisplay("helpcycloids.txt","The Cycloids Tab")
     def onHelpPlot(self, evt):
-        Help = u"""The Plot Tab shows a map of the stresses on the surface of the satellite.\n\n\
-- Tension on the map is shown as positive and compression is shown as negative.
-- You can step through the plots by using the buttons to the bottom right of the graph.\n\
-- Each individual plot can be saved by using the save button to the lower left of the graph, and the series can be saved using the "save series" \
-button to the lower right.\n\
-- The panel on the right allows manipulation of the map, changing the scale and type of map, as well as the stresses showed.\n\
-- The bottom panel enables and disables cycloids.\n\
-- When using Polar Wander, the initial and final locations of the rotational poles and/or sub- and anti-jove points will appear on the graph.\n\
-  - The initial north and south poles will be white circles.\n\
-  - The final north and south poles will be black circles.\n\
-  - The initial sub- and anti-jove points will be white squares.\n\
-  - The final sub- and anti-jove points will be black squares.\n\
-- The vectors created by Polar Wander do not currently appear to be generating correctly.\n\
-- When using cycloids, if the program is unable to initiate a cycloid, it will plot a black triangle at the attempted location.\n\
-  - If it creates a split, but cannot propagate it, it will plot a white triangle at the location.\n\
-- Cycloids can be saved as shape files via the appropriate button. Loading of shape files is currently not supported.\n\
-- NOTE: The cycloids cannot be saved as netcdf files currently.\n\
-- NOTE: The Lineaments feature does not function currently.\n\
-"""
-        self.makeMsgDialog(Help, u'The Plot Tab')
-
+        self.messageDisplay("helpplot.txt","The Plot Tab")
     def onHelpGrayedOutInstructions(self, evt):
-        Help = u"""Panels in this application rely on parameters or information given in previous panels, \
-as such, panels in which the user has not supplied enough parameters or information are grayed out/disabled until \
-the user supplies what is necessary. \n\n\
-NOTE: if the Cycloids and Plot panels are grayed out/disabled even after the Grid panel has \
-been enabled, the user can enable them by clicking anywhere on the Grid panel. \
-(This application reads an "interaction" that the user has with the Grid panel, such as clicking \
-anywhere on the panel or inputting their own parameters in the panel, as a que to enable the Cycloids and Plot \
-panels. In most cases, the user will have "interacted" with the Grid panel anyways so this information \
-will not always be relevant.) 
-        """
-         
-        self.makeMsgDialog(Help, u'Grayed Out/Disabled Panels')
+        self.messageDisplay("helpgrayedoutinstructions.txt","Grayed Out/Disabled Panels")
+
     def makeMsgDialog(self, msg, title):
         msg = wx.MessageDialog(self, msg, title, wx.OK | wx.ICON_INFORMATION)
         msg.ShowModal()

@@ -1,0 +1,7 @@
+The Cycloids Tab allows the user to generate a cycloidal feature on the map.
+- The cycloids are modeled and plotted on the Plot Tab.
+- The Yield Threshold is how much stress must be put on the crust to break the ice and initiate a fracture.
+- The Propagation Strength is how much stress must be put on the crust to make the split continue, and the split continues at the Propagation Speed.
+- The Starting Latitude and Longitude determine where the cycloid begins, and the Direction determines the curvature of the cycloid.
+- NOTE: The Vary Velocity option is currently untested.
+- For more information on cycloids, see the Information menu.

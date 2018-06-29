@@ -1,0 +1,3 @@
+Panels in this application rely on parameters or information given in previous panels, as such, panels in which the user has not supplied enough parameters or information are grayed out/disabled until the user supplies what is necessary.
+
+NOTE: if the Cycloids and Plot panels are grayed out/disabled even after the Grid panel has been enabled, the user can enable them by clicking anywhere on the Grid panel. (This application reads an "interaction" that the user has with the Grid panel, such as clicking anywhere on the panel or inputting their own parameters in the panel, as a que to enable the Cycloids and Plot panels. In most cases, the user will have "interacted" with the Grid panel anyways so this information will not always be relevant.)

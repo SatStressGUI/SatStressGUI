@@ -1,0 +1,8 @@
+The Satellite Tab is used to input the physical properties of the satellite.
+
+- SatStressGUI assumes a 4-layer (upper ice layer, lower ice layer, liquid ocean layer, and core) satellite body.
+- Each entry should use the units denoted in the square brackets next to the box.
+- The viscoelastic model used assumes that the satellite has two icy layers, a liquid ocean, and a solid core.
+- The NSR period is usually on the order of 100,000 years.  If you are not using NSR, you can leave it as 'infinity'.
+- The orbital eccentricity must be < 0.25. Otherwise, the program cannot reasonably calculate stresses.
+- If you have changed a number but nothing seems to happen, try hitting 'Enter' in the box you changed.

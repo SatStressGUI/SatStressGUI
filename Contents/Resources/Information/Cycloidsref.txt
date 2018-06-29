@@ -1,0 +1,5 @@
+Cycloids are arcuate lineaments found on the surface of Europa. They are thought to be created when a fracture in the ice is propagated because of the stresses. In order for a cycloid to be created, the tensile stress at the location must exceed the tensile strength of the ice. Once the fracture has started, it will propagate through the ice at a certain velocity. This velocity could be constant, or could vary depending on the magnitude of the stress. During the cycloid's propagation, the satellite will continue orbiting around its primary. This causes the stress field on the satellite to change, making the cycloids curve.
+When the stress is no longer greater than the requisite propagation strength, the cycloid stops moving. If the stress reaches the propagation strength again, it will continue.
+
+For more information, please see:
+    Hoppa, G.V., Tufts, B.R., Greenberg, R., Geissler, P.E., 1999b. Formation of cycloidal features on Europa. Science 285, 1899-1902

@@ -1,0 +1,4 @@
+This is version 5.0 of SatStressGUI.  For more information, please visit:
+https://github.com/SatStressGUI/SatStressGUI
+
+In this version several bugs were fixed and a new stressing mechanism (Ice Shell Volume Change in the viscoelastic case) was added. To find detailed notes of all the changes, suggest improvements, or report bugs, please visit the GitHub page.

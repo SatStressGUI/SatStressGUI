@@ -1,0 +1,11 @@
+Welcome to SatStressGUI! This program is designed to model stresses icy satellites experience as they orbit their primary. For more information on this program and the mathematics behind it, check the "Information" menu.
+
+1) Input the satellite's physical parameters on the Satellite tab.
+2) Select which stresses to apply in the Stresses tab.
+- When using Diurnal and NSR, either input Love numbers and check the box marked "Input Love Numbers", or leave them blank to allow the program to calculate Love numbers based on the satellite's physical properties.
+3) In the Grid tab, input a latitude and longitude range to examine.
+- The number of grid points must be equal for both latitude and longitude.
+4) Also in the Grid tab, input the relevant information for the selected stresses.
+5) Change to the Plot tab to see the stress maps.
+- For more information on how to use the maps, see "Plot" in the Help Menu.
+6) Use the Point tab to calculate the stress at discrete points in space and time.

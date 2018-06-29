@@ -1,0 +1,8 @@
+Polar Wander is the apparent movement of a satellite's rotational pole due to nonsynchronous reorientation of the satellite's crust. If a satellite's crust is not coupled to its core, it may experience nonsynchronous rotation (NSR). Sometimes, this also results in a reorientation of the poles. The north pole appears to wander over the surface as the crust reorients itself. This results in stressing, due to the tidal bulge of the core and ocean moving beneath the crust, as well as the parent planet appearing to change its location in the sky.
+
+This stressing mechanism is calculated using an elastic model.
+
+For more information on Polar Wander as a stressing mechanism, please see:
+    Matsuyama, Isamu, and Francis Nimmo. "Tectonic patterns on reoriented and despun planetary bodies." Icarus 195, no. 1 (2008): 459-473.
+    
+    Matsuyama, Isamu, Francis Nimmo, and Jerry X. Mitrovica. "Planetary reorientation." Annual Review of Earth and Planetary Sciences 42 (2014): 605-634.

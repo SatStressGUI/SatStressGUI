@@ -1,0 +1,9 @@
+The Grid Tab is used to specify what section of the satellite to look at.
+
+- For more information about each stress, see the Information menu.
+- NOTE: The number of latitude and longitude grid points must be equal.
+- To examine the whole moon, use a latitude range from -90 to 90 and a longitude range of -180 to 180.
+- Each row will only activate when the appropriate stress is enabled.
+- The "orbital position" row is used to track diurnal stress from the satellite's orbit.  The satellite starts at the minimum position, and moves to the maximum position. Inputting 0 to 360 degrees will be one full orbit. Additional orbits can be added by increasing the maximum beyond 360 degrees.
+- The map will occasionally not work for certain positions. If this happens, simply change the number of increments or the end position.
+- The "amount of NSR build up" row is used to determine how long the ice shell has been rotating. The Start Time is when the plotting starts, and the End Time is when the plotting ends.
