@@ -1081,7 +1081,8 @@ class SatPanel(wx.Panel):
         #Why are you removing the attribute?
         super(SatPanel, self).__init__(*args, **kw)
         self.parameters = {}
-        self.radioBoxes = [] 
+        self.radioBoxes = []
+
     def bind_parameters(self):
         for k, p in self.parameters.items():
             f = self.mk_change_param(k)
@@ -1132,9 +1133,12 @@ class SatPanel(wx.Panel):
                             ctrl.SetValue(False)
                     else:
                         ctrl.SetValue(self.sc.parameters[p])
-            except KeyError:
-                print str(KeyError)
-                #print "Bug Found!\n"
+            except KeyError, e:
+                #Keys in the SatelliteCalculation Class are not defined, uncomment print statements to see stderr message
+                pass
+                #print str(KeyError)
+                #print str(e)
+                
     def get_panel_param(self, p):
         return self.parameters[p]
 
